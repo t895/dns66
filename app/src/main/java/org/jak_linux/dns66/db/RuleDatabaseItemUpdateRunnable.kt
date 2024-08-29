@@ -114,7 +114,7 @@ class RuleDatabaseItemUpdateRunnable(
         try {
             connection = getHttpURLConnection(file!!, singleWriterMultipleReaderFile, url)
 
-            if (validateResponse(connection)) {
+            if (!validateResponse(connection)) {
                 return
             }
             downloadFile(file!!, singleWriterMultipleReaderFile, connection)
