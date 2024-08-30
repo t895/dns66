@@ -183,6 +183,7 @@ class StartFragment : Fragment() {
         startService()
     }
 
+    @Suppress("DEPRECATION")
     private fun startService() {
         Log.i(TAG, "Attempting to connect")
         val intent = VpnService.prepare(context)
@@ -216,6 +217,8 @@ class StartFragment : Fragment() {
         return true
     }
 
+    @Suppress("DEPRECATION")
+    @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         Log.d(
             TAG,
