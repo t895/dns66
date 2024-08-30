@@ -59,11 +59,12 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
 
     // Compose
-    implementation("androidx.compose.material3:material3:1.2.1")
+    implementation("androidx.compose.material3:material3:1.3.0-rc01")
 
-    val composeVersion = "1.6.8"
+    val composeVersion = "1.7.0-rc01"
     implementation("androidx.compose.ui:ui-tooling-preview:$composeVersion")
     debugImplementation("androidx.compose.ui:ui-tooling:$composeVersion")
 
     implementation("androidx.compose.material:material-icons-core:$composeVersion")
+    implementation("androidx.compose.material:material-icons-extended:$composeVersion")
 }
