@@ -17,6 +17,7 @@ import android.view.Menu
 import android.view.MenuItem
 import android.view.MotionEvent
 import android.view.View
+import android.widget.AdapterView
 import android.widget.ImageView
 import android.widget.Spinner
 import android.widget.Switch
@@ -34,7 +35,7 @@ class ItemActivity : AppCompatActivity() {
     private lateinit var locationText: TextInputEditText
     private lateinit var titleText: TextInputEditText
     private lateinit var stateSpinner: Spinner
-    private lateinit var stateSwitch: Switch
+    private var stateSwitch: Switch? = null
     private lateinit var imageView: ImageView
 
     fun performFileSearch() {
@@ -98,23 +99,32 @@ class ItemActivity : AppCompatActivity() {
             stateSpinner.setSelection(intent.getIntExtra("ITEM_STATE", 0))
         }
         if (intent.hasExtra("ITEM_STATE")) {
-            stateSwitch.setChecked(intent.getIntExtra("ITEM_STATE", 0) % 2 != 0)
+            stateSwitch?.setChecked(intent.getIntExtra("ITEM_STATE", 0) % 2 != 0)
         }
 
-        stateSpinner.setOnItemClickListener { _, _, position, _ ->
-            when (position) {
-                Configuration.Item.STATE_ALLOW -> imageView.setImageDrawable(
-                    ContextCompat.getDrawable(this@ItemActivity, R.drawable.ic_state_allow)
-                )
+        stateSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) {
+                when (position) {
+                    Configuration.Item.STATE_ALLOW -> imageView.setImageDrawable(
+                        ContextCompat.getDrawable(this@ItemActivity, R.drawable.ic_state_allow)
+                    )
 
-                Configuration.Item.STATE_DENY -> imageView.setImageDrawable(
-                    ContextCompat.getDrawable(this@ItemActivity, R.drawable.ic_state_deny)
-                )
+                    Configuration.Item.STATE_DENY -> imageView.setImageDrawable(
+                        ContextCompat.getDrawable(this@ItemActivity, R.drawable.ic_state_deny)
+                    )
 
-                Configuration.Item.STATE_IGNORE -> imageView.setImageDrawable(
-                    ContextCompat.getDrawable(this@ItemActivity, R.drawable.ic_state_ignore)
-                )
+                    Configuration.Item.STATE_IGNORE -> imageView.setImageDrawable(
+                        ContextCompat.getDrawable(this@ItemActivity, R.drawable.ic_state_ignore)
+                    )
+                }
             }
+
+            override fun onNothingSelected(parent: AdapterView<*>?) = Unit
         }
 
         // We have an attachment icon for host files
@@ -176,7 +186,7 @@ class ItemActivity : AppCompatActivity() {
                     .putExtra("ITEM_TITLE", titleText.getText().toString())
                     .putExtra("ITEM_LOCATION", locationText.getText().toString())
                     .putExtra("ITEM_STATE", stateSpinner.selectedItemPosition)
-                    .putExtra("ITEM_STATE", if (stateSwitch.isChecked) 1 else 0)
+                    .putExtra("ITEM_STATE", if (stateSwitch?.isChecked == true) 1 else 0)
                 setResult(RESULT_OK, intent)
                 finish()
             }
