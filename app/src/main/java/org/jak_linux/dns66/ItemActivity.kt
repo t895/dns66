@@ -34,7 +34,7 @@ class ItemActivity : AppCompatActivity() {
 
     private lateinit var locationText: TextInputEditText
     private lateinit var titleText: TextInputEditText
-    private lateinit var stateSpinner: Spinner
+    private var stateSpinner: Spinner? = null
     private var stateSwitch: Switch? = null
     private lateinit var imageView: ImageView
 
@@ -96,13 +96,13 @@ class ItemActivity : AppCompatActivity() {
             locationText.setText(intent.getStringExtra("ITEM_LOCATION"))
         }
         if (intent.hasExtra("ITEM_STATE")) {
-            stateSpinner.setSelection(intent.getIntExtra("ITEM_STATE", 0))
+            stateSpinner?.setSelection(intent.getIntExtra("ITEM_STATE", 0))
         }
         if (intent.hasExtra("ITEM_STATE")) {
             stateSwitch?.setChecked(intent.getIntExtra("ITEM_STATE", 0) % 2 != 0)
         }
 
-        stateSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+        stateSpinner?.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(
                 parent: AdapterView<*>?,
                 view: View?,
@@ -185,7 +185,7 @@ class ItemActivity : AppCompatActivity() {
                 val intent = Intent()
                     .putExtra("ITEM_TITLE", titleText.getText().toString())
                     .putExtra("ITEM_LOCATION", locationText.getText().toString())
-                    .putExtra("ITEM_STATE", stateSpinner.selectedItemPosition)
+                    .putExtra("ITEM_STATE", stateSpinner?.selectedItemPosition ?: 0)
                     .putExtra("ITEM_STATE", if (stateSwitch?.isChecked == true) 1 else 0)
                 setResult(RESULT_OK, intent)
                 finish()
