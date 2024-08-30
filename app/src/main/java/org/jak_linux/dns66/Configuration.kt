@@ -24,6 +24,7 @@ import java.io.Writer
  *
  * @author Julian Andres Klode
  */
+@Keep
 class Configuration {
     companion object {
         private const val TAG = "Configuration"
@@ -179,6 +180,7 @@ class Configuration {
     @Throws(IOException::class)
     fun write(writer: Writer?) = GSON.toJson(this, writer)
 
+    @Keep
     class Item {
         companion object {
             const val STATE_IGNORE = 2
