@@ -194,6 +194,7 @@ class AdVpnService : VpnService(), Handler.Callback {
                 getSharedPreferences("state", Context.MODE_PRIVATE).edit()
                     .putBoolean("isActive", false)
                     .apply()
+                stopVpn()
             }
 
             Command.PAUSE -> pauseVpn()
