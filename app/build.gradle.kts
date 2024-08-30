@@ -1,6 +1,7 @@
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
@@ -33,6 +34,10 @@ android {
             signingConfig = signingConfigs.getByName("debug")
         }
     }
+
+    buildFeatures {
+        compose = true
+    }
 }
 
 kotlin {
@@ -51,4 +56,13 @@ dependencies {
     implementation("dnsjava:dnsjava:3.0.0")
 
     implementation("com.google.code.gson:gson:2.10.1")
+
+    // Compose
+    implementation("androidx.compose.material3:material3:1.2.1")
+
+    val composeVersion = "1.6.8"
+    implementation("androidx.compose.ui:ui-tooling-preview:$composeVersion")
+    debugImplementation("androidx.compose.ui:ui-tooling:$composeVersion")
+
+    implementation("androidx.compose.material:material-icons-core:$composeVersion")
 }
