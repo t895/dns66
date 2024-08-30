@@ -77,7 +77,7 @@ class AdVpnService : VpnService(), Handler.Callback {
         fun checkStartVpnOnBoot(context: Context) {
             Log.i("BOOT", "Checking whether to start ad buster on boot")
             val config = FileHelper.loadCurrentSettings(context)
-            if (config == null || !config.autoStart) {
+            if (!config.autoStart) {
                 return
             }
             if (!context.getSharedPreferences("state", Context.MODE_PRIVATE)
