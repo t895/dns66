@@ -26,7 +26,6 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
-import android.os.Parcelable
 import android.util.Log
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
@@ -36,6 +35,7 @@ import org.jak_linux.dns66.FileHelper
 import org.jak_linux.dns66.MainActivity
 import org.jak_linux.dns66.NotificationChannels
 import org.jak_linux.dns66.R
+import org.jak_linux.dns66.getParcel
 
 class AdVpnService : VpnService(), Handler.Callback {
     companion object {
@@ -173,11 +173,7 @@ class AdVpnService : VpnService(), Handler.Callback {
                 .putBoolean("isActive", true)
                 .apply()
 
-            val notificationIntent = if (intent == null) {
-                null
-            } else {
-                intent.getParcelableExtra<Parcelable>("NOTIFICATION_INTENT") as PendingIntent?
-            }
+            val notificationIntent = intent?.getParcel<PendingIntent>("NOTIFICATION_INTENT")
             startVpn(notificationIntent)
         }
 
