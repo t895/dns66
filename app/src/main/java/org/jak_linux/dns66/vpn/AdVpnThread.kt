@@ -60,6 +60,7 @@ class AdVpnThread(
         const val DNS_MAXIMUM_WAITING = 1024
         const val DNS_TIMEOUT_SEC: Long = 10
 
+        @Suppress("DEPRECATION")
         @Throws(VpnNetworkException::class)
         private fun getDnsServers(context: Context): List<InetAddress> {
             val known = HashSet<InetAddress>()
