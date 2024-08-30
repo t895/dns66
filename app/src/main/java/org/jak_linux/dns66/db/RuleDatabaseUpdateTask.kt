@@ -17,6 +17,7 @@ import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import org.jak_linux.dns66.Configuration
+import org.jak_linux.dns66.Dns66Application.Companion.applicationContext
 import org.jak_linux.dns66.MainActivity
 import org.jak_linux.dns66.NotificationChannels
 import org.jak_linux.dns66.R
@@ -31,9 +32,8 @@ import java.util.concurrent.atomic.AtomicReference
  * remote servers.
  */
 open class RuleDatabaseUpdateTask(
-    private val context: Context,
     private val configuration: Configuration,
-    notifications: Boolean
+    notifications: Boolean,
 ) : AsyncTask<Void, Void, Void>() {
     companion object {
         private const val TAG = "RuleDatabaseUpdateTask"
@@ -62,12 +62,12 @@ open class RuleDatabaseUpdateTask(
 
     private fun setupNotificationBuilder() {
         notificationManager =
-            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+            applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         notificationBuilder =
-            NotificationCompat.Builder(context, NotificationChannels.UPDATE_STATUS)
-                .setContentTitle(context.getString(R.string.updating_hostfiles))
+            NotificationCompat.Builder(applicationContext, NotificationChannels.UPDATE_STATUS)
+                .setContentTitle(applicationContext.getString(R.string.updating_hostfiles))
                 .setSmallIcon(R.drawable.ic_refresh)
-                .setColor(ContextCompat.getColor(context, R.color.colorPrimaryDark))
+                .setColor(ContextCompat.getColor(applicationContext, R.color.colorPrimaryDark))
                 .setProgress(configuration.hosts.items.size, 0, false)
     }
 
@@ -109,7 +109,7 @@ open class RuleDatabaseUpdateTask(
      * Releases all persisted URI permissions that are no longer referenced
      */
     fun releaseGarbagePermissions() {
-        val contentResolver = context.contentResolver
+        val contentResolver = applicationContext.contentResolver
         for (permission in contentResolver.persistedUriPermissions) {
             if (isGarbage(permission.uri)) {
                 Log.i(TAG, "releaseGarbagePermissions: Releasing permission for ${permission.uri}")
@@ -141,7 +141,7 @@ open class RuleDatabaseUpdateTask(
      * RuleDatabaseItemUpdateRunnable factory for unit tests
      */
     fun getCommand(item: Configuration.Item): RuleDatabaseItemUpdateRunnable =
-        RuleDatabaseItemUpdateRunnable(this, context, item)
+        RuleDatabaseItemUpdateRunnable(this, applicationContext, item)
 
     /**
      * Sets progress message.
@@ -159,7 +159,7 @@ open class RuleDatabaseUpdateTask(
         notificationBuilder ?: return
         notificationBuilder!!.setProgress(pending.size + done.size, done.size, false)
             .setStyle(NotificationCompat.BigTextStyle().bigText(builder.toString()))
-            .setContentText(context.getString(R.string.updating_n_host_files, pending.size))
+            .setContentText(applicationContext.getString(R.string.updating_n_host_files, pending.size))
         notificationManager!!.notify(UPDATE_NOTIFICATION_ID, notificationBuilder!!.build())
     }
 
@@ -170,7 +170,7 @@ open class RuleDatabaseUpdateTask(
     private fun postExecute() {
         Log.d(TAG, "postExecute: Sending notification")
         try {
-            RuleDatabase.instance.initialize(context)
+            RuleDatabase.instance.initialize(applicationContext)
         } catch (e: InterruptedException) {
             e.printStackTrace()
         }
@@ -180,13 +180,13 @@ open class RuleDatabaseUpdateTask(
         if (errors.isEmpty()) {
             notificationManager!!.cancel(UPDATE_NOTIFICATION_ID)
         } else {
-            val intent = Intent(context, MainActivity::class.java).apply {
+            val intent = Intent(applicationContext, MainActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
             }
 
             lastErrors.set(errors)
             val pendingIntent = PendingIntent.getActivity(
-                context,
+                applicationContext,
                 0,
                 intent,
                 PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
@@ -194,7 +194,7 @@ open class RuleDatabaseUpdateTask(
 
             notificationBuilder!!
                 .setProgress(0, 0, false)
-                .setContentText(context.getString(R.string.could_not_update_all_hosts))
+                .setContentText(applicationContext.getString(R.string.could_not_update_all_hosts))
                 .setSmallIcon(R.drawable.ic_warning)
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true)

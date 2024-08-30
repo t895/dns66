@@ -257,7 +257,7 @@ class MainActivity : AppCompatActivity() {
         }
 
     private fun refresh() {
-        val task = RuleDatabaseUpdateTask(applicationContext, config, true)
+        val task = RuleDatabaseUpdateTask(config, true)
         task.execute()
     }
 
