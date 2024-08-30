@@ -141,7 +141,7 @@ class AdVpnService : VpnService(), Handler.Callback {
     private val notificationBuilder =
         NotificationCompat.Builder(this, NotificationChannels.SERVICE_RUNNING)
             .setSmallIcon(R.drawable.ic_state_deny) // TODO: Notification icon
-            .setPriority(Notification.PRIORITY_MIN)
+            .setPriority(NotificationCompat.PRIORITY_MIN)
 
     override fun onCreate() {
         super.onCreate()
