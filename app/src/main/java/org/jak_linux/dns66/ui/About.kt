@@ -100,7 +100,7 @@ fun AboutScreen(
                 },
                 scrollBehavior = scrollBehavior,
             )
-        }
+        },
     ) { innerPadding ->
         About(Modifier.padding(innerPadding).padding(horizontal = 16.dp))
     }

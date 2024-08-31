@@ -34,12 +34,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.jak_linux.dns66.ui.theme.AppTypography
 import org.jak_linux.dns66.ui.theme.Dns66Theme
 
 @Composable
@@ -55,7 +53,7 @@ fun SettingInfo(
     ) {
         Text(
             text = title,
-            style = AppTypography.labelLarge,
+            style = MaterialTheme.typography.labelLarge,
             maxLines = 1,
             overflow = TextOverflow.Ellipsis,
         )
@@ -64,7 +62,7 @@ fun SettingInfo(
             Spacer(modifier = Modifier.padding(vertical = 1.dp))
             Text(
                 text = details,
-                style = AppTypography.bodySmall,
+                style = MaterialTheme.typography.bodySmall,
             )
         }
     }
@@ -87,7 +85,7 @@ fun CheckboxListItem(
                 enabled = enabled,
                 onClick = onClick,
             )
-            .padding(horizontal = 8.dp),
+            .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         SettingInfo(
@@ -137,7 +135,7 @@ fun SwitchListItem(
                 enabled = enabled,
                 onClick = onClick,
             )
-            .padding(horizontal = 8.dp),
+            .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         SettingInfo(
@@ -238,7 +236,7 @@ fun IconListItem(
                 enabled = enabled,
                 onClick = onClick,
             )
-            .padding(horizontal = 8.dp),
+            .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         SettingInfo(
@@ -250,7 +248,7 @@ fun IconListItem(
         Box(
             modifier = Modifier
                 .clip(CircleShape)
-                .clickable(enabled = enabled, onClick = onClick)
+                .clickable(enabled = enabled, onClick = onIconClick)
                 .minimumInteractiveComponentSize()
         ) {
             Icon(painter = icon, contentDescription = contentDescription)
@@ -293,7 +291,7 @@ fun ListSettingsContainer(
             if (title.isNotEmpty()) {
                 Text(
                     text = title,
-                    style = AppTypography.labelSmall
+                    style = MaterialTheme.typography.labelSmall
                 )
                 Spacer(modifier = Modifier.padding(vertical = 2.dp))
             }
