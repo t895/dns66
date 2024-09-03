@@ -12,7 +12,6 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.automirrored.filled.FactCheck
 import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
@@ -128,13 +127,16 @@ fun HostsScreen(
             }
 
             IconListItem(
-                icon = painterResource(id = iconResource),
                 onClick = {
                     onItemClick(it)
                 },
                 title = it.title,
                 details = it.location,
-                onIconClick = onItemStateChanged,
+                iconContent = {
+                    IconButton(onClick = onItemStateChanged) {
+                        Icon(painterResource(iconResource), null)
+                    }
+                },
             )
         }
     }
@@ -285,17 +287,25 @@ private fun EditFilterPreview() {
 @Composable
 fun EditFilterScreen(
     modifier: Modifier = Modifier,
+    title: String,
+    location: String,
+    action: Int,
     onNavigateUp: () -> Unit,
-    onSave: () -> Unit,
+    onSave: (String, String, Int) -> Unit,
     onDelete: (() -> Unit)? = null,
+    onOpenUri: () -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
+    var titleInput by rememberSaveable { mutableStateOf(title) }
+    var locationInput by rememberSaveable { mutableStateOf(location) }
+    var actionInput by rememberSaveable { mutableIntStateOf(action) }
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
                 title = {
-                    Text(text = stringResource(id = R.string.activity_edit_filter))
+                    Text(text = stringResource(R.string.activity_edit_filter))
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
@@ -307,7 +317,7 @@ fun EditFilterScreen(
                 },
                 actions = {
                     if (onDelete != null) {
-                        IconButton(onClick = onNavigateUp) {
+                        IconButton(onClick = onDelete) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = null,
@@ -315,7 +325,7 @@ fun EditFilterScreen(
                         }
                     }
 
-                    IconButton(onClick = onNavigateUp) {
+                    IconButton(onClick = { onSave(titleInput, locationInput, actionInput) }) {
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = null,
@@ -326,19 +336,15 @@ fun EditFilterScreen(
             )
         },
     ) { paddingValues ->
-        // TODO: Replace these with viewmodel state
-        var action by rememberSaveable { mutableIntStateOf(0) }
-        var titleText by rememberSaveable { mutableStateOf("") }
-        var locationText by rememberSaveable { mutableStateOf("") }
         EditFilter(
             modifier = Modifier.padding(paddingValues).padding(horizontal = 16.dp),
-            titleText = titleText,
-            onTitleTextChanged = { titleText = it },
-            locationText = locationText,
-            onLocationTextChanged = { locationText = it },
-            onOpenHostsDirectoryClick = {},
-            action = action,
-            onActionChanged = { action = it },
+            titleText = titleInput,
+            onTitleTextChanged = { titleInput = it },
+            locationText = locationInput,
+            onLocationTextChanged = { locationInput = it },
+            onOpenHostsDirectoryClick = onOpenUri,
+            action = actionInput,
+            onActionChanged = { actionInput = it },
         )
     }
 }
@@ -348,9 +354,13 @@ fun EditFilterScreen(
 private fun EditFilterScreenPreview(modifier: Modifier = Modifier) {
     Dns66Theme {
         EditFilterScreen(
+            title = "",
+            location = "",
+            action = 0,
             onNavigateUp = {},
-            onSave = {},
+            onSave = { _, _, _ -> },
             onDelete = {},
+            onOpenUri = {},
         )
     }
 }

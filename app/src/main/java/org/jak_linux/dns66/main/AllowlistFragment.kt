@@ -132,7 +132,7 @@ class AllowlistFragment : Fragment() {
         return rootView
     }
 
-    inner class AppListAdapter(val pm: PackageManager, val list: ArrayList<ListEntry>) :
+    inner class AppListAdapter(val pm: PackageManager, val list: ArrayList<AppItem>) :
         RecyclerView.Adapter<AppListAdapter.ViewHolder>() {
         private val onVpn: MutableSet<String> = HashSet()
         private val notOnVpn = HashSet<String>()
@@ -161,8 +161,8 @@ class AllowlistFragment : Fragment() {
             } else {
                 holder.icon.setVisibility(View.INVISIBLE)
 
-                holder.task = object : AsyncTask<ListEntry, Void, Drawable>() {
-                    override fun doInBackground(vararg params: ListEntry?): Drawable? =
+                holder.task = object : AsyncTask<AppItem, Void, Drawable>() {
+                    override fun doInBackground(vararg params: AppItem?): Drawable? =
                         params[0]?.loadIcon(pm)
 
                     override fun onPostExecute(result: Drawable?) {
@@ -221,7 +221,7 @@ class AllowlistFragment : Fragment() {
             val details: TextView
             val allowlistSwitch: Switch
 
-            var task: AsyncTask<ListEntry, Void, Drawable>? = null
+            var task: AsyncTask<AppItem, Void, Drawable>? = null
 
             init {
                 with(itemView) {
@@ -242,13 +242,13 @@ class AllowlistFragment : Fragment() {
 
             Collections.sort(apps, ApplicationInfo.DisplayNameComparator(pm))
 
-            val entries = ArrayList<ListEntry>()
+            val entries = ArrayList<AppItem>()
             for (app in apps) {
                 if (app.packageName != BuildConfig.APPLICATION_ID &&
                     (MainActivity.config.allowlist.showSystemApps ||
                         (app.flags and ApplicationInfo.FLAG_SYSTEM) == 0)
                 ) {
-                    entries.add(ListEntry(app, app.packageName, app.loadLabel(pm).toString()))
+                    entries.add(AppItem(app, app.packageName, app.loadLabel(pm).toString()))
                 }
             }
 
@@ -259,25 +259,6 @@ class AllowlistFragment : Fragment() {
         override fun onPostExecute(result: AppListAdapter?) {
             appList.adapter = result
             swipeRefresh.isRefreshing = false
-        }
-    }
-
-    inner class ListEntry(
-        val appInfo: ApplicationInfo,
-        val packageName: String,
-        val label: String
-    ) {
-        private var weakIcon: WeakReference<Drawable>? = null
-
-        fun getIcon(): Drawable? = weakIcon?.get()
-
-        fun loadIcon(pm: PackageManager): Drawable? {
-            var icon = getIcon()
-            if (icon == null) {
-                icon = appInfo.loadIcon(pm)
-                weakIcon = WeakReference(icon)
-            }
-            return icon
         }
     }
 }

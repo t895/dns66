@@ -67,4 +67,10 @@ dependencies {
 
     implementation("androidx.compose.material:material-icons-core:$composeVersion")
     implementation("androidx.compose.material:material-icons-extended:$composeVersion")
+
+    val coilVersion = "2.7.0"
+    implementation("io.coil-kt:coil:$coilVersion")
+    implementation("io.coil-kt:coil-compose:$coilVersion")
+
+    implementation("androidx.navigation:navigation-compose:2.7.7")
 }
