@@ -47,7 +47,7 @@ fun AppsScreen(
         modifier
             .fillMaxSize()
             .background(MaterialTheme.colorScheme.surface)
-            .padding(16.dp)
+            .padding(horizontal = 16.dp)
     ) {
         item {
             ListSettingsContainer(

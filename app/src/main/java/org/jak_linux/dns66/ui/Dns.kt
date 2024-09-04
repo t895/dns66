@@ -37,7 +37,7 @@ fun DnsScreen(
             modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.surface)
-                .padding(16.dp)
+                .padding(horizontal = 16.dp)
         ) {
             item {
                 ListSettingsContainer {
@@ -66,7 +66,7 @@ fun DnsScreen(
 
 @Preview
 @Composable
-fun DnsScreenPreview(modifier: Modifier = Modifier) {
+private fun DnsScreenPreview(modifier: Modifier = Modifier) {
     val item = Configuration.Item()
     item.title = "Title"
     item.location = "213.73.91.35"

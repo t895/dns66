@@ -28,7 +28,7 @@ fun StartScreen(modifier: Modifier = Modifier) {
             .fillMaxSize()
     ) {
         Column(
-            modifier = modifier
+            modifier = Modifier
                 .verticalScroll(rememberScrollState())
         ) {
             ListSettingsContainer(
