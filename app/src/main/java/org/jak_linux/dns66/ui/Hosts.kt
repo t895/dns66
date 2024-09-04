@@ -144,7 +144,7 @@ fun HostsScreen(
 
 @Preview
 @Composable
-private fun HostsScreenPreview(modifier: Modifier = Modifier) {
+private fun HostsScreenPreview() {
     val items = buildList {
         val item1 = Configuration.Item()
         item1.title = "StevenBlack's hosts file"
@@ -256,7 +256,6 @@ fun EditFilter(
                 }
             }
         }
-
     }
 }
 
@@ -291,7 +290,7 @@ fun EditFilterScreen(
     location: String,
     action: Int,
     onNavigateUp: () -> Unit,
-    onSave: (String, String, Int) -> Unit,
+    onSave: (title: String, location: String, action: Int) -> Unit,
     onDelete: (() -> Unit)? = null,
     onOpenUri: () -> Unit,
 ) {
@@ -351,7 +350,7 @@ fun EditFilterScreen(
 
 @Preview
 @Composable
-private fun EditFilterScreenPreview(modifier: Modifier = Modifier) {
+private fun EditFilterScreenPreview() {
     Dns66Theme {
         EditFilterScreen(
             title = "",

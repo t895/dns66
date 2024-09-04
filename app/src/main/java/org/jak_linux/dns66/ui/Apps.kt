@@ -116,7 +116,7 @@ fun AppsScreen(
 
 @Preview
 @Composable
-private fun AppsScreenPreview(modifier: Modifier = Modifier) {
+private fun AppsScreenPreview() {
     Dns66Theme {
         AppsScreen(
             apps = listOf(AppItem(ApplicationInfo(), "Package", "Label")),
