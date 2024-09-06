@@ -7,7 +7,6 @@
  */
 package org.jak_linux.dns66.db
 
-import android.content.Context
 import android.util.Log
 import org.jak_linux.dns66.Configuration
 import org.jak_linux.dns66.FileHelper
@@ -116,8 +115,8 @@ class RuleDatabase private constructor() {
      */
     @Synchronized
     @Throws(InterruptedException::class)
-    fun initialize(context: Context) {
-        val config = FileHelper.loadCurrentSettings(context)
+    fun initialize() {
+        val config = FileHelper.loadCurrentSettings()
 
         nextBlockedHosts = HashSet(blockedHosts.get().size)
 
@@ -130,7 +129,7 @@ class RuleDatabase private constructor() {
                 if (Thread.interrupted()) {
                     throw InterruptedException("Interrupted")
                 }
-                loadItem(context, item)
+                loadItem(item)
             }
         }
 
@@ -146,13 +145,13 @@ class RuleDatabase private constructor() {
      * @throws InterruptedException If the thread was interrupted.
      */
     @Throws(InterruptedException::class)
-    private fun loadItem(context: Context, item: Configuration.Item) {
-        if (item.state == Configuration.Item.STATE_IGNORE) {
+    private fun loadItem(item: Configuration.HostItem) {
+        if (item.state == Configuration.HostState.IGNORE) {
             return
         }
 
         val reader = try {
-            FileHelper.openItemFile(context, item)
+            FileHelper.openItemFile(item)
         } catch (e: FileNotFoundException) {
             Log.d(TAG, "loadItem: File not found: ${item.location}")
             return
@@ -171,14 +170,14 @@ class RuleDatabase private constructor() {
      * @param item The item the host belongs to
      * @param host The host
      */
-    private fun addHost(item: Configuration.Item, host: String) {
+    private fun addHost(item: Configuration.HostItem, host: String) {
         // Single address to block
-        if (item.state == Configuration.Item.STATE_ALLOW) {
+        if (item.state == Configuration.HostState.ALLOW) {
             nextBlockedHosts?.remove(host) ?: Log.d(
                 TAG,
                 "addHost: nextBlockedHosts was null when attempting to remove host!"
             )
-        } else if (item.state == Configuration.Item.STATE_DENY) {
+        } else if (item.state == Configuration.HostState.DENY) {
             nextBlockedHosts?.add(host) ?: Log.d(
                 TAG,
                 "addHost: nextBlockedHosts was null when attempting to add host!"
@@ -194,7 +193,7 @@ class RuleDatabase private constructor() {
      * @throws InterruptedException If thread was interrupted
      */
     @Throws(InterruptedException::class)
-    fun loadReader(item: Configuration.Item, reader: Reader): Boolean {
+    fun loadReader(item: Configuration.HostItem, reader: Reader): Boolean {
         var count = 0
         try {
             Log.d(TAG, "loadBlockedHosts: Reading: ${item.location}")

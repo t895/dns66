@@ -140,7 +140,7 @@ open class RuleDatabaseUpdateTask(
     /**
      * RuleDatabaseItemUpdateRunnable factory for unit tests
      */
-    fun getCommand(item: Configuration.Item): RuleDatabaseItemUpdateRunnable =
+    fun getCommand(item: Configuration.HostItem): RuleDatabaseItemUpdateRunnable =
         RuleDatabaseItemUpdateRunnable(this, applicationContext, item)
 
     /**
@@ -170,7 +170,7 @@ open class RuleDatabaseUpdateTask(
     private fun postExecute() {
         Log.d(TAG, "postExecute: Sending notification")
         try {
-            RuleDatabase.instance.initialize(applicationContext)
+            RuleDatabase.instance.initialize()
         } catch (e: InterruptedException) {
             e.printStackTrace()
         }
@@ -209,13 +209,13 @@ open class RuleDatabaseUpdateTask(
      * @param message Message
      */
     @Synchronized
-    fun addError(item: Configuration.Item, message: String) {
+    fun addError(item: Configuration.HostItem, message: String) {
         Log.d(TAG, "error: ${item.title}:$message")
         errors.add("<b>${item.title}</b><br>$message")
     }
 
     @Synchronized
-    fun addDone(item: Configuration.Item) {
+    fun addDone(item: Configuration.HostItem) {
         Log.d(TAG, "done: ${item.title}")
         pending.remove(item.title)
         done.add(item.title)
@@ -228,7 +228,7 @@ open class RuleDatabaseUpdateTask(
      * @param item The item currently being processed.
      */
     @Synchronized
-    fun addBegin(item: Configuration.Item) {
+    fun addBegin(item: Configuration.HostItem) {
         pending.add(item.title)
         updateProgressNotification()
     }

@@ -76,7 +76,7 @@ class AdVpnService : VpnService(), Handler.Callback {
 
         fun checkStartVpnOnBoot(context: Context) {
             Log.i("BOOT", "Checking whether to start ad buster on boot")
-            val config = FileHelper.loadCurrentSettings(context)
+            val config = FileHelper.loadCurrentSettings()
             if (!config.autoStart) {
                 return
             }
@@ -227,7 +227,7 @@ class AdVpnService : VpnService(), Handler.Callback {
         notificationBuilder.setContentTitle(getString(notificationTextId))
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ||
-            FileHelper.loadCurrentSettings(applicationContext).showNotification
+            FileHelper.loadCurrentSettings().showNotification
         ) {
             startForeground(NOTIFICATION_ID_STATE, notificationBuilder.build())
         }

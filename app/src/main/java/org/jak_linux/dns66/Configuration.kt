@@ -11,10 +11,16 @@ import android.content.Intent
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Parcel
+import android.os.Parcelable
 import android.util.Log
 import androidx.annotation.Keep
 import com.google.gson.Gson
 import com.google.gson.annotations.SerializedName
+import kotlinx.parcelize.Parceler
+import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
+import org.jak_linux.dns66.Configuration.HostState.Companion.toHostState
 import java.io.IOException
 import java.io.Reader
 import java.io.Writer
@@ -50,7 +56,7 @@ class Configuration {
             config.updateURL(
                 "http://someonewhocares.org/hosts/hosts",
                 "https://someonewhocares.org/hosts/hosts",
-                0
+                HostState.IGNORE
             )
 
             return config
@@ -79,26 +85,26 @@ class Configuration {
                 updateURL(
                     "http://someonewhocares.org/hosts/hosts",
                     "https://someonewhocares.org/hosts/hosts",
-                    -1
+                    HostState.IGNORE
                 )
 
                 /* Switch to StevenBlack's host file */
                 addURL(
                     0, "StevenBlack's hosts file (includes all others)",
                     "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts",
-                    Item.STATE_DENY
+                    HostState.DENY
                 )
-                updateURL("https://someonewhocares.org/hosts/hosts", null, Item.STATE_IGNORE)
-                updateURL("https://adaway.org/hosts.txt", null, Item.STATE_IGNORE)
+                updateURL("https://someonewhocares.org/hosts/hosts", null, HostState.IGNORE)
+                updateURL("https://adaway.org/hosts.txt", null, HostState.IGNORE)
                 updateURL(
                     "https://www.malwaredomainlist.com/hostslist/hosts.txt",
                     null,
-                    Item.STATE_IGNORE
+                    HostState.IGNORE
                 )
                 updateURL(
                     "https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=1&mimetype=plaintext",
                     null,
-                    Item.STATE_IGNORE
+                    HostState.IGNORE
                 )
 
                 /* Remove broken host */
@@ -116,63 +122,51 @@ class Configuration {
         minorVersion = level
     }
 
-    fun updateURL(oldURL: String, newURL: String?, newState: Int) {
-        for (host in hosts.items) {
-            if (host.location == oldURL) {
+    fun updateURL(oldURL: String, newURL: String?, newState: HostState) =
+        hosts.items.forEach {
+            if (it.location == oldURL) {
                 if (newURL != null) {
-                    host.location = newURL
+                    it.location = newURL
                 }
 
-                if (newState >= 0) {
-                    host.state = newState
-                }
+                it.state = newState
             }
         }
-    }
 
-    fun updateDNS(oldIP: String, newIP: String) {
-        for (host in dnsServers.items) {
-            if (host.location == oldIP) {
-                host.location = newIP
+    fun updateDNS(oldIP: String, newIP: String) =
+        dnsServers.items.forEach {
+            if (it.location == oldIP) {
+                it.location = newIP
             }
         }
-    }
 
-    fun addDNS(title: String, location: String, isEnabled: Boolean) {
-        val item = Item().apply {
-            this.title = title
-            this.location = location
-            state = if (isEnabled) 1 else 0
-        }
-        dnsServers.items.add(item)
-    }
+    fun addDNS(title: String, location: String, isEnabled: Boolean) =
+        dnsServers.items.add(
+            DnsItem(
+                title = title,
+                location = location,
+                enabled = isEnabled,
+            )
+        )
 
-    fun addURL(index: Int, title: String, location: String, state: Int) {
-        val item = Item().apply {
-            this.title = title
-            this.location = location
-            this.state = state
-        }
-        hosts.items.add(index, item)
-    }
+    fun addURL(index: Int, title: String, location: String, state: HostState) =
+        hosts.items.add(
+            index = index,
+            element = HostItem(
+                title = title,
+                location = location,
+                state = state,
+            ),
+        )
 
-    fun removeURL(oldURL: String) {
-        val itr = hosts.items.iterator()
-        while (itr.hasNext()) {
-            val host = itr.next()
-            if (host.location == oldURL) {
-                itr.remove()
-            }
-        }
-    }
+    fun removeURL(oldURL: String) =
+        hosts.items.removeAll { it.location == oldURL }
 
     fun disableURL(oldURL: String) {
         Log.d(TAG, String.format("disableURL: Disabling %s", oldURL))
-        val itr: Iterator<*> = hosts.items.iterator()
-        while (itr.hasNext()) {
-            val host = itr.next() as Item
-            if (host.location == oldURL) {
-                host.state = Item.STATE_IGNORE
+        hosts.items.forEach {
+            if (it.location == oldURL) {
+                it.state = HostState.IGNORE
             }
         }
     }
@@ -180,34 +174,62 @@ class Configuration {
     @Throws(IOException::class)
     fun write(writer: Writer?) = GSON.toJson(this, writer)
 
-    @Keep
-    class Item {
+    // DO NOT change the order of these states. They correspond to UI functionality.
+    enum class HostState {
+        IGNORE, DENY, ALLOW;
+
         companion object {
-            const val STATE_IGNORE = 2
-            const val STATE_DENY = 0
-            const val STATE_ALLOW = 1
-        }
-
-        var title: String = ""
-        var location: String = ""
-        var state = 0
-
-        fun isDownloadable(): Boolean {
-            return location.startsWith("https://") || location.startsWith("http://")
+            fun Int.toHostState(): HostState = entries.firstOrNull { it.ordinal == this } ?: IGNORE
         }
     }
+
+    @Parcelize
+    @Serializable
+    data class HostItem(
+        var title: String = "",
+        var location: String = "",
+        var state: HostState = HostState.IGNORE,
+    ) : Parcelable {
+        fun isDownloadable(): Boolean =
+            location.startsWith("https://") || location.startsWith("http://")
+
+        private companion object : Parceler<HostItem> {
+            override fun HostItem.write(parcel: Parcel, flags: Int) {
+                parcel.apply {
+                    writeString(title)
+                    writeString(location)
+                    writeInt(state.ordinal)
+                }
+            }
+
+            override fun create(parcel: Parcel): HostItem =
+                HostItem(
+                    parcel.readString() ?: "",
+                    parcel.readString() ?: "",
+                    parcel.readInt().toHostState(),
+                )
+        }
+    }
+
+    @Parcelize
+    @Serializable
+    data class DnsItem(
+        var title: String = "",
+        var location: String = "",
+        var enabled: Boolean = false,
+    ) : Parcelable
 
     @Keep
     inner class Hosts {
         var enabled = false
         var automaticRefresh = false
-        var items: MutableList<Item> = ArrayList()
+        var items = mutableListOf<HostItem>()
     }
 
     @Keep
     inner class DnsServers {
         var enabled = false
-        var items: MutableList<Item> = ArrayList()
+        var items = mutableListOf<DnsItem>()
     }
 
     @Keep

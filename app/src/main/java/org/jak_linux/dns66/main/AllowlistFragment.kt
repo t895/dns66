@@ -30,6 +30,7 @@ import org.jak_linux.dns66.Configuration
 import org.jak_linux.dns66.FileHelper
 import org.jak_linux.dns66.MainActivity
 import org.jak_linux.dns66.R
+import org.jak_linux.dns66.viewmodel.HomeViewModel
 import java.lang.ref.WeakReference
 import java.util.Collections
 
@@ -71,58 +72,58 @@ class AllowlistFragment : Fragment() {
         }
         swipeRefresh.isRefreshing = true
 
-        val switchShowSystemApps =
-            rootView.findViewById<Switch>(R.id.switch_show_system_apps)
-        switchShowSystemApps.isChecked = MainActivity.config.allowlist.showSystemApps
-        switchShowSystemApps.setOnCheckedChangeListener { _, isChecked ->
-            MainActivity.config.allowlist.showSystemApps = isChecked
-            FileHelper.writeSettings(requireContext(), MainActivity.config)
-            appListGenerator = AppListGenerator(requireContext().packageManager)
-            appListGenerator?.execute()
-        }
+//        val switchShowSystemApps =
+//            rootView.findViewById<Switch>(R.id.switch_show_system_apps)
+//        switchShowSystemApps.isChecked = MainActivity.config.allowlist.showSystemApps
+//        switchShowSystemApps.setOnCheckedChangeListener { _, isChecked ->
+//            MainActivity.config.allowlist.showSystemApps = isChecked
+//            FileHelper.writeSettings(MainActivity.config)
+//            appListGenerator = AppListGenerator(requireContext().packageManager)
+//            appListGenerator?.execute()
+//        }
 
-        val allowlistDefaultText =
-            rootView.findViewById<View>(R.id.allowlist_default_text) as TextView
-        allowlistDefaultText.text =
-            resources.getStringArray(R.array.allowlist_defaults)[MainActivity.config.allowlist.defaultMode]
-        val onDefaultChangeClicked = object : View.OnClickListener {
-            override fun onClick(v: View?) {
-                val menu = PopupMenu(context, rootView.findViewById(R.id.change_default))
-                menu.inflate(R.menu.allowlist_popup)
-                menu.setOnMenuItemClickListener {
-                    when (it.itemId) {
-                        R.id.allowlist_default_on_vpn -> {
-                            Log.d(TAG, "onMenuItemClick: OnVpn")
-                            MainActivity.config.allowlist.defaultMode =
-                                Configuration.Allowlist.DEFAULT_MODE_ON_VPN
-                        }
+//        val allowlistDefaultText =
+//            rootView.findViewById<View>(R.id.allowlist_default_text) as TextView
+//        allowlistDefaultText.text =
+//            resources.getStringArray(R.array.allowlist_defaults)[MainActivity.config.allowlist.defaultMode]
+//        val onDefaultChangeClicked = object : View.OnClickListener {
+//            override fun onClick(v: View?) {
+//                val menu = PopupMenu(context, rootView.findViewById(R.id.change_default))
+//                menu.inflate(R.menu.allowlist_popup)
+//                menu.setOnMenuItemClickListener {
+//                    when (it.itemId) {
+//                        R.id.allowlist_default_on_vpn -> {
+//                            Log.d(TAG, "onMenuItemClick: OnVpn")
+//                            MainActivity.config.allowlist.defaultMode =
+//                                Configuration.Allowlist.DEFAULT_MODE_ON_VPN
+//                        }
+//
+//                        R.id.allowlist_default_not_on_vpn -> {
+//                            Log.d(TAG, "onMenuItemClick: NotOnVpn")
+//                            MainActivity.config.allowlist.defaultMode =
+//                                Configuration.Allowlist.DEFAULT_MODE_NOT_ON_VPN
+//                        }
+//
+//                        R.id.allowlist_default_intelligent -> {
+//                            Log.d(TAG, "onMenuItemClick: Intelligent")
+//                            MainActivity.config.allowlist.defaultMode =
+//                                Configuration.Allowlist.DEFAULT_MODE_INTELLIGENT
+//                        }
+//                    }
+//                    allowlistDefaultText.text =
+//                        resources.getStringArray(R.array.allowlist_defaults)[MainActivity.config.allowlist.defaultMode]
+//                    appListGenerator = AppListGenerator(requireContext().packageManager)
+//                    appListGenerator?.execute()
+//                    FileHelper.writeSettings(MainActivity.config)
+//                    return@setOnMenuItemClickListener true
+//                }
+//
+//                menu.show()
+//            }
+//        }
 
-                        R.id.allowlist_default_not_on_vpn -> {
-                            Log.d(TAG, "onMenuItemClick: NotOnVpn")
-                            MainActivity.config.allowlist.defaultMode =
-                                Configuration.Allowlist.DEFAULT_MODE_NOT_ON_VPN
-                        }
-
-                        R.id.allowlist_default_intelligent -> {
-                            Log.d(TAG, "onMenuItemClick: Intelligent")
-                            MainActivity.config.allowlist.defaultMode =
-                                Configuration.Allowlist.DEFAULT_MODE_INTELLIGENT
-                        }
-                    }
-                    allowlistDefaultText.text =
-                        resources.getStringArray(R.array.allowlist_defaults)[MainActivity.config.allowlist.defaultMode]
-                    appListGenerator = AppListGenerator(requireContext().packageManager)
-                    appListGenerator?.execute()
-                    FileHelper.writeSettings(requireContext(), MainActivity.config)
-                    return@setOnMenuItemClickListener true
-                }
-
-                menu.show()
-            }
-        }
-
-        rootView.findViewById<View>(R.id.change_default).setOnClickListener(onDefaultChangeClicked)
-        allowlistDefaultText.setOnClickListener(onDefaultChangeClicked)
+//        rootView.findViewById<View>(R.id.change_default).setOnClickListener(onDefaultChangeClicked)
+//        allowlistDefaultText.setOnClickListener(onDefaultChangeClicked)
 
         appListGenerator = AppListGenerator(requireContext().packageManager)
         appListGenerator?.execute()
@@ -137,9 +138,9 @@ class AllowlistFragment : Fragment() {
         private val onVpn: MutableSet<String> = HashSet()
         private val notOnVpn = HashSet<String>()
 
-        init {
-            MainActivity.config.allowlist.resolve(pm, onVpn, notOnVpn)
-        }
+//        init {
+//            MainActivity.config.allowlist.resolve(pm, onVpn, notOnVpn)
+//        }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
             ViewHolder(
@@ -186,26 +187,26 @@ class AllowlistFragment : Fragment() {
 
             holder.allowlistSwitch.setOnCheckedChangeListener { buttonView, isChecked ->
                 /* No change, do nothing */
-                if (isChecked && MainActivity.config.allowlist.items.contains(entry.packageName)) {
-                    return@setOnCheckedChangeListener
-                }
-
-                if (!isChecked &&
-                    MainActivity.config.allowlist.itemsOnVpn.contains(entry.packageName)
-                ) {
-                    return@setOnCheckedChangeListener
-                }
-
-                if (isChecked) {
-                    MainActivity.config.allowlist.items.add(entry.packageName)
-                    MainActivity.config.allowlist.itemsOnVpn.remove(entry.packageName)
-                    notOnVpn.add(entry.packageName)
-                } else {
-                    MainActivity.config.allowlist.items.remove(entry.packageName)
-                    MainActivity.config.allowlist.itemsOnVpn.add(entry.packageName)
-                    notOnVpn.remove(entry.packageName)
-                }
-                FileHelper.writeSettings(buttonView.context, MainActivity.config)
+//                if (isChecked && MainActivity.config.allowlist.items.contains(entry.packageName)) {
+//                    return@setOnCheckedChangeListener
+//                }
+//
+//                if (!isChecked &&
+//                    MainActivity.config.allowlist.itemsOnVpn.contains(entry.packageName)
+//                ) {
+//                    return@setOnCheckedChangeListener
+//                }
+//
+//                if (isChecked) {
+//                    MainActivity.config.allowlist.items.add(entry.packageName)
+//                    MainActivity.config.allowlist.itemsOnVpn.remove(entry.packageName)
+//                    notOnVpn.add(entry.packageName)
+//                } else {
+//                    MainActivity.config.allowlist.items.remove(entry.packageName)
+//                    MainActivity.config.allowlist.itemsOnVpn.add(entry.packageName)
+//                    notOnVpn.remove(entry.packageName)
+//                }
+//                FileHelper.writeSettings(MainActivity.config)
             }
 
             holder.itemView.setOnClickListener {
@@ -244,12 +245,12 @@ class AllowlistFragment : Fragment() {
 
             val entries = ArrayList<AppItem>()
             for (app in apps) {
-                if (app.packageName != BuildConfig.APPLICATION_ID &&
-                    (MainActivity.config.allowlist.showSystemApps ||
-                        (app.flags and ApplicationInfo.FLAG_SYSTEM) == 0)
-                ) {
-                    entries.add(AppItem(app, app.packageName, app.loadLabel(pm).toString()))
-                }
+//                if (app.packageName != BuildConfig.APPLICATION_ID &&
+//                    (MainActivity.config.allowlist.showSystemApps ||
+//                        (app.flags and ApplicationInfo.FLAG_SYSTEM) == 0)
+//                ) {
+//                    entries.add(AppItem(app, app.packageName, app.loadLabel(pm).toString()))
+//                }
             }
 
             return AppListAdapter(pm, entries)

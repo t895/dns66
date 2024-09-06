@@ -8,6 +8,7 @@ import android.system.OsConstants
 import android.system.StructPollfd
 import android.util.Log
 import android.widget.Toast
+import org.jak_linux.dns66.Dns66Application.Companion.applicationContext
 import java.io.Closeable
 import java.io.File
 import java.io.FileDescriptor
@@ -32,91 +33,76 @@ object FileHelper {
      * the same name in the assets.
      */
     @Throws(IOException::class)
-    fun openRead(context: Context, filename: String?): InputStream =
+    fun openRead(filename: String?): InputStream =
         try {
-            context.openFileInput(filename)
+            applicationContext.openFileInput(filename)
         } catch (e: FileNotFoundException) {
-            context.assets.open(filename!!)
+            applicationContext.assets.open(filename!!)
         }
 
     /**
      * Write to the given file in the private files dir, first renaming an old one to .bak
      *
-     * @param context  A context
      * @param filename A filename as for [Context.openFileOutput]
      * @return See [Context.openFileOutput]
      * @throws IOException See @{link {@link Context#openFileOutput(String, int)}}
      */
     @Throws(IOException::class)
-    fun openWrite(context: Context, filename: String): OutputStream? {
-        val out = context.getFileStreamPath(filename)
+    fun openWrite(filename: String): OutputStream? {
+        val out = applicationContext.getFileStreamPath(filename)
 
         // Create backup
-        out.renameTo(context.getFileStreamPath("$filename.bak"))
-        return context.openFileOutput(filename, Context.MODE_PRIVATE)
+        out.renameTo(applicationContext.getFileStreamPath("$filename.bak"))
+        return applicationContext.openFileOutput(filename, Context.MODE_PRIVATE)
     }
 
     @Throws(IOException::class)
-    private fun readConfigFile(
-        context: Context,
-        name: String,
-        defaultsOnly: Boolean
-    ): Configuration {
+    private fun readConfigFile(name: String, defaultsOnly: Boolean): Configuration {
         val stream: InputStream = if (defaultsOnly) {
-            context.assets.open(name)
+            applicationContext.assets.open(name)
         } else {
-            openRead(context, name)
+            openRead(name)
         }
 
         return Configuration.read(InputStreamReader(stream))
     }
 
-    fun loadCurrentSettings(context: Context): Configuration =
+    fun loadCurrentSettings(): Configuration =
         try {
-            readConfigFile(context, "settings.json", false)
+            readConfigFile("settings.json", false)
         } catch (e: Exception) {
             Toast.makeText(
-                context,
-                context.getString(R.string.cannot_read_config, e.localizedMessage),
+                applicationContext,
+                applicationContext.getString(R.string.cannot_read_config, e.localizedMessage),
                 Toast.LENGTH_LONG
             ).show()
-            loadPreviousSettings(context)
+            loadPreviousSettings(applicationContext)
         }
 
     fun loadPreviousSettings(context: Context): Configuration =
         try {
-            readConfigFile(context, "settings.json.bak", false)
+            readConfigFile("settings.json.bak", false)
         } catch (e: Exception) {
             Toast.makeText(
                 context,
                 context.getString(R.string.cannot_restore_previous_config, e.localizedMessage),
                 Toast.LENGTH_LONG
             ).show()
-            loadDefaultSettings(context)!!
+            loadDefaultSettings()
         }
 
-    fun loadDefaultSettings(context: Context): Configuration? =
-        try {
-            readConfigFile(context, "settings.json", true)
-        } catch (e: Exception) {
-            Toast.makeText(
-                context,
-                context.getString(R.string.cannot_load_default_config, e.localizedMessage),
-                Toast.LENGTH_LONG
-            ).show()
-            null
-        }
+    fun loadDefaultSettings(): Configuration = readConfigFile("settings.json", true)
 
-    fun writeSettings(context: Context, config: Configuration) {
+    fun writeSettings(config: Configuration) {
         Log.d(TAG, "writeSettings: Writing the settings file")
         try {
-            OutputStreamWriter(openWrite(context, "settings.json")).use {
+            OutputStreamWriter(openWrite("settings.json")).use {
                 config.write(it)
             }
         } catch (e: IOException) {
             Toast.makeText(
-                context,
-                context.getString(R.string.cannot_write_config, e.localizedMessage),
+                applicationContext,
+                applicationContext.getString(R.string.cannot_write_config, e.localizedMessage),
                 Toast.LENGTH_SHORT
             ).show()
         }
@@ -125,14 +111,16 @@ object FileHelper {
     /**
      * Returns a file where the item should be downloaded to.
      *
-     * @param context A context to work in
      * @param item    A configuration item.
      * @return File or null, if that item is not downloadable.
      */
-    fun getItemFile(context: Context, item: Configuration.Item): File? =
+    fun getItemFile(item: Configuration.HostItem): File? =
         if (item.isDownloadable()) {
             try {
-                File(context.getExternalFilesDir(null), URLEncoder.encode(item.location, "UTF-8"))
+                File(
+                    applicationContext.getExternalFilesDir(null),
+                    URLEncoder.encode(item.location, "UTF-8"),
+                )
             } catch (e: UnsupportedEncodingException) {
                 e.printStackTrace()
                 null
@@ -142,22 +130,22 @@ object FileHelper {
         }
 
     @Throws(FileNotFoundException::class)
-    fun openItemFile(context: Context, item: Configuration.Item): InputStreamReader? {
+    fun openItemFile(item: Configuration.HostItem): InputStreamReader? {
         return if (item.location.startsWith("content://")) {
             try {
-                InputStreamReader(context.contentResolver.openInputStream(Uri.parse(item.location)))
+                InputStreamReader(applicationContext.contentResolver.openInputStream(Uri.parse(item.location)))
             } catch (e: SecurityException) {
                 Log.d("FileHelper", "openItemFile: Cannot open", e)
                 throw FileNotFoundException(e.message)
             }
         } else {
-            getItemFile(context, item) ?: return null
+            getItemFile(item) ?: return null
             if (item.isDownloadable()) {
                 InputStreamReader(
-                    SingleWriterMultipleReaderFile(getItemFile(context, item)!!).openRead()
+                    SingleWriterMultipleReaderFile(getItemFile(item)!!).openRead()
                 )
             } else {
-                FileReader(getItemFile(context, item))
+                FileReader(getItemFile(item))
             }
         }
     }

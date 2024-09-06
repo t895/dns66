@@ -2,6 +2,9 @@ plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("org.jetbrains.kotlin.plugin.compose")
+    id("org.jetbrains.kotlin.plugin.parcelize")
+    id("org.jetbrains.kotlin.plugin.serialization")
+    id("org.jetbrains.kotlinx.atomicfu")
 }
 
 android {
@@ -59,9 +62,9 @@ dependencies {
     implementation("com.google.code.gson:gson:2.10.1")
 
     // Compose
-    implementation("androidx.compose.material3:material3:1.3.0-rc01")
+    implementation("androidx.compose.material3:material3:1.3.0")
 
-    val composeVersion = "1.7.0-rc01"
+    val composeVersion = "1.7.0"
     implementation("androidx.compose.ui:ui-tooling-preview:$composeVersion")
     debugImplementation("androidx.compose.ui:ui-tooling:$composeVersion")
 
@@ -72,5 +75,14 @@ dependencies {
     implementation("io.coil-kt:coil:$coilVersion")
     implementation("io.coil-kt:coil-compose:$coilVersion")
 
-    implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation("androidx.navigation:navigation-compose:2.8.0")
+
+    val lifecycleVersion = "2.8.5"
+    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycleVersion")
+    implementation("androidx.lifecycle:lifecycle-runtime-compose:$lifecycleVersion")
+
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.2")
+
+    implementation("org.jetbrains.kotlinx:atomicfu:0.25.0")
 }

@@ -24,6 +24,7 @@ import android.widget.Switch
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import com.google.android.material.textfield.TextInputEditText
+import org.jak_linux.dns66.Configuration.HostState.Companion.toHostState
 
 class ItemActivity : AppCompatActivity() {
     companion object {
@@ -109,16 +110,16 @@ class ItemActivity : AppCompatActivity() {
                 position: Int,
                 id: Long
             ) {
-                when (position) {
-                    Configuration.Item.STATE_ALLOW -> imageView.setImageDrawable(
+                when (position.toHostState()) {
+                    Configuration.HostState.ALLOW -> imageView.setImageDrawable(
                         ContextCompat.getDrawable(this@ItemActivity, R.drawable.ic_state_allow)
                     )
 
-                    Configuration.Item.STATE_DENY -> imageView.setImageDrawable(
+                    Configuration.HostState.DENY -> imageView.setImageDrawable(
                         ContextCompat.getDrawable(this@ItemActivity, R.drawable.ic_state_deny)
                     )
 
-                    Configuration.Item.STATE_IGNORE -> imageView.setImageDrawable(
+                    Configuration.HostState.IGNORE -> imageView.setImageDrawable(
                         ContextCompat.getDrawable(this@ItemActivity, R.drawable.ic_state_ignore)
                     )
                 }

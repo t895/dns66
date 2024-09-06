@@ -45,6 +45,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.jak_linux.dns66.Configuration
+import org.jak_linux.dns66.Configuration.HostState.Companion.toHostState
 import org.jak_linux.dns66.R
 import org.jak_linux.dns66.ui.theme.Dns66Theme
 
@@ -61,7 +62,10 @@ private fun IconText(
     ) {
         Icon(painter = icon, contentDescription = null)
         Spacer(modifier = Modifier.padding(horizontal = 2.dp))
-        Text(text = text)
+        Text(
+            text = text,
+            style = MaterialTheme.typography.bodyMedium,
+        )
     }
 }
 
@@ -69,8 +73,12 @@ private fun IconText(
 @Composable
 fun HostsScreen(
     modifier: Modifier = Modifier,
-    hosts: List<Configuration.Item>,
-    onItemClick: (Configuration.Item) -> Unit,
+    filterHosts: Boolean,
+    onFilterHostsClick: () -> Unit,
+    refreshDaily: Boolean,
+    onRefreshDailyClick: () -> Unit,
+    hosts: List<Configuration.HostItem>,
+    onItemClick: (Configuration.HostItem) -> Unit,
     onItemStateChanged: () -> Unit,
 ) {
     LazyColumn(
@@ -83,8 +91,9 @@ fun HostsScreen(
             ListSettingsContainer {
                 SwitchListItem(
                     title = stringResource(id = R.string.enable_hosts),
-                    onCheckedChange = {},
-                    onClick = {},
+                    checked = filterHosts,
+                    onCheckedChange = { onFilterHostsClick() },
+                    onClick = onFilterHostsClick,
                 )
 
                 Column(
@@ -92,7 +101,10 @@ fun HostsScreen(
                     horizontalAlignment = Alignment.Start,
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
-                    Text(text = stringResource(id = R.string.legend_host_intro))
+                    Text(
+                        text = stringResource(id = R.string.legend_host_intro),
+                        style = MaterialTheme.typography.bodyMedium,
+                    )
                     IconText(
                         icon = painterResource(id = R.drawable.ic_state_ignore),
                         text = stringResource(id = R.string.legend_host_ignore),
@@ -112,8 +124,9 @@ fun HostsScreen(
                 SwitchListItem(
                     title = stringResource(id = R.string.automatic_refresh),
                     details = stringResource(id = R.string.automatic_refresh_description),
-                    onCheckedChange = {},
-                    onClick = {},
+                    checked = refreshDaily,
+                    onCheckedChange = { onRefreshDailyClick() },
+                    onClick = onRefreshDailyClick,
                 )
             }
             Spacer(modifier = Modifier.padding(vertical = 4.dp))
@@ -121,8 +134,8 @@ fun HostsScreen(
 
         items(hosts) {
             val iconResource = when (it.state) {
-                Configuration.Item.STATE_DENY -> R.drawable.ic_state_deny
-                Configuration.Item.STATE_ALLOW -> R.drawable.ic_state_allow
+                Configuration.HostState.DENY -> R.drawable.ic_state_deny
+                Configuration.HostState.ALLOW -> R.drawable.ic_state_allow
                 else -> R.drawable.ic_state_ignore
             }
 
@@ -146,27 +159,31 @@ fun HostsScreen(
 @Composable
 private fun HostsScreenPreview() {
     val items = buildList {
-        val item1 = Configuration.Item()
+        val item1 = Configuration.HostItem()
         item1.title = "StevenBlack's hosts file"
         item1.location = "https://url.to.hosts.file.com/"
-        item1.state = 0
+        item1.state = Configuration.HostState.IGNORE
         add(item1)
 
-        val item2 = Configuration.Item()
+        val item2 = Configuration.HostItem()
         item2.title = "StevenBlack's hosts file"
         item2.location = "https://url.to.hosts.file.com/"
-        item2.state = 1
+        item2.state = Configuration.HostState.DENY
         add(item2)
 
-        val item3 = Configuration.Item()
+        val item3 = Configuration.HostItem()
         item3.title = "StevenBlack's hosts file"
         item3.location = "https://url.to.hosts.file.com/"
-        item3.state = 2
+        item3.state = Configuration.HostState.ALLOW
         add(item3)
     }
 
     Dns66Theme {
         HostsScreen(
+            filterHosts = false,
+            onFilterHostsClick = {},
+            refreshDaily = false,
+            onRefreshDailyClick = {},
             hosts = items,
             onItemClick = {},
             onItemStateChanged = {},
@@ -183,8 +200,8 @@ fun EditFilter(
     locationText: String,
     onLocationTextChanged: (String) -> Unit,
     onOpenHostsDirectoryClick: () -> Unit,
-    action: Int,
-    onActionChanged: (Int) -> Unit,
+    state: Configuration.HostState,
+    onStateChanged: (Configuration.HostState) -> Unit,
 ) {
     Column(
         modifier = modifier,
@@ -226,7 +243,7 @@ fun EditFilter(
                 modifier = Modifier
                     .menuAnchor(MenuAnchorType.PrimaryNotEditable)
                     .fillMaxWidth(),
-                value = itemStates[action],
+                value = itemStates[state.ordinal],
                 onValueChange = {},
                 readOnly = true,
                 singleLine = true,
@@ -249,7 +266,7 @@ fun EditFilter(
                         },
                         onClick = {
                             expanded = false
-                            onActionChanged(index)
+                            onStateChanged(index.toHostState())
                         },
                         contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                     )
@@ -263,7 +280,7 @@ fun EditFilter(
 @Composable
 private fun EditFilterPreview() {
     Dns66Theme {
-        var action by remember { mutableIntStateOf(0) }
+        var state by remember { mutableStateOf(Configuration.HostState.IGNORE) }
         var titleText by remember { mutableStateOf("") }
         var locationText by remember { mutableStateOf("") }
         EditFilter(
@@ -276,8 +293,8 @@ private fun EditFilterPreview() {
             locationText = locationText,
             onLocationTextChanged = { locationText = it },
             onOpenHostsDirectoryClick = {},
-            action = action,
-            onActionChanged = { action = it },
+            state = state,
+            onStateChanged = { state = it },
         )
     }
 }
@@ -288,9 +305,9 @@ fun EditFilterScreen(
     modifier: Modifier = Modifier,
     title: String,
     location: String,
-    action: Int,
+    state: Configuration.HostState,
     onNavigateUp: () -> Unit,
-    onSave: (title: String, location: String, action: Int) -> Unit,
+    onSave: (title: String, location: String, state: Configuration.HostState) -> Unit,
     onDelete: (() -> Unit)? = null,
     onOpenUri: () -> Unit,
 ) {
@@ -298,7 +315,7 @@ fun EditFilterScreen(
 
     var titleInput by rememberSaveable { mutableStateOf(title) }
     var locationInput by rememberSaveable { mutableStateOf(location) }
-    var actionInput by rememberSaveable { mutableIntStateOf(action) }
+    var stateInput by rememberSaveable { mutableStateOf(state) }
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -324,7 +341,7 @@ fun EditFilterScreen(
                         }
                     }
 
-                    IconButton(onClick = { onSave(titleInput, locationInput, actionInput) }) {
+                    IconButton(onClick = { onSave(titleInput, locationInput, stateInput) }) {
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = null,
@@ -342,8 +359,8 @@ fun EditFilterScreen(
             locationText = locationInput,
             onLocationTextChanged = { locationInput = it },
             onOpenHostsDirectoryClick = onOpenUri,
-            action = actionInput,
-            onActionChanged = { actionInput = it },
+            state = stateInput,
+            onStateChanged = { stateInput = it },
         )
     }
 }
@@ -355,7 +372,7 @@ private fun EditFilterScreenPreview() {
         EditFilterScreen(
             title = "",
             location = "",
-            action = 0,
+            state = Configuration.HostState.IGNORE,
             onNavigateUp = {},
             onSave = { _, _, _ -> },
             onDelete = {},

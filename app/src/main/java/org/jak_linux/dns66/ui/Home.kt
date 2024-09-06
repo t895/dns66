@@ -1,10 +1,11 @@
 package org.jak_linux.dns66.ui
 
-import android.annotation.SuppressLint
+import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DriveFileMove
@@ -16,6 +17,7 @@ import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -27,11 +29,14 @@ import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -39,20 +44,25 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
+import androidx.navigation.toRoute
 import org.jak_linux.dns66.Configuration
+import org.jak_linux.dns66.FileHelper
+import org.jak_linux.dns66.MainActivity
 import org.jak_linux.dns66.R
+import org.jak_linux.dns66.viewmodel.HomeViewModel
 
 enum class Destination(
     val route: String,
     val icon: ImageVector,
-    val labelResId: Int,
+    @StringRes val labelResId: Int,
 ) {
     Start("start", Icons.Default.Home, R.string.start_tab),
     Hosts("hosts", Icons.AutoMirrored.Filled.DriveFileMove, R.string.hosts_tab),
@@ -64,9 +74,15 @@ enum class Destination(
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
-fun HomeScreen() {
+fun HomeScreen(
+    vm: HomeViewModel = viewModel(),
+    onRefresh: () -> Unit,
+    onLoadDefaults: () -> Unit,
+    onImport: () -> Unit,
+    onExport: () -> Unit,
+    onShareLogcat: () -> Unit,
+) {
     val navController = rememberNavController()
     val backstackState by navController.currentBackStackEntryAsState()
     val selectedDestination by remember {
@@ -89,6 +105,29 @@ fun HomeScreen() {
         }
     }
 
+    val showUpdateIncompleteDialog by vm.showUpdateIncompleteDialog.collectAsState()
+    if (showUpdateIncompleteDialog) {
+        AlertDialog(
+            onDismissRequest = { vm.onUpdateIncompleteDismiss() },
+            confirmButton = {
+                TextButton(onClick = { vm.onUpdateIncompleteDismiss() }) {
+                    Text(text = stringResource(android.R.string.ok))
+                }
+            },
+            title = {
+                Text(text = stringResource(R.string.update_incomplete))
+            },
+            text = {
+                Column {
+                    Text(text = stringResource(R.string.update_incomplete_description))
+                    vm.errors?.forEach {
+                        Text(text = it)
+                    }
+                }
+            },
+        )
+    }
+
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
         topBar = {
@@ -98,9 +137,7 @@ fun HomeScreen() {
                     Text(text = stringResource(R.string.app_name))
                 },
                 actions = {
-                    IconButton(
-                        onClick = {},
-                    ) {
+                    IconButton(onClick = onRefresh) {
                         Icon(Icons.Default.Refresh, null)
                     }
 
@@ -128,13 +165,13 @@ fun HomeScreen() {
                                 )
                             }
 
-                            item(stringResource(R.string.load_defaults)) {}
-                            item(stringResource(R.string.action_import)) {}
-                            item(stringResource(R.string.action_export)) {}
+                            item(stringResource(R.string.load_defaults), onLoadDefaults)
+                            item(stringResource(R.string.action_import), onImport)
+                            item(stringResource(R.string.action_export), onExport)
                             item(stringResource(R.string.action_about)) {
                                 navController.navigate(Destination.About.route)
                             }
-                            item(stringResource(R.string.action_logcat)) {}
+                            item(stringResource(R.string.action_logcat), onShareLogcat)
                         }
                     }
                 },
@@ -171,9 +208,9 @@ fun HomeScreen() {
                 FloatingActionButton(
                     onClick = {
                         if (selectedDestination == Destination.Hosts.route) {
-                            navController.navigate(Destination.EditHost.route)
+                            navController.navigate(Configuration.HostItem())
                         } else if (selectedDestination == Destination.DNS.route) {
-                            navController.navigate(Destination.EditDNS.route)
+                            navController.navigate(Configuration.DnsItem())
                         }
                     },
                 ) {
@@ -188,84 +225,121 @@ fun HomeScreen() {
             startDestination = Destination.Start.route,
         ) {
             composable(Destination.Start.route) {
+                var resumeOnStartup by remember { mutableStateOf(vm.config.autoStart) }
+                var watchConnection by remember { mutableStateOf(vm.config.watchDog) }
+                var ipv6Support by remember { mutableStateOf(vm.config.ipV6Support) }
                 StartScreen(
                     modifier = Modifier.padding(contentPadding),
+                    resumeOnStartup = resumeOnStartup,
+                    onResumeOnStartupClick = {
+                        vm.config.autoStart = !vm.config.autoStart
+                        resumeOnStartup = vm.config.autoStart
+                        FileHelper.writeSettings(vm.config)
+                    },
+                    watchConnection = watchConnection,
+                    onWatchConnectionClick = {
+                        vm.config.watchDog = !vm.config.watchDog
+                        watchConnection = vm.config.watchDog
+                        FileHelper.writeSettings(vm.config)
+                    },
+                    ipv6Support = ipv6Support,
+                    onIpv6SupportClick = {
+                        vm.config.ipV6Support = !vm.config.ipV6Support
+                        ipv6Support = vm.config.ipV6Support
+                        FileHelper.writeSettings(vm.config)
+                    },
                 )
             }
             composable(Destination.Hosts.route) {
+                var filterHosts by remember { mutableStateOf(vm.config.hosts.enabled) }
+                var refreshDaily by remember { mutableStateOf(vm.config.hosts.automaticRefresh) }
                 HostsScreen(
                     modifier = Modifier.padding(contentPadding),
-                    hosts = emptyList(),
-                    onItemClick = {},
+                    filterHosts = filterHosts,
+                    onFilterHostsClick = {
+                        vm.config.hosts.enabled = !vm.config.hosts.enabled
+                        filterHosts = vm.config.hosts.enabled
+                        FileHelper.writeSettings(vm.config)
+                    },
+                    refreshDaily = refreshDaily,
+                    onRefreshDailyClick = {
+                        vm.config.hosts.automaticRefresh = !vm.config.hosts.automaticRefresh
+                        refreshDaily = vm.config.hosts.automaticRefresh
+                        FileHelper.writeSettings(vm.config)
+                    },
+                    hosts = vm.config.hosts.items,
+                    onItemClick = { item ->
+                        navController.navigate(item)
+                    },
                     onItemStateChanged = {},
                 )
             }
-            composable(
-                route = Destination.EditHost.route,
-                arguments = listOf(
-                    navArgument("host") {
-                        defaultValue = null
-                        nullable = true
-                    }
-                ),
-            ) { backstackEntry ->
-                val argument = backstackEntry.arguments?.get("host") as Configuration.Item?
+            composable<Configuration.HostItem> { backstackEntry ->
+                val hostItem = backstackEntry.toRoute<Configuration.HostItem>()
                 EditFilterScreen(
-                    title = argument?.title ?: "",
-                    location = argument?.location ?: "",
-                    action = argument?.state ?: 0,
+                    title = hostItem.title,
+                    location = hostItem.location,
+                    state = hostItem.state,
                     onNavigateUp = { navController.navigateUp() },
-                    onSave = { title, location, action ->  },
+                    onSave = { title, location, state -> },
                     onDelete = null,
                     onOpenUri = {},
                 )
             }
             composable(Destination.Apps.route) {
+                val apps by vm.appList.collectAsState()
+                val isRefreshing by vm.appListRefreshing.collectAsState()
+                var showSystemApps by remember { mutableStateOf(vm.config.allowlist.showSystemApps) }
+                var allowlistDefault by remember { mutableIntStateOf(vm.config.allowlist.defaultMode) }
                 AppsScreen(
                     modifier = Modifier.padding(contentPadding),
-                    showSystemApps = false,
-                    onShowSystemAppsClick = {},
-                    bypassSelection = 0,
-                    onBypassSelection = {},
-                    apps = emptyList(),
+                    isRefreshing = isRefreshing,
+                    onRefresh = { vm.populateAppList() },
+                    showSystemApps = showSystemApps,
+                    onShowSystemAppsClick = {
+                        vm.config.allowlist.showSystemApps = !vm.config.allowlist.showSystemApps
+                        showSystemApps = vm.config.allowlist.showSystemApps
+                        FileHelper.writeSettings(vm.config)
+                    },
+                    bypassSelection = allowlistDefault,
+                    onBypassSelection = { selection ->
+                        vm.config.allowlist.defaultMode = selection
+                        allowlistDefault = selection
+                        FileHelper.writeSettings(vm.config)
+                    },
+                    apps = apps,
                     onAppClick = {},
                 )
             }
             composable(Destination.DNS.route) {
+                var customDnsServers by remember { mutableStateOf(vm.config.dnsServers.enabled) }
                 DnsScreen(
                     modifier = Modifier.padding(contentPadding),
-                    servers = emptyList(),
-                    isRefreshing = false,
-                    onRefresh = {},
-                    customDnsServers = false,
-                    onCustomDnsServersClick = {},
-                    onItemClick = {},
+                    servers = vm.config.dnsServers.items,
+                    customDnsServers = customDnsServers,
+                    onCustomDnsServersClick = {
+                        vm.config.dnsServers.enabled = !vm.config.dnsServers.enabled
+                        customDnsServers = vm.config.dnsServers.enabled
+                        FileHelper.writeSettings(vm.config)
+                    },
+                    onItemClick = { item ->
+                        navController.navigate(item)
+                    },
                 )
             }
-            composable(
-                route = Destination.EditDNS.route,
-                arguments = listOf(
-                    navArgument("dns") {
-                        defaultValue = null
-                        nullable = true
-                    }
-                ),
-            ) { backstackEntry ->
-                val argument = backstackEntry.arguments?.get("dns") as Configuration.Item?
+            composable<Configuration.DnsItem> { backstackEntry ->
+                val dnsItem = backstackEntry.toRoute<Configuration.DnsItem>()
                 EditDnsScreen(
-                    title = argument?.title ?: "",
-                    location = argument?.location ?: "",
-                    enabled = when (argument?.state ?: 0) {
-                        Configuration.Item.STATE_ALLOW -> true
-                        else -> false
-                    },
+                    title = dnsItem.title,
+                    location = dnsItem.location,
+                    enabled = dnsItem.enabled,
                     onNavigateUp = { navController.navigateUp() },
-                    onSave = { title, location, enabled ->  },
+                    onSave = { title, location, enabled -> },
                     onDelete = null,
                 )
             }
             composable(Destination.About.route) {
-                AboutScreen { navController.navigate(selectedDestination) }
+                AboutScreen { navController.popBackStack() }
             }
         }
     }
@@ -274,5 +348,11 @@ fun HomeScreen() {
 @Preview
 @Composable
 fun HomeScreenPreview() {
-    HomeScreen()
+    HomeScreen(
+        onRefresh = {},
+        onLoadDefaults = {},
+        onImport = {},
+        onExport = {},
+        onShareLogcat = {},
+    )
 }

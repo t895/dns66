@@ -19,12 +19,11 @@ import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import org.jak_linux.dns66.Configuration
 import org.jak_linux.dns66.FileHelper
-import org.jak_linux.dns66.ItemChangedListener
 import org.jak_linux.dns66.MainActivity
 import org.jak_linux.dns66.R
 
 class DNSFragment : Fragment(), FloatingActionButtonFragment {
-    private var adapter: ItemRecyclerViewAdapter? = null
+    // private var adapter: ItemRecyclerViewAdapter? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -41,19 +40,19 @@ class DNSFragment : Fragment(), FloatingActionButtonFragment {
 
         recyclerView.setLayoutManager(LinearLayoutManager(requireContext()))
 
-        adapter = ItemRecyclerViewAdapter(requireContext(), MainActivity.config.dnsServers.items, 2)
-        recyclerView.adapter = adapter
+//        adapter = ItemRecyclerViewAdapter(requireContext(), MainActivity.config.dnsServers.items, 2)
+//        recyclerView.adapter = adapter
 
-        val itemTouchHelper = ItemTouchHelper(ItemTouchHelperCallback(adapter!!))
-        itemTouchHelper.attachToRecyclerView(recyclerView)
+//        val itemTouchHelper = ItemTouchHelper(ItemTouchHelperCallback(adapter!!))
+//        itemTouchHelper.attachToRecyclerView(recyclerView)
 
-        rootView.findViewById<Switch>(R.id.dns_enabled).apply {
-            isChecked = MainActivity.config.dnsServers.enabled
-            setOnCheckedChangeListener { _, isChecked ->
-                MainActivity.config.dnsServers.enabled = isChecked
-                FileHelper.writeSettings(requireContext(), MainActivity.config)
-            }
-        }
+//        rootView.findViewById<Switch>(R.id.dns_enabled).apply {
+//            isChecked = MainActivity.config.dnsServers.enabled
+//            setOnCheckedChangeListener { _, isChecked ->
+//                MainActivity.config.dnsServers.enabled = isChecked
+//                FileHelper.writeSettings(MainActivity.config)
+//            }
+//        }
         ExtraBar.setup(rootView.findViewById(R.id.extra_bar), "dns")
         return rootView
     }
@@ -61,14 +60,14 @@ class DNSFragment : Fragment(), FloatingActionButtonFragment {
     override fun setupFloatingActionButton(fab: FloatingActionButton) {
         fab.setOnClickListener {
             val main = requireActivity() as MainActivity
-            main.editItem(2, null, object : ItemChangedListener {
-                override fun onItemChanged(item: Configuration.Item?) {
-                    item ?: return
-                    MainActivity.config.dnsServers.items.add(item)
-                    adapter?.notifyItemInserted((adapter?.itemCount ?: 0) - 1)
-                    FileHelper.writeSettings(requireContext(), MainActivity.config)
-                }
-            })
+//            main.editItem(2, null, object : ItemChangedListener {
+//                override fun onItemChanged(item: Configuration.Item?) {
+//                    item ?: return
+//                    MainActivity.config.dnsServers.items.add(item)
+//                    adapter?.notifyItemInserted((adapter?.itemCount ?: 0) - 1)
+//                    FileHelper.writeSettings(requireContext(), MainActivity.config)
+//                }
+//            })
         }
     }
 }

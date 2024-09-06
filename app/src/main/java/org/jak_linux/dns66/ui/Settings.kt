@@ -188,9 +188,8 @@ fun IconSwitchListItem(
     ) {
         Box(
             modifier = Modifier
-                .size(48.dp)
-                .padding(4.dp)
-                .padding(end = 4.dp),
+                .size(56.dp)
+                .padding(end = 6.dp),
             contentAlignment = Alignment.Center,
             content = iconContent,
         )

@@ -83,14 +83,13 @@ class DnsPacketProxy {
     /**
      * Initializes the rules database and the list of upstream servers.
      *
-     * @param context            The context we are operating in (for the database)
      * @param upstreamDnsServers The upstream DNS servers to use; or an empty list if no
      *                           rewriting of ip addresses takes place
      * @throws InterruptedException If the database initialization was interrupted
      */
     @Throws(InterruptedException::class)
-    fun initialize(context: Context, upstreamDnsServers: ArrayList<InetAddress>) {
-        ruleDatabase.initialize(context)
+    fun initialize(upstreamDnsServers: ArrayList<InetAddress>) {
+        ruleDatabase.initialize()
         this.upstreamDnsServers = upstreamDnsServers
     }
 

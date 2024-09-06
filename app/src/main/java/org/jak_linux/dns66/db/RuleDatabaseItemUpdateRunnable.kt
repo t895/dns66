@@ -35,7 +35,7 @@ import javax.net.ssl.HttpsURLConnection
 class RuleDatabaseItemUpdateRunnable(
     private val parentTask: RuleDatabaseUpdateTask,
     private val context: Context,
-    private val item: Configuration.Item,
+    private val item: Configuration.HostItem,
 ) : Runnable {
     companion object {
         private const val CONNECT_TIMEOUT_MILLIS = 3000
@@ -47,7 +47,7 @@ class RuleDatabaseItemUpdateRunnable(
     private var file: File? = null
 
     fun shouldDownload(): Boolean {
-        if (item.state == Configuration.Item.STATE_IGNORE) {
+        if (item.state == Configuration.HostState.IGNORE) {
             return false
         }
 
@@ -56,7 +56,7 @@ class RuleDatabaseItemUpdateRunnable(
             return true
         }
 
-        file = FileHelper.getItemFile(context, item)
+        file = FileHelper.getItemFile(item)
         if (file == null || !item.isDownloadable()) {
             return false
         }

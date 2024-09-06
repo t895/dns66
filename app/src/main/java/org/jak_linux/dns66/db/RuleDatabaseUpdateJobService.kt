@@ -70,7 +70,7 @@ class RuleDatabaseUpdateJobService : JobService() {
         Log.d(TAG, "onStartJob: Start job")
 
         task = object : RuleDatabaseUpdateTask(
-            FileHelper.loadCurrentSettings(applicationContext),
+            FileHelper.loadCurrentSettings(),
             true
         ) {
             override fun onPostExecute(result: Void?) {

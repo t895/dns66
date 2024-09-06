@@ -147,8 +147,8 @@ class AdVpnThread(
 
         // Load the block list
         try {
-            dnsPacketProxy.initialize(vpnService, upstreamDnsServers)
-            vpnWatchDog.initialize(FileHelper.loadCurrentSettings(vpnService).watchDog)
+            dnsPacketProxy.initialize(upstreamDnsServers)
+            vpnWatchDog.initialize(FileHelper.loadCurrentSettings().watchDog)
         } catch (e: InterruptedException) {
             return
         }
@@ -450,7 +450,7 @@ class AdVpnThread(
     private fun configure(): ParcelFileDescriptor? {
         Log.i(TAG, "Configuring $this")
 
-        val config = FileHelper.loadCurrentSettings(vpnService)
+        val config = FileHelper.loadCurrentSettings()
 
         // Get the current DNS servers before starting the VPN
         val dnsServers = getDnsServers(vpnService)
@@ -501,7 +501,7 @@ class AdVpnThread(
         upstreamDnsServers.clear()
         if (config.dnsServers.enabled) {
             for (item in config.dnsServers.items) {
-                if (item.state == Configuration.Item.STATE_ALLOW) {
+                if (item.enabled) {
                     try {
                         newDNSServer(
                             builder,
@@ -565,7 +565,7 @@ class AdVpnThread(
 
         if (config.dnsServers.enabled) {
             for (item in config.dnsServers.items) {
-                if (item.state == Configuration.Item.STATE_ALLOW && item.location.contains(":")) {
+                if (item.enabled && item.location.contains(":")) {
                     return true
                 }
             }

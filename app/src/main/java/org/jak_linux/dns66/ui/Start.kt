@@ -21,7 +21,15 @@ import org.jak_linux.dns66.R
 
 // TODO: Viewmodel hookup
 @Composable
-fun StartScreen(modifier: Modifier = Modifier) {
+fun StartScreen(
+    modifier: Modifier = Modifier,
+    resumeOnStartup: Boolean,
+    onResumeOnStartupClick: () -> Unit,
+    watchConnection: Boolean,
+    onWatchConnectionClick: () -> Unit,
+    ipv6Support: Boolean,
+    onIpv6SupportClick: () -> Unit,
+) {
     Box(
         modifier = modifier
             .background(MaterialTheme.colorScheme.surface)
@@ -38,20 +46,23 @@ fun StartScreen(modifier: Modifier = Modifier) {
                 SwitchListItem(
                     title = stringResource(id = R.string.switch_onboot),
                     details = stringResource(id = R.string.switch_onboot_description),
-                    onCheckedChange = {},
-                    onClick = {},
+                    checked = resumeOnStartup,
+                    onCheckedChange = { onResumeOnStartupClick() },
+                    onClick = onResumeOnStartupClick,
                 )
                 SwitchListItem(
                     title = stringResource(id = R.string.watchdog),
                     details = stringResource(id = R.string.watchdog_description),
-                    onCheckedChange = {},
-                    onClick = {},
+                    checked = watchConnection,
+                    onCheckedChange = { onWatchConnectionClick() },
+                    onClick = onWatchConnectionClick,
                 )
                 SwitchListItem(
                     title = stringResource(id = R.string.ipv6_support),
                     details = stringResource(id = R.string.ipv6_support_description),
-                    onCheckedChange = {},
-                    onClick = {},
+                    checked = ipv6Support,
+                    onCheckedChange = { onIpv6SupportClick() },
+                    onClick = onIpv6SupportClick,
                 )
             }
         }
@@ -77,5 +88,12 @@ fun StartScreen(modifier: Modifier = Modifier) {
 @Preview
 @Composable
 private fun StartScreenPreview(modifier: Modifier = Modifier) {
-    StartScreen()
+    StartScreen(
+        resumeOnStartup = false,
+        onResumeOnStartupClick = {},
+        watchConnection = false,
+        onWatchConnectionClick = {},
+        ipv6Support = false,
+        onIpv6SupportClick = {},
+    )
 }
