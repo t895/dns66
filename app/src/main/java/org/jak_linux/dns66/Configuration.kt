@@ -75,46 +75,9 @@ data class Configuration(
     }
 
     fun runUpdate(level: Int) {
-        when (level) {
-            1 -> {
-                /* Switch someonewhocares to https */
-                updateURL(
-                    "http://someonewhocares.org/hosts/hosts",
-                    "https://someonewhocares.org/hosts/hosts",
-                    HostState.IGNORE
-                )
-
-                /* Switch to StevenBlack's host file */
-                addURL(
-                    0, "StevenBlack's hosts file (includes all others)",
-                    "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts",
-                    HostState.DENY
-                )
-                updateURL("https://someonewhocares.org/hosts/hosts", null, HostState.IGNORE)
-                updateURL("https://adaway.org/hosts.txt", null, HostState.IGNORE)
-                updateURL(
-                    "https://www.malwaredomainlist.com/hostslist/hosts.txt",
-                    null,
-                    HostState.IGNORE
-                )
-                updateURL(
-                    "https://pgl.yoyo.org/adservers/serverlist.php?hostformat=hosts&showintro=1&mimetype=plaintext",
-                    null,
-                    HostState.IGNORE
-                )
-
-                /* Remove broken host */
-                removeURL("http://winhelp2002.mvps.org/hosts.txt")
-
-                /* Update digitalcourage dns and add cloudflare */
-                updateDNS("85.214.20.141", "46.182.19.48")
-                addDNS("CloudFlare DNS (1)", "1.1.1.1", false)
-                addDNS("CloudFlare DNS (2)", "1.0.0.1", false)
-            }
-
-            2 -> removeURL("https://hosts-file.net/ad_servers.txt")
-            3 -> disableURL("https://blokada.org/blocklists/ddgtrackerradar/standard/hosts.txt")
-        }
+        // Uncomment this block to set up db updates
+        // when (level) {
+        // }
         minorVersion = level
     }
 
@@ -296,14 +259,44 @@ data class Host(
 data class Hosts(
     var enabled: Boolean = false,
     var automaticRefresh: Boolean = false,
-    var items: MutableList<Host> = mutableListOf(),
-)
+    var items: MutableList<Host> = defaultHosts.toMutableList(),
+) {
+    companion object {
+        val defaultHosts = listOf(
+            Host(
+                title = "StevenBlack's hosts file (includes all others)",
+                location = "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts",
+                state = HostState.DENY,
+            )
+        )
+    }
+}
 
 @Serializable
 data class DnsServers(
     var enabled: Boolean = false,
-    var items: MutableList<DnsServer> = mutableListOf(),
-)
+    var items: MutableList<DnsServer> = defaultServers.toMutableList(),
+) {
+    companion object {
+        val defaultServers = listOf(
+            DnsServer(
+                title = "Cloudflare (1)",
+                location = "1.1.1.1",
+                enabled = false,
+            ),
+            DnsServer(
+                title = "Cloudflare (2)",
+                location = "1.0.0.1",
+                enabled = false,
+            ),
+            DnsServer(
+                title = "Quad9",
+                location = "9.9.9.9",
+                enabled = false,
+            ),
+        )
+    }
+}
 
 // DO NOT change the order of these states. They correspond to UI functionality.
 enum class HostState {
