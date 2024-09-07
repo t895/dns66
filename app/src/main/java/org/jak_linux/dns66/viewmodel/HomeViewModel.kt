@@ -52,6 +52,7 @@ class HomeViewModel : ViewModel() {
         if (refreshingLock) {
             return
         }
+        refreshingLock = true
         _appListRefreshing.value = true
 
         val pm = applicationContext.packageManager
