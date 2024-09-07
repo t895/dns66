@@ -11,7 +11,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Dns
-import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material.icons.filled.GridOn
 import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Info
@@ -36,7 +35,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -44,7 +42,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -53,9 +50,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import org.jak_linux.dns66.Configuration
+import org.jak_linux.dns66.DnsItem
 import org.jak_linux.dns66.FileHelper
-import org.jak_linux.dns66.MainActivity
+import org.jak_linux.dns66.HostItem
 import org.jak_linux.dns66.R
 import org.jak_linux.dns66.viewmodel.HomeViewModel
 
@@ -66,10 +63,8 @@ enum class Destination(
 ) {
     Start("start", Icons.Default.Home, R.string.start_tab),
     Hosts("hosts", Icons.AutoMirrored.Filled.DriveFileMove, R.string.hosts_tab),
-    EditHost("hosts/edit", Icons.Default.Edit, 0),
     Apps("apps", Icons.Default.GridOn, R.string.allowlist_tab),
     DNS("dns", Icons.Default.Dns, R.string.dns_tab),
-    EditDNS("dns/edit", Icons.Default.Edit, 0),
     About("about", Icons.Default.Info, 0),
 }
 
@@ -208,9 +203,9 @@ fun HomeScreen(
                 FloatingActionButton(
                     onClick = {
                         if (selectedDestination == Destination.Hosts.route) {
-                            navController.navigate(Configuration.HostItem())
+                            navController.navigate(HostItem())
                         } else if (selectedDestination == Destination.DNS.route) {
-                            navController.navigate(Configuration.DnsItem())
+                            navController.navigate(DnsItem())
                         }
                     },
                 ) {
@@ -274,8 +269,8 @@ fun HomeScreen(
                     onItemStateChanged = {},
                 )
             }
-            composable<Configuration.HostItem> { backstackEntry ->
-                val hostItem = backstackEntry.toRoute<Configuration.HostItem>()
+            composable<HostItem> { backstackEntry ->
+                val hostItem = backstackEntry.toRoute<HostItem>()
                 EditFilterScreen(
                     title = hostItem.title,
                     location = hostItem.location,
@@ -290,7 +285,7 @@ fun HomeScreen(
                 val apps by vm.appList.collectAsState()
                 val isRefreshing by vm.appListRefreshing.collectAsState()
                 var showSystemApps by remember { mutableStateOf(vm.config.allowlist.showSystemApps) }
-                var allowlistDefault by remember { mutableIntStateOf(vm.config.allowlist.defaultMode) }
+                var allowlistDefault by remember { mutableStateOf(vm.config.allowlist.defaultMode) }
                 AppsScreen(
                     modifier = Modifier.padding(contentPadding),
                     isRefreshing = isRefreshing,
@@ -327,8 +322,8 @@ fun HomeScreen(
                     },
                 )
             }
-            composable<Configuration.DnsItem> { backstackEntry ->
-                val dnsItem = backstackEntry.toRoute<Configuration.DnsItem>()
+            composable<DnsItem> { backstackEntry ->
+                val dnsItem = backstackEntry.toRoute<DnsItem>()
                 EditDnsScreen(
                     title = dnsItem.title,
                     location = dnsItem.location,

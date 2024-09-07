@@ -30,7 +30,6 @@ import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -44,8 +43,9 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.jak_linux.dns66.Configuration
-import org.jak_linux.dns66.Configuration.HostState.Companion.toHostState
+import org.jak_linux.dns66.HostItem
+import org.jak_linux.dns66.HostState
+import org.jak_linux.dns66.HostState.Companion.toHostState
 import org.jak_linux.dns66.R
 import org.jak_linux.dns66.ui.theme.Dns66Theme
 
@@ -77,8 +77,8 @@ fun HostsScreen(
     onFilterHostsClick: () -> Unit,
     refreshDaily: Boolean,
     onRefreshDailyClick: () -> Unit,
-    hosts: List<Configuration.HostItem>,
-    onItemClick: (Configuration.HostItem) -> Unit,
+    hosts: List<HostItem>,
+    onItemClick: (HostItem) -> Unit,
     onItemStateChanged: () -> Unit,
 ) {
     LazyColumn(
@@ -134,8 +134,8 @@ fun HostsScreen(
 
         items(hosts) {
             val iconResource = when (it.state) {
-                Configuration.HostState.DENY -> R.drawable.ic_state_deny
-                Configuration.HostState.ALLOW -> R.drawable.ic_state_allow
+                HostState.DENY -> R.drawable.ic_state_deny
+                HostState.ALLOW -> R.drawable.ic_state_allow
                 else -> R.drawable.ic_state_ignore
             }
 
@@ -159,22 +159,22 @@ fun HostsScreen(
 @Composable
 private fun HostsScreenPreview() {
     val items = buildList {
-        val item1 = Configuration.HostItem()
+        val item1 = HostItem()
         item1.title = "StevenBlack's hosts file"
         item1.location = "https://url.to.hosts.file.com/"
-        item1.state = Configuration.HostState.IGNORE
+        item1.state = HostState.IGNORE
         add(item1)
 
-        val item2 = Configuration.HostItem()
+        val item2 = HostItem()
         item2.title = "StevenBlack's hosts file"
         item2.location = "https://url.to.hosts.file.com/"
-        item2.state = Configuration.HostState.DENY
+        item2.state = HostState.DENY
         add(item2)
 
-        val item3 = Configuration.HostItem()
+        val item3 = HostItem()
         item3.title = "StevenBlack's hosts file"
         item3.location = "https://url.to.hosts.file.com/"
-        item3.state = Configuration.HostState.ALLOW
+        item3.state = HostState.ALLOW
         add(item3)
     }
 
@@ -200,8 +200,8 @@ fun EditFilter(
     locationText: String,
     onLocationTextChanged: (String) -> Unit,
     onOpenHostsDirectoryClick: () -> Unit,
-    state: Configuration.HostState,
-    onStateChanged: (Configuration.HostState) -> Unit,
+    state: HostState,
+    onStateChanged: (HostState) -> Unit,
 ) {
     Column(
         modifier = modifier,
@@ -280,7 +280,7 @@ fun EditFilter(
 @Composable
 private fun EditFilterPreview() {
     Dns66Theme {
-        var state by remember { mutableStateOf(Configuration.HostState.IGNORE) }
+        var state by remember { mutableStateOf(HostState.IGNORE) }
         var titleText by remember { mutableStateOf("") }
         var locationText by remember { mutableStateOf("") }
         EditFilter(
@@ -305,9 +305,9 @@ fun EditFilterScreen(
     modifier: Modifier = Modifier,
     title: String,
     location: String,
-    state: Configuration.HostState,
+    state: HostState,
     onNavigateUp: () -> Unit,
-    onSave: (title: String, location: String, state: Configuration.HostState) -> Unit,
+    onSave: (title: String, location: String, state: HostState) -> Unit,
     onDelete: (() -> Unit)? = null,
     onOpenUri: () -> Unit,
 ) {
@@ -372,7 +372,7 @@ private fun EditFilterScreenPreview() {
         EditFilterScreen(
             title = "",
             location = "",
-            state = Configuration.HostState.IGNORE,
+            state = HostState.IGNORE,
             onNavigateUp = {},
             onSave = { _, _, _ -> },
             onDelete = {},

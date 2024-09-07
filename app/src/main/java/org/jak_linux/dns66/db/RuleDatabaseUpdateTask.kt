@@ -18,6 +18,7 @@ import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import org.jak_linux.dns66.Configuration
 import org.jak_linux.dns66.Dns66Application.Companion.applicationContext
+import org.jak_linux.dns66.HostItem
 import org.jak_linux.dns66.MainActivity
 import org.jak_linux.dns66.NotificationChannels
 import org.jak_linux.dns66.R
@@ -140,7 +141,7 @@ open class RuleDatabaseUpdateTask(
     /**
      * RuleDatabaseItemUpdateRunnable factory for unit tests
      */
-    fun getCommand(item: Configuration.HostItem): RuleDatabaseItemUpdateRunnable =
+    fun getCommand(item: HostItem): RuleDatabaseItemUpdateRunnable =
         RuleDatabaseItemUpdateRunnable(this, applicationContext, item)
 
     /**
@@ -209,13 +210,13 @@ open class RuleDatabaseUpdateTask(
      * @param message Message
      */
     @Synchronized
-    fun addError(item: Configuration.HostItem, message: String) {
+    fun addError(item: HostItem, message: String) {
         Log.d(TAG, "error: ${item.title}:$message")
         errors.add("<b>${item.title}</b><br>$message")
     }
 
     @Synchronized
-    fun addDone(item: Configuration.HostItem) {
+    fun addDone(item: HostItem) {
         Log.d(TAG, "done: ${item.title}")
         pending.remove(item.title)
         done.add(item.title)
@@ -228,7 +229,7 @@ open class RuleDatabaseUpdateTask(
      * @param item The item currently being processed.
      */
     @Synchronized
-    fun addBegin(item: Configuration.HostItem) {
+    fun addBegin(item: HostItem) {
         pending.add(item.title)
         updateProgressNotification()
     }

@@ -12,8 +12,9 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Process
 import android.util.Log
-import org.jak_linux.dns66.Configuration
 import org.jak_linux.dns66.FileHelper
+import org.jak_linux.dns66.HostItem
+import org.jak_linux.dns66.HostState
 import org.jak_linux.dns66.R
 import org.jak_linux.dns66.SingleWriterMultipleReaderFile
 import java.io.File
@@ -35,7 +36,7 @@ import javax.net.ssl.HttpsURLConnection
 class RuleDatabaseItemUpdateRunnable(
     private val parentTask: RuleDatabaseUpdateTask,
     private val context: Context,
-    private val item: Configuration.HostItem,
+    private val item: HostItem,
 ) : Runnable {
     companion object {
         private const val CONNECT_TIMEOUT_MILLIS = 3000
@@ -47,7 +48,7 @@ class RuleDatabaseItemUpdateRunnable(
     private var file: File? = null
 
     fun shouldDownload(): Boolean {
-        if (item.state == Configuration.HostState.IGNORE) {
+        if (item.state == HostState.IGNORE) {
             return false
         }
 

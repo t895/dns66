@@ -25,6 +25,7 @@ import android.system.Os
 import android.system.OsConstants
 import android.system.StructPollfd
 import android.util.Log
+import org.jak_linux.dns66.AllowListMode
 import org.jak_linux.dns66.Configuration
 import org.jak_linux.dns66.FileHelper
 import org.jak_linux.dns66.MainActivity
@@ -425,7 +426,7 @@ class AdVpnThread(
 
         config.allowlist.resolve(vpnService.packageManager, allowOnVpn, doNotAllowOnVpn)
 
-        if (config.allowlist.defaultMode == Configuration.Allowlist.DEFAULT_MODE_NOT_ON_VPN) {
+        if (config.allowlist.defaultMode == AllowListMode.NOT_ON_VPN) {
             for (app in allowOnVpn) {
                 try {
                     Log.d(TAG, "configure: Allowing $app to use the DNS VPN")

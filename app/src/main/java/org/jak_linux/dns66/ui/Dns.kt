@@ -32,17 +32,17 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.jak_linux.dns66.Configuration
+import org.jak_linux.dns66.DnsItem
 import org.jak_linux.dns66.R
 import org.jak_linux.dns66.ui.theme.Dns66Theme
 
 @Composable
 fun DnsScreen(
     modifier: Modifier = Modifier,
-    servers: List<Configuration.DnsItem> = emptyList(),
+    servers: List<DnsItem> = emptyList(),
     customDnsServers: Boolean,
     onCustomDnsServersClick: () -> Unit,
-    onItemClick: (Configuration.DnsItem) -> Unit,
+    onItemClick: (DnsItem) -> Unit,
 ) {
     LazyColumn(
         modifier
@@ -78,7 +78,7 @@ fun DnsScreen(
 @Preview
 @Composable
 private fun DnsScreenPreview() {
-    val item = Configuration.DnsItem()
+    val item = DnsItem()
     item.title = "Title"
     item.location = "213.73.91.35"
     Dns66Theme {

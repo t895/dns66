@@ -32,6 +32,8 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import org.jak_linux.dns66.AllowListMode
+import org.jak_linux.dns66.AllowListMode.Companion.toAllowListMode
 import org.jak_linux.dns66.R
 import org.jak_linux.dns66.main.AppItem
 import org.jak_linux.dns66.ui.theme.Dns66Theme
@@ -44,8 +46,8 @@ fun AppsScreen(
     onRefresh: () -> Unit,
     showSystemApps: Boolean,
     onShowSystemAppsClick: () -> Unit,
-    bypassSelection: Int,
-    onBypassSelection: (Int) -> Unit,
+    bypassSelection: AllowListMode,
+    onBypassSelection: (AllowListMode) -> Unit,
     apps: List<AppItem> = emptyList(),
     onAppClick: (AppItem) -> Unit,
 ) {
@@ -74,7 +76,7 @@ fun AppsScreen(
                     val bypassOptions = stringArrayResource(R.array.allowlist_defaults)
                     Box {
                         IconListItem(
-                            title = bypassOptions[bypassSelection],
+                            title = bypassOptions[bypassSelection.ordinal],
                             onClick = { expanded = true },
                             iconContent = {
                                 IconButton(onClick = { expanded = true }) {
@@ -93,7 +95,7 @@ fun AppsScreen(
                                         Text(text = option)
                                     },
                                     onClick = {
-                                        onBypassSelection(i)
+                                        onBypassSelection(i.toAllowListMode())
                                         expanded = false
                                     },
                                 )
@@ -137,7 +139,7 @@ private fun AppsScreenPreview() {
             onAppClick = {},
             showSystemApps = false,
             onShowSystemAppsClick = {},
-            bypassSelection = 0,
+            bypassSelection = AllowListMode.ON_VPN,
             onBypassSelection = {},
         )
     }

@@ -8,8 +8,9 @@
 package org.jak_linux.dns66.db
 
 import android.util.Log
-import org.jak_linux.dns66.Configuration
 import org.jak_linux.dns66.FileHelper
+import org.jak_linux.dns66.HostItem
+import org.jak_linux.dns66.HostState
 import java.io.BufferedReader
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -145,8 +146,8 @@ class RuleDatabase private constructor() {
      * @throws InterruptedException If the thread was interrupted.
      */
     @Throws(InterruptedException::class)
-    private fun loadItem(item: Configuration.HostItem) {
-        if (item.state == Configuration.HostState.IGNORE) {
+    private fun loadItem(item: HostItem) {
+        if (item.state == HostState.IGNORE) {
             return
         }
 
@@ -170,14 +171,14 @@ class RuleDatabase private constructor() {
      * @param item The item the host belongs to
      * @param host The host
      */
-    private fun addHost(item: Configuration.HostItem, host: String) {
+    private fun addHost(item: HostItem, host: String) {
         // Single address to block
-        if (item.state == Configuration.HostState.ALLOW) {
+        if (item.state == HostState.ALLOW) {
             nextBlockedHosts?.remove(host) ?: Log.d(
                 TAG,
                 "addHost: nextBlockedHosts was null when attempting to remove host!"
             )
-        } else if (item.state == Configuration.HostState.DENY) {
+        } else if (item.state == HostState.DENY) {
             nextBlockedHosts?.add(host) ?: Log.d(
                 TAG,
                 "addHost: nextBlockedHosts was null when attempting to add host!"
@@ -193,7 +194,7 @@ class RuleDatabase private constructor() {
      * @throws InterruptedException If thread was interrupted
      */
     @Throws(InterruptedException::class)
-    fun loadReader(item: Configuration.HostItem, reader: Reader): Boolean {
+    fun loadReader(item: HostItem, reader: Reader): Boolean {
         var count = 0
         try {
             Log.d(TAG, "loadBlockedHosts: Reading: ${item.location}")

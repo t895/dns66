@@ -14,37 +14,48 @@ import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.Log
-import androidx.annotation.Keep
-import com.google.gson.Gson
-import com.google.gson.annotations.SerializedName
 import kotlinx.parcelize.Parceler
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
-import org.jak_linux.dns66.Configuration.HostState.Companion.toHostState
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
+import org.jak_linux.dns66.HostState.Companion.toHostState
 import java.io.IOException
 import java.io.Reader
 import java.io.Writer
 
-/**
- * Configuration class. This is serialized as JSON using read() and write() methods.
- *
- * @author Julian Andres Klode
- */
-@Keep
-class Configuration {
+@Serializable
+data class Configuration(
+    var version: Int = 1,
+    var minorVersion: Int = 0,
+    var autoStart: Boolean = false,
+    var hosts: Hosts = Hosts(),
+    var dnsServers: DnsServers = DnsServers(),
+    var allowlist: Allowlist = Allowlist(),
+    var showNotification: Boolean = true,
+    var nightMode: Boolean = false,
+    var watchDog: Boolean = false,
+    var ipV6Support: Boolean = true,
+) {
     companion object {
         private const val TAG = "Configuration"
 
-        val GSON = Gson()
-
-        private const val VERSION = 2
+        private const val VERSION = 1
 
         /* Default tweak level */
-        const val MINOR_VERSION = 3
+        private const val MINOR_VERSION = 0
 
         @Throws(IOException::class)
         fun read(reader: Reader): Configuration {
-            val config = GSON.fromJson(reader, Configuration::class.java)
+            val config = reader.use {
+                val data = it.readText()
+                try {
+                    Json.decodeFromString<Configuration>(data)
+                } catch (e: Exception) {
+                    Log.e(TAG, "Failed to decode config! - ${e.localizedMessage}")
+                    Configuration()
+                }
+            }
             if (config.version > VERSION) {
                 throw IOException("Unhandled file format version")
             }
@@ -62,21 +73,6 @@ class Configuration {
             return config
         }
     }
-
-    var version = 1
-    var minorVersion = 0
-    var autoStart = false
-    var hosts = Hosts()
-    var dnsServers = DnsServers()
-
-    // Apologies for the legacy alternate
-    @Keep
-    @SerializedName(value = "allowlist", alternate = ["whitelist"])
-    var allowlist = Allowlist()
-    var showNotification = true
-    var nightMode = false
-    var watchDog = false
-    var ipV6Support = true
 
     fun runUpdate(level: Int) {
         when (level) {
@@ -172,155 +168,148 @@ class Configuration {
     }
 
     @Throws(IOException::class)
-    fun write(writer: Writer?) = GSON.toJson(this, writer)
+    fun write(writer: Writer?) = writer?.write(Json.encodeToString(this))
+}
 
-    // DO NOT change the order of these states. They correspond to UI functionality.
-    enum class HostState {
-        IGNORE, DENY, ALLOW;
-
-        companion object {
-            fun Int.toHostState(): HostState = entries.firstOrNull { it.ordinal == this } ?: IGNORE
-        }
-    }
-
-    @Parcelize
-    @Serializable
-    data class HostItem(
-        var title: String = "",
-        var location: String = "",
-        var state: HostState = HostState.IGNORE,
-    ) : Parcelable {
-        fun isDownloadable(): Boolean =
-            location.startsWith("https://") || location.startsWith("http://")
-
-        private companion object : Parceler<HostItem> {
-            override fun HostItem.write(parcel: Parcel, flags: Int) {
-                parcel.apply {
-                    writeString(title)
-                    writeString(location)
-                    writeInt(state.ordinal)
-                }
-            }
-
-            override fun create(parcel: Parcel): HostItem =
-                HostItem(
-                    parcel.readString() ?: "",
-                    parcel.readString() ?: "",
-                    parcel.readInt().toHostState(),
-                )
-        }
-    }
-
-    @Parcelize
-    @Serializable
-    data class DnsItem(
-        var title: String = "",
-        var location: String = "",
-        var enabled: Boolean = false,
-    ) : Parcelable
-
-    @Keep
-    inner class Hosts {
-        var enabled = false
-        var automaticRefresh = false
-        var items = mutableListOf<HostItem>()
-    }
-
-    @Keep
-    inner class DnsServers {
-        var enabled = false
-        var items = mutableListOf<DnsItem>()
-    }
-
-    @Keep
-    class Allowlist {
-        companion object {
-            /**
-             * All apps use the VPN.
-             */
-            const val DEFAULT_MODE_ON_VPN = 0
-
-            /**
-             * No apps use the VPN.
-             */
-            const val DEFAULT_MODE_NOT_ON_VPN = 1
-
-            /**
-             * System apps (excluding browsers) do not use the VPN.
-             */
-            const val DEFAULT_MODE_INTELLIGENT = 2
+@Serializable
+data class Allowlist(
+    var showSystemApps: Boolean = false,
+    var defaultMode: AllowListMode = AllowListMode.ON_VPN,
+    var itemsNotOnVpn: MutableList<String> = mutableListOf(),
+    var itemsOnVpn: MutableList<String> = mutableListOf(),
+) {
+    /**
+     * Categorizes all packages in the system into "on vpn" or
+     * "not on vpn".
+     *
+     * @param pm       A {@link PackageManager}
+     * @param onVpn    names of packages to use the VPN
+     * @param notOnVpn Names of packages not to use the VPN
+     */
+    fun resolve(pm: PackageManager, onVpn: MutableSet<String>, notOnVpn: MutableSet<String>) {
+        val webBrowserPackageNames: MutableSet<String> = HashSet()
+        val resolveInfoList = pm.queryIntentActivities(newBrowserIntent(), 0)
+        for (resolveInfo in resolveInfoList) {
+            webBrowserPackageNames.add(resolveInfo.activityInfo.packageName)
         }
 
-        var showSystemApps = false
+        webBrowserPackageNames.apply {
+            add("com.google.android.webview")
+            add("com.android.htmlviewer")
+            add("com.google.android.backuptransport")
+            add("com.google.android.gms")
+            add("com.google.android.gsf")
+        }
 
-        /**
-         * The default mode to put apps in, that are not listed in the lists.
-         */
-        var defaultMode = DEFAULT_MODE_ON_VPN
-
-        /**
-         * Apps that should not be allowed on the VPN
-         */
-        var items: MutableList<String> = ArrayList()
-
-        /**
-         * Apps that should be on the VPN
-         */
-        var itemsOnVpn: MutableList<String> = ArrayList()
-
-        /**
-         * Categorizes all packages in the system into "on vpn" or
-         * "not on vpn".
-         *
-         * @param pm       A {@link PackageManager}
-         * @param onVpn    names of packages to use the VPN
-         * @param notOnVpn Names of packages not to use the VPN
-         */
-        fun resolve(pm: PackageManager, onVpn: MutableSet<String>, notOnVpn: MutableSet<String>) {
-            val webBrowserPackageNames: MutableSet<String> = HashSet()
-            val resolveInfoList = pm.queryIntentActivities(newBrowserIntent(), 0)
-            for (resolveInfo in resolveInfoList) {
-                webBrowserPackageNames.add(resolveInfo.activityInfo.packageName)
-            }
-
-            webBrowserPackageNames.apply {
-                add("com.google.android.webview")
-                add("com.android.htmlviewer")
-                add("com.google.android.backuptransport")
-                add("com.google.android.gms")
-                add("com.google.android.gsf")
-            }
-
-            for (applicationInfo in pm.getInstalledApplications(0)) {
-                // We need to always keep ourselves using the VPN, otherwise our
-                // watchdog does not work.
-                if (applicationInfo.packageName == BuildConfig.APPLICATION_ID) {
+        for (applicationInfo in pm.getInstalledApplications(0)) {
+            // We need to always keep ourselves using the VPN, otherwise our
+            // watchdog does not work.
+            if (applicationInfo.packageName == BuildConfig.APPLICATION_ID) {
+                onVpn.add(applicationInfo.packageName)
+            } else if (itemsOnVpn.contains(applicationInfo.packageName)) {
+                onVpn.add(applicationInfo.packageName)
+            } else if (itemsNotOnVpn.contains(applicationInfo.packageName)) {
+                notOnVpn.add(applicationInfo.packageName)
+            } else if (defaultMode == AllowListMode.ON_VPN) {
+                onVpn.add(applicationInfo.packageName)
+            } else if (defaultMode == AllowListMode.NOT_ON_VPN) {
+                notOnVpn.add(applicationInfo.packageName)
+            } else if (defaultMode == AllowListMode.AUTO) {
+                if (webBrowserPackageNames.contains(applicationInfo.packageName)) {
                     onVpn.add(applicationInfo.packageName)
-                } else if (itemsOnVpn.contains(applicationInfo.packageName)) {
-                    onVpn.add(applicationInfo.packageName)
-                } else if (items.contains(applicationInfo.packageName)) {
+                } else if (applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM != 0) {
                     notOnVpn.add(applicationInfo.packageName)
-                } else if (defaultMode == DEFAULT_MODE_ON_VPN) {
+                } else {
                     onVpn.add(applicationInfo.packageName)
-                } else if (defaultMode == DEFAULT_MODE_NOT_ON_VPN) {
-                    notOnVpn.add(applicationInfo.packageName)
-                } else if (defaultMode == DEFAULT_MODE_INTELLIGENT) {
-                    if (webBrowserPackageNames.contains(applicationInfo.packageName)) {
-                        onVpn.add(applicationInfo.packageName)
-                    } else if (applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM != 0) {
-                        notOnVpn.add(applicationInfo.packageName)
-                    } else {
-                        onVpn.add(applicationInfo.packageName)
-                    }
                 }
             }
         }
+    }
 
-        /**
-         * Returns an intent for opening a website, used for finding
-         * web browsers. Extracted method for mocking.
-         */
-        fun newBrowserIntent(): Intent =
-            Intent(Intent.ACTION_VIEW).setData(Uri.parse("https://isabrowser.dns66.jak-linux.org/"))
+    /**
+     * Returns an intent for opening a website, used for finding
+     * web browsers. Extracted method for mocking.
+     */
+    fun newBrowserIntent(): Intent =
+        Intent(Intent.ACTION_VIEW).setData(Uri.parse("https://isabrowser.dns66.jak-linux.org/"))
+}
+
+enum class AllowListMode {
+    /**
+     * System apps (excluding browsers) do not use the VPN.
+     */
+    AUTO,
+
+    /**
+     * All apps use the VPN.
+     */
+    ON_VPN,
+
+    /**
+     * No apps use the VPN.
+     */
+    NOT_ON_VPN;
+
+    companion object {
+        fun Int.toAllowListMode(): AllowListMode =
+            AllowListMode.entries.firstOrNull { it.ordinal == this } ?: ON_VPN
+    }
+}
+
+@Parcelize
+@Serializable
+data class DnsItem(
+    var title: String = "",
+    var location: String = "",
+    var enabled: Boolean = false,
+) : Parcelable
+
+@Parcelize
+@Serializable
+data class HostItem(
+    var title: String = "",
+    var location: String = "",
+    var state: HostState = HostState.IGNORE,
+) : Parcelable {
+    fun isDownloadable(): Boolean =
+        location.startsWith("https://") || location.startsWith("http://")
+
+    private companion object : Parceler<HostItem> {
+        override fun HostItem.write(parcel: Parcel, flags: Int) {
+            parcel.apply {
+                writeString(title)
+                writeString(location)
+                writeInt(state.ordinal)
+            }
+        }
+
+        override fun create(parcel: Parcel): HostItem =
+            HostItem(
+                parcel.readString() ?: "",
+                parcel.readString() ?: "",
+                parcel.readInt().toHostState(),
+            )
+    }
+}
+
+@Serializable
+data class Hosts(
+    var enabled: Boolean = false,
+    var automaticRefresh: Boolean = false,
+    var items: MutableList<HostItem> = mutableListOf(),
+)
+
+@Serializable
+data class DnsServers(
+    var enabled: Boolean = false,
+    var items: MutableList<DnsItem> = mutableListOf(),
+)
+
+// DO NOT change the order of these states. They correspond to UI functionality.
+enum class HostState {
+    IGNORE, DENY, ALLOW;
+
+    companion object {
+        fun Int.toHostState(): HostState = entries.firstOrNull { it.ordinal == this } ?: IGNORE
     }
 }

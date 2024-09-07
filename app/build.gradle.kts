@@ -59,8 +59,6 @@ dependencies {
     implementation("org.pcap4j:pcap4j-packetfactory-static:1.8.2")
     implementation("dnsjava:dnsjava:3.0.0")
 
-    implementation("com.google.code.gson:gson:2.10.1")
-
     // Compose
     implementation("androidx.compose.material3:material3:1.3.0")
 
