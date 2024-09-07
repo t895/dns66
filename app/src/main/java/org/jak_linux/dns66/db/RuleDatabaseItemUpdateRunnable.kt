@@ -13,7 +13,7 @@ import android.net.Uri
 import android.os.Process
 import android.util.Log
 import org.jak_linux.dns66.FileHelper
-import org.jak_linux.dns66.HostItem
+import org.jak_linux.dns66.Host
 import org.jak_linux.dns66.HostState
 import org.jak_linux.dns66.R
 import org.jak_linux.dns66.SingleWriterMultipleReaderFile
@@ -36,7 +36,7 @@ import javax.net.ssl.HttpsURLConnection
 class RuleDatabaseItemUpdateRunnable(
     private val parentTask: RuleDatabaseUpdateTask,
     private val context: Context,
-    private val item: HostItem,
+    private val item: Host,
 ) : Runnable {
     companion object {
         private const val CONNECT_TIMEOUT_MILLIS = 3000

@@ -9,7 +9,7 @@ package org.jak_linux.dns66.db
 
 import android.util.Log
 import org.jak_linux.dns66.FileHelper
-import org.jak_linux.dns66.HostItem
+import org.jak_linux.dns66.Host
 import org.jak_linux.dns66.HostState
 import java.io.BufferedReader
 import java.io.FileNotFoundException
@@ -146,7 +146,7 @@ class RuleDatabase private constructor() {
      * @throws InterruptedException If the thread was interrupted.
      */
     @Throws(InterruptedException::class)
-    private fun loadItem(item: HostItem) {
+    private fun loadItem(item: Host) {
         if (item.state == HostState.IGNORE) {
             return
         }
@@ -171,7 +171,7 @@ class RuleDatabase private constructor() {
      * @param item The item the host belongs to
      * @param host The host
      */
-    private fun addHost(item: HostItem, host: String) {
+    private fun addHost(item: Host, host: String) {
         // Single address to block
         if (item.state == HostState.ALLOW) {
             nextBlockedHosts?.remove(host) ?: Log.d(
@@ -194,7 +194,7 @@ class RuleDatabase private constructor() {
      * @throws InterruptedException If thread was interrupted
      */
     @Throws(InterruptedException::class)
-    fun loadReader(item: HostItem, reader: Reader): Boolean {
+    fun loadReader(item: Host, reader: Reader): Boolean {
         var count = 0
         try {
             Log.d(TAG, "loadBlockedHosts: Reading: ${item.location}")

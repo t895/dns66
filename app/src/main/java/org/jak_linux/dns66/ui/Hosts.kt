@@ -43,7 +43,7 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import org.jak_linux.dns66.HostItem
+import org.jak_linux.dns66.Host
 import org.jak_linux.dns66.HostState
 import org.jak_linux.dns66.HostState.Companion.toHostState
 import org.jak_linux.dns66.R
@@ -77,8 +77,8 @@ fun HostsScreen(
     onFilterHostsClick: () -> Unit,
     refreshDaily: Boolean,
     onRefreshDailyClick: () -> Unit,
-    hosts: List<HostItem>,
-    onItemClick: (HostItem) -> Unit,
+    hosts: List<Host>,
+    onItemClick: (Host) -> Unit,
     onItemStateChanged: () -> Unit,
 ) {
     LazyColumn(
@@ -159,19 +159,19 @@ fun HostsScreen(
 @Composable
 private fun HostsScreenPreview() {
     val items = buildList {
-        val item1 = HostItem()
+        val item1 = Host()
         item1.title = "StevenBlack's hosts file"
         item1.location = "https://url.to.hosts.file.com/"
         item1.state = HostState.IGNORE
         add(item1)
 
-        val item2 = HostItem()
+        val item2 = Host()
         item2.title = "StevenBlack's hosts file"
         item2.location = "https://url.to.hosts.file.com/"
         item2.state = HostState.DENY
         add(item2)
 
-        val item3 = HostItem()
+        val item3 = Host()
         item3.title = "StevenBlack's hosts file"
         item3.location = "https://url.to.hosts.file.com/"
         item3.state = HostState.ALLOW

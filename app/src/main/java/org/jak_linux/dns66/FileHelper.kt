@@ -114,7 +114,7 @@ object FileHelper {
      * @param item    A configuration item.
      * @return File or null, if that item is not downloadable.
      */
-    fun getItemFile(item: HostItem): File? =
+    fun getItemFile(item: Host): File? =
         if (item.isDownloadable()) {
             try {
                 File(
@@ -130,7 +130,7 @@ object FileHelper {
         }
 
     @Throws(FileNotFoundException::class)
-    fun openItemFile(item: HostItem): InputStreamReader? {
+    fun openItemFile(item: Host): InputStreamReader? {
         return if (item.location.startsWith("content://")) {
             try {
                 InputStreamReader(applicationContext.contentResolver.openInputStream(Uri.parse(item.location)))

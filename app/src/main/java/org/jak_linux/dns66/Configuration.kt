@@ -138,7 +138,7 @@ data class Configuration(
 
     fun addDNS(title: String, location: String, isEnabled: Boolean) =
         dnsServers.items.add(
-            DnsItem(
+            DnsServer(
                 title = title,
                 location = location,
                 enabled = isEnabled,
@@ -148,7 +148,7 @@ data class Configuration(
     fun addURL(index: Int, title: String, location: String, state: HostState) =
         hosts.items.add(
             index = index,
-            element = HostItem(
+            element = Host(
                 title = title,
                 location = location,
                 state = state,
@@ -258,7 +258,7 @@ enum class AllowListMode {
 
 @Parcelize
 @Serializable
-data class DnsItem(
+data class DnsServer(
     var title: String = "",
     var location: String = "",
     var enabled: Boolean = false,
@@ -266,7 +266,7 @@ data class DnsItem(
 
 @Parcelize
 @Serializable
-data class HostItem(
+data class Host(
     var title: String = "",
     var location: String = "",
     var state: HostState = HostState.IGNORE,
@@ -274,8 +274,8 @@ data class HostItem(
     fun isDownloadable(): Boolean =
         location.startsWith("https://") || location.startsWith("http://")
 
-    companion object : Parceler<HostItem> {
-        override fun HostItem.write(parcel: Parcel, flags: Int) {
+    companion object : Parceler<Host> {
+        override fun Host.write(parcel: Parcel, flags: Int) {
             parcel.apply {
                 writeString(title)
                 writeString(location)
@@ -283,8 +283,8 @@ data class HostItem(
             }
         }
 
-        override fun create(parcel: Parcel): HostItem =
-            HostItem(
+        override fun create(parcel: Parcel): Host =
+            Host(
                 parcel.readString() ?: "",
                 parcel.readString() ?: "",
                 parcel.readInt().toHostState(),
@@ -296,13 +296,13 @@ data class HostItem(
 data class Hosts(
     var enabled: Boolean = false,
     var automaticRefresh: Boolean = false,
-    var items: MutableList<HostItem> = mutableListOf(),
+    var items: MutableList<Host> = mutableListOf(),
 )
 
 @Serializable
 data class DnsServers(
     var enabled: Boolean = false,
-    var items: MutableList<DnsItem> = mutableListOf(),
+    var items: MutableList<DnsServer> = mutableListOf(),
 )
 
 // DO NOT change the order of these states. They correspond to UI functionality.

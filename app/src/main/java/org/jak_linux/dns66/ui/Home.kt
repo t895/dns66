@@ -50,9 +50,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
-import org.jak_linux.dns66.DnsItem
+import org.jak_linux.dns66.DnsServer
 import org.jak_linux.dns66.FileHelper
-import org.jak_linux.dns66.HostItem
+import org.jak_linux.dns66.Host
 import org.jak_linux.dns66.R
 import org.jak_linux.dns66.viewmodel.HomeViewModel
 
@@ -203,9 +203,9 @@ fun HomeScreen(
                 FloatingActionButton(
                     onClick = {
                         if (selectedDestination == Destination.Hosts.route) {
-                            navController.navigate(HostItem())
+                            navController.navigate(Host())
                         } else if (selectedDestination == Destination.DNS.route) {
-                            navController.navigate(DnsItem())
+                            navController.navigate(DnsServer())
                         }
                     },
                 ) {
@@ -269,12 +269,12 @@ fun HomeScreen(
                     onItemStateChanged = {},
                 )
             }
-            composable<HostItem> { backstackEntry ->
-                val hostItem = backstackEntry.toRoute<HostItem>()
+            composable<Host> { backstackEntry ->
+                val host = backstackEntry.toRoute<Host>()
                 EditFilterScreen(
-                    title = hostItem.title,
-                    location = hostItem.location,
-                    state = hostItem.state,
+                    title = host.title,
+                    location = host.location,
+                    state = host.state,
                     onNavigateUp = { navController.navigateUp() },
                     onSave = { title, location, state -> },
                     onDelete = null,
@@ -322,12 +322,12 @@ fun HomeScreen(
                     },
                 )
             }
-            composable<DnsItem> { backstackEntry ->
-                val dnsItem = backstackEntry.toRoute<DnsItem>()
+            composable<DnsServer> { backstackEntry ->
+                val dnsServer = backstackEntry.toRoute<DnsServer>()
                 EditDnsScreen(
-                    title = dnsItem.title,
-                    location = dnsItem.location,
-                    enabled = dnsItem.enabled,
+                    title = dnsServer.title,
+                    location = dnsServer.location,
+                    enabled = dnsServer.enabled,
                     onNavigateUp = { navController.navigateUp() },
                     onSave = { title, location, enabled -> },
                     onDelete = null,
