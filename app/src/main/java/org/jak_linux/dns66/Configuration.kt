@@ -274,7 +274,7 @@ data class HostItem(
     fun isDownloadable(): Boolean =
         location.startsWith("https://") || location.startsWith("http://")
 
-    private companion object : Parceler<HostItem> {
+    companion object : Parceler<HostItem> {
         override fun HostItem.write(parcel: Parcel, flags: Int) {
             parcel.apply {
                 writeString(title)
