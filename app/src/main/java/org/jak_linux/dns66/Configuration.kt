@@ -46,8 +46,8 @@ data class Configuration(
         private const val MINOR_VERSION = 0
 
         @Throws(IOException::class)
-        fun read(reader: Reader): Configuration {
-            val config = reader.use {
+        fun read(reader: Reader?): Configuration {
+            val config = reader?.use {
                 val data = it.readText()
                 try {
                     Json.decodeFromString<Configuration>(data)
@@ -55,7 +55,7 @@ data class Configuration(
                     Log.e(TAG, "Failed to decode config! - ${e.localizedMessage}")
                     Configuration()
                 }
-            }
+            } ?: Configuration()
             if (config.version > VERSION) {
                 throw IOException("Unhandled file format version")
             }
@@ -131,7 +131,14 @@ data class Configuration(
     }
 
     @Throws(IOException::class)
-    fun write(writer: Writer?) = writer?.write(Json.encodeToString(this))
+    fun write(writer: Writer?) {
+        try {
+            val data = Json.encodeToString(this)
+            writer?.write(data)
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to write config to disk! - ${e.localizedMessage}")
+        }
+    }
 }
 
 @Serializable

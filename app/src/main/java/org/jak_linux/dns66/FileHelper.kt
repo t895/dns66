@@ -57,19 +57,12 @@ object FileHelper {
     }
 
     @Throws(IOException::class)
-    private fun readConfigFile(name: String, defaultsOnly: Boolean): Configuration {
-        val stream: InputStream = if (defaultsOnly) {
-            applicationContext.assets.open(name)
-        } else {
-            openRead(name)
-        }
-
-        return Configuration.read(InputStreamReader(stream))
-    }
+    private fun readConfigFile(name: String): Configuration =
+        Configuration.read(InputStreamReader(openRead(name)))
 
     fun loadCurrentSettings(): Configuration =
         try {
-            readConfigFile("settings.json", false)
+            readConfigFile("settings.json")
         } catch (e: Exception) {
             Toast.makeText(
                 applicationContext,
@@ -81,7 +74,7 @@ object FileHelper {
 
     fun loadPreviousSettings(context: Context): Configuration =
         try {
-            readConfigFile("settings.json.bak", false)
+            readConfigFile("settings.json.bak")
         } catch (e: Exception) {
             Toast.makeText(
                 context,
@@ -91,7 +84,7 @@ object FileHelper {
             loadDefaultSettings()
         }
 
-    fun loadDefaultSettings(): Configuration = readConfigFile("settings.json", true)
+    fun loadDefaultSettings(): Configuration = Configuration.read(null)
 
     fun writeSettings(config: Configuration) {
         Log.d(TAG, "writeSettings: Writing the settings file")
