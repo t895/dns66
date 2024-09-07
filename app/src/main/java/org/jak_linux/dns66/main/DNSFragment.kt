@@ -11,20 +11,14 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Switch
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.floatingactionbutton.FloatingActionButton
-import org.jak_linux.dns66.Configuration
-import org.jak_linux.dns66.FileHelper
 import org.jak_linux.dns66.MainActivity
 import org.jak_linux.dns66.R
 
 class DNSFragment : Fragment(), FloatingActionButtonFragment {
-    // private var adapter: ItemRecyclerViewAdapter? = null
-
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -40,19 +34,6 @@ class DNSFragment : Fragment(), FloatingActionButtonFragment {
 
         recyclerView.setLayoutManager(LinearLayoutManager(requireContext()))
 
-//        adapter = ItemRecyclerViewAdapter(requireContext(), MainActivity.config.dnsServers.items, 2)
-//        recyclerView.adapter = adapter
-
-//        val itemTouchHelper = ItemTouchHelper(ItemTouchHelperCallback(adapter!!))
-//        itemTouchHelper.attachToRecyclerView(recyclerView)
-
-//        rootView.findViewById<Switch>(R.id.dns_enabled).apply {
-//            isChecked = MainActivity.config.dnsServers.enabled
-//            setOnCheckedChangeListener { _, isChecked ->
-//                MainActivity.config.dnsServers.enabled = isChecked
-//                FileHelper.writeSettings(MainActivity.config)
-//            }
-//        }
         ExtraBar.setup(rootView.findViewById(R.id.extra_bar), "dns")
         return rootView
     }

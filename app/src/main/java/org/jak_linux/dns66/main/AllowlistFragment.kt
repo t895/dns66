@@ -44,10 +44,7 @@ class AllowlistFragment : Fragment() {
         private const val TAG = "Allowlist"
     }
 
-    private var appListGenerator: AppListGenerator? = null
-
     lateinit var appList: RecyclerView
-    private lateinit var swipeRefresh: SwipeRefreshLayout
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -65,69 +62,6 @@ class AllowlistFragment : Fragment() {
             DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL)
         appList.addItemDecoration(dividerItemDecoration)
 
-        swipeRefresh = rootView.findViewById<View>(R.id.swiperefresh) as SwipeRefreshLayout
-        swipeRefresh.setOnRefreshListener {
-            appListGenerator = AppListGenerator(requireContext().packageManager)
-            appListGenerator?.execute()
-        }
-        swipeRefresh.isRefreshing = true
-
-//        val switchShowSystemApps =
-//            rootView.findViewById<Switch>(R.id.switch_show_system_apps)
-//        switchShowSystemApps.isChecked = MainActivity.config.allowlist.showSystemApps
-//        switchShowSystemApps.setOnCheckedChangeListener { _, isChecked ->
-//            MainActivity.config.allowlist.showSystemApps = isChecked
-//            FileHelper.writeSettings(MainActivity.config)
-//            appListGenerator = AppListGenerator(requireContext().packageManager)
-//            appListGenerator?.execute()
-//        }
-
-//        val allowlistDefaultText =
-//            rootView.findViewById<View>(R.id.allowlist_default_text) as TextView
-//        allowlistDefaultText.text =
-//            resources.getStringArray(R.array.allowlist_defaults)[MainActivity.config.allowlist.defaultMode]
-//        val onDefaultChangeClicked = object : View.OnClickListener {
-//            override fun onClick(v: View?) {
-//                val menu = PopupMenu(context, rootView.findViewById(R.id.change_default))
-//                menu.inflate(R.menu.allowlist_popup)
-//                menu.setOnMenuItemClickListener {
-//                    when (it.itemId) {
-//                        R.id.allowlist_default_on_vpn -> {
-//                            Log.d(TAG, "onMenuItemClick: OnVpn")
-//                            MainActivity.config.allowlist.defaultMode =
-//                                Configuration.Allowlist.DEFAULT_MODE_ON_VPN
-//                        }
-//
-//                        R.id.allowlist_default_not_on_vpn -> {
-//                            Log.d(TAG, "onMenuItemClick: NotOnVpn")
-//                            MainActivity.config.allowlist.defaultMode =
-//                                Configuration.Allowlist.DEFAULT_MODE_NOT_ON_VPN
-//                        }
-//
-//                        R.id.allowlist_default_intelligent -> {
-//                            Log.d(TAG, "onMenuItemClick: Intelligent")
-//                            MainActivity.config.allowlist.defaultMode =
-//                                Configuration.Allowlist.DEFAULT_MODE_INTELLIGENT
-//                        }
-//                    }
-//                    allowlistDefaultText.text =
-//                        resources.getStringArray(R.array.allowlist_defaults)[MainActivity.config.allowlist.defaultMode]
-//                    appListGenerator = AppListGenerator(requireContext().packageManager)
-//                    appListGenerator?.execute()
-//                    FileHelper.writeSettings(MainActivity.config)
-//                    return@setOnMenuItemClickListener true
-//                }
-//
-//                menu.show()
-//            }
-//        }
-
-//        rootView.findViewById<View>(R.id.change_default).setOnClickListener(onDefaultChangeClicked)
-//        allowlistDefaultText.setOnClickListener(onDefaultChangeClicked)
-
-        appListGenerator = AppListGenerator(requireContext().packageManager)
-        appListGenerator?.execute()
-
         ExtraBar.setup(rootView.findViewById(R.id.extra_bar), "allowlist")
 
         return rootView
@@ -137,10 +71,6 @@ class AllowlistFragment : Fragment() {
         RecyclerView.Adapter<AppListAdapter.ViewHolder>() {
         private val onVpn: MutableSet<String> = HashSet()
         private val notOnVpn = HashSet<String>()
-
-//        init {
-//            MainActivity.config.allowlist.resolve(pm, onVpn, notOnVpn)
-//        }
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder =
             ViewHolder(
@@ -232,34 +162,6 @@ class AllowlistFragment : Fragment() {
                     allowlistSwitch = findViewById(R.id.checkbox)
                 }
             }
-        }
-    }
-
-    inner class AppListGenerator(private val pm: PackageManager) :
-        AsyncTask<Void, Void, AppListAdapter>() {
-        @Deprecated("Deprecated in Java")
-        override fun doInBackground(vararg params: Void?): AppListAdapter {
-            val apps = pm.getInstalledApplications(0)
-
-            Collections.sort(apps, ApplicationInfo.DisplayNameComparator(pm))
-
-            val entries = ArrayList<AppItem>()
-            for (app in apps) {
-//                if (app.packageName != BuildConfig.APPLICATION_ID &&
-//                    (MainActivity.config.allowlist.showSystemApps ||
-//                        (app.flags and ApplicationInfo.FLAG_SYSTEM) == 0)
-//                ) {
-//                    entries.add(AppItem(app, app.packageName, app.loadLabel(pm).toString()))
-//                }
-            }
-
-            return AppListAdapter(pm, entries)
-        }
-
-        @Deprecated("Deprecated in Java")
-        override fun onPostExecute(result: AppListAdapter?) {
-            appList.adapter = result
-            swipeRefresh.isRefreshing = false
         }
     }
 }

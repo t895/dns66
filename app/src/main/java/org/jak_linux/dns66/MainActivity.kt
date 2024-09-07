@@ -61,6 +61,7 @@ class MainActivity : AppCompatActivity() {
                     onLoadDefaults = {
                         vm.config = FileHelper.loadDefaultSettings()
                         FileHelper.writeSettings(vm.config)
+                        vm.onReloadSettings()
                         recreate()
                     },
                     onImport = {
@@ -149,8 +150,9 @@ class MainActivity : AppCompatActivity() {
             } catch (e: Exception) {
                 Toast.makeText(this, "Cannot read file: ${e.message}", Toast.LENGTH_SHORT).show()
             }
-            recreate()
             FileHelper.writeSettings(vm.config)
+            vm.onReloadSettings()
+            recreate()
         }
 
         if (requestCode == REQUEST_FILE_STORE && resultCode == RESULT_OK) {

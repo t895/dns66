@@ -69,7 +69,6 @@ private fun IconText(
     }
 }
 
-// TODO: Viewmodel hookup
 @Composable
 fun HostsScreen(
     modifier: Modifier = Modifier,
@@ -78,8 +77,8 @@ fun HostsScreen(
     refreshDaily: Boolean,
     onRefreshDailyClick: () -> Unit,
     hosts: List<Host>,
-    onItemClick: (Host) -> Unit,
-    onItemStateChanged: () -> Unit,
+    onHostClick: (Host) -> Unit,
+    onHostStateChanged: (Host) -> Unit,
 ) {
     LazyColumn(
         modifier
@@ -140,13 +139,14 @@ fun HostsScreen(
             }
 
             IconListItem(
+                modifier = Modifier.animateItem(),
                 onClick = {
-                    onItemClick(it)
+                    onHostClick(it)
                 },
                 title = it.title,
                 details = it.location,
                 iconContent = {
-                    IconButton(onClick = onItemStateChanged) {
+                    IconButton(onClick = { onHostStateChanged(it) }) {
                         Icon(painterResource(iconResource), null)
                     }
                 },
@@ -185,19 +185,21 @@ private fun HostsScreenPreview() {
             refreshDaily = false,
             onRefreshDailyClick = {},
             hosts = items,
-            onItemClick = {},
-            onItemStateChanged = {},
+            onHostClick = {},
+            onHostStateChanged = {},
         )
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditFilter(
+fun EditHost(
     modifier: Modifier = Modifier,
     titleText: String,
+    titleTextError: Boolean,
     onTitleTextChanged: (String) -> Unit,
     locationText: String,
+    locationTextError: Boolean,
     onLocationTextChanged: (String) -> Unit,
     onOpenHostsDirectoryClick: () -> Unit,
     state: HostState,
@@ -215,6 +217,7 @@ fun EditFilter(
             },
             value = titleText,
             onValueChange = onTitleTextChanged,
+            isError = titleTextError,
         )
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
@@ -228,6 +231,7 @@ fun EditFilter(
                     Icon(imageVector = Icons.Default.AttachFile, contentDescription = null)
                 }
             },
+            isError = locationTextError,
         )
 
         val itemStates = stringArrayResource(id = R.array.item_states)
@@ -278,19 +282,21 @@ fun EditFilter(
 
 @Preview
 @Composable
-private fun EditFilterPreview() {
+private fun EditHostPreview() {
     Dns66Theme {
         var state by remember { mutableStateOf(HostState.IGNORE) }
         var titleText by remember { mutableStateOf("") }
         var locationText by remember { mutableStateOf("") }
-        EditFilter(
+        EditHost(
             modifier = Modifier
                 .background(MaterialTheme.colorScheme.surface)
                 .fillMaxWidth()
                 .padding(20.dp),
             titleText = titleText,
+            titleTextError = false,
             onTitleTextChanged = { titleText = it },
             locationText = locationText,
+            locationTextError = false,
             onLocationTextChanged = { locationText = it },
             onOpenHostsDirectoryClick = {},
             state = state,
@@ -301,21 +307,19 @@ private fun EditFilterPreview() {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditFilterScreen(
+fun EditHostScreen(
     modifier: Modifier = Modifier,
-    title: String,
-    location: String,
-    state: HostState,
+    host: Host,
     onNavigateUp: () -> Unit,
-    onSave: (title: String, location: String, state: HostState) -> Unit,
+    onSave: (Host) -> Unit,
     onDelete: (() -> Unit)? = null,
     onOpenUri: () -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
-    var titleInput by rememberSaveable { mutableStateOf(title) }
-    var locationInput by rememberSaveable { mutableStateOf(location) }
-    var stateInput by rememberSaveable { mutableStateOf(state) }
+    var titleInput by rememberSaveable { mutableStateOf(host.title) }
+    var locationInput by rememberSaveable { mutableStateOf(host.location) }
+    var stateInput by rememberSaveable { mutableStateOf(host.state) }
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -341,7 +345,7 @@ fun EditFilterScreen(
                         }
                     }
 
-                    IconButton(onClick = { onSave(titleInput, locationInput, stateInput) }) {
+                    IconButton(onClick = { onSave(Host(titleInput, locationInput, stateInput)) }) {
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = null,
@@ -352,11 +356,13 @@ fun EditFilterScreen(
             )
         },
     ) { paddingValues ->
-        EditFilter(
+        EditHost(
             modifier = Modifier.padding(paddingValues).padding(horizontal = 16.dp),
             titleText = titleInput,
+            titleTextError = false,
             onTitleTextChanged = { titleInput = it },
             locationText = locationInput,
+            locationTextError = false,
             onLocationTextChanged = { locationInput = it },
             onOpenHostsDirectoryClick = onOpenUri,
             state = stateInput,
@@ -367,14 +373,12 @@ fun EditFilterScreen(
 
 @Preview
 @Composable
-private fun EditFilterScreenPreview() {
+private fun EditHostScreenPreview() {
     Dns66Theme {
-        EditFilterScreen(
-            title = "",
-            location = "",
-            state = HostState.IGNORE,
+        EditHostScreen(
+            host = Host(),
             onNavigateUp = {},
-            onSave = { _, _, _ -> },
+            onSave = {},
             onDelete = {},
             onOpenUri = {},
         )

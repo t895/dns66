@@ -20,7 +20,6 @@ import androidx.compose.ui.unit.dp
 import org.jak_linux.dns66.R
 import org.jak_linux.dns66.vpn.VpnStatus
 
-// TODO: Viewmodel hookup
 @Composable
 fun StartScreen(
     modifier: Modifier = Modifier,

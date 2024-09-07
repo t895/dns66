@@ -43,6 +43,7 @@ fun DnsScreen(
     customDnsServers: Boolean,
     onCustomDnsServersClick: () -> Unit,
     onItemClick: (DnsServer) -> Unit,
+    onItemCheckClicked: (DnsServer) -> Unit,
 ) {
     LazyColumn(
         modifier
@@ -65,10 +66,11 @@ fun DnsScreen(
 
         items(servers) {
             CheckboxListItem(
+                modifier = Modifier.animateItem(),
                 title = it.title,
                 details = it.location,
                 checked = it.enabled,
-                onCheckedChange = { _ -> onItemClick(it) },
+                onCheckedChange = { _ -> onItemCheckClicked(it) },
                 onClick = { onItemClick(it) },
             )
         }
@@ -84,9 +86,10 @@ private fun DnsScreenPreview() {
     Dns66Theme {
         DnsScreen(
             servers = listOf(item, item, item),
-            onItemClick = { _ -> },
+            onItemClick = {},
             customDnsServers = false,
             onCustomDnsServersClick = {},
+            onItemCheckClicked = {},
         )
     }
 }
@@ -151,16 +154,14 @@ private fun EditDnsPreview() {
 @Composable
 fun EditDnsScreen(
     modifier: Modifier = Modifier,
-    title: String,
-    location: String,
-    enabled: Boolean,
+    server: DnsServer,
     onNavigateUp: () -> Unit,
-    onSave: (String, String, Boolean) -> Unit,
+    onSave: (DnsServer) -> Unit,
     onDelete: (() -> Unit)? = null,
 ) {
-    var titleInput by rememberSaveable { mutableStateOf(title) }
-    var locationInput by rememberSaveable { mutableStateOf(location) }
-    var enabledInput by rememberSaveable { mutableStateOf(enabled) }
+    var titleInput by rememberSaveable { mutableStateOf(server.title) }
+    var locationInput by rememberSaveable { mutableStateOf(server.location) }
+    var enabledInput by rememberSaveable { mutableStateOf(server.enabled) }
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
@@ -188,7 +189,11 @@ fun EditDnsScreen(
                         }
                     }
 
-                    IconButton(onClick = { onSave(titleInput, locationInput, enabledInput) }) {
+                    IconButton(
+                        onClick = {
+                            onSave(DnsServer(titleInput, locationInput, enabledInput))
+                        }
+                    ) {
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = null,
@@ -217,11 +222,9 @@ fun EditDnsScreen(
 @Composable
 fun EditDnsScreenPreview(modifier: Modifier = Modifier) {
     EditDnsScreen(
-        title = "Title",
-        location = "Location",
-        enabled = true,
+        server = DnsServer("Title", "Location", true),
         onNavigateUp = {},
-        onSave = { _, _, _ -> },
+        onSave = {},
         onDelete = {},
     )
 }

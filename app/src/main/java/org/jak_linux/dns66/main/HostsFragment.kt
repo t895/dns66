@@ -39,27 +39,6 @@ class HostsFragment : Fragment(), FloatingActionButtonFragment {
 
         recyclerView.setLayoutManager(LinearLayoutManager(requireContext()))
 
-//        adapter = ItemRecyclerViewAdapter(requireContext(), MainActivity.config.hosts.items, 3)
-//        recyclerView.adapter = adapter
-
-//        val itemTouchHelper = ItemTouchHelper(ItemTouchHelperCallback(adapter!!))
-//        itemTouchHelper.attachToRecyclerView(recyclerView)
-
-//        val hostEnabled = rootView.findViewById<View>(R.id.host_enabled) as Switch
-//        hostEnabled.isChecked = MainActivity.config.hosts.enabled
-//        hostEnabled.setOnCheckedChangeListener { _, isChecked ->
-//            MainActivity.config.hosts.enabled = isChecked
-//            FileHelper.writeSettings(MainActivity.config)
-//        }
-//
-//        val automaticRefresh = rootView.findViewById<View>(R.id.automatic_refresh) as Switch
-//        automaticRefresh.isChecked = MainActivity.config.hosts.automaticRefresh
-//        automaticRefresh.setOnCheckedChangeListener { _, isChecked ->
-//            MainActivity.config.hosts.automaticRefresh = isChecked
-//            FileHelper.writeSettings(MainActivity.config)
-//            RuleDatabaseUpdateJobService.scheduleOrCancel(requireContext(), MainActivity.config)
-//        }
-
         ExtraBar.setup(rootView.findViewById(R.id.extra_bar), "hosts")
 
         return rootView
