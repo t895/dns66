@@ -60,14 +60,15 @@ dependencies {
     implementation("dnsjava:dnsjava:3.0.0")
 
     // Compose
-    implementation("androidx.compose.material3:material3:1.3.0")
-
-    val composeVersion = "1.7.0"
-    implementation("androidx.compose.ui:ui-tooling-preview:$composeVersion")
-    debugImplementation("androidx.compose.ui:ui-tooling:$composeVersion")
-
-    implementation("androidx.compose.material:material-icons-core:$composeVersion")
-    implementation("androidx.compose.material:material-icons-extended:$composeVersion")
+    val composeBom = platform("androidx.compose:compose-bom:2024.09.00")
+    implementation(composeBom)
+    debugImplementation(composeBom)
+    androidTestImplementation(composeBom)
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.ui:ui-tooling-preview")
+    debugImplementation("androidx.compose.ui:ui-tooling")
+    implementation("androidx.compose.material:material-icons-core")
+    implementation("androidx.compose.material:material-icons-extended")
 
     val coilVersion = "2.7.0"
     implementation("io.coil-kt:coil:$coilVersion")
