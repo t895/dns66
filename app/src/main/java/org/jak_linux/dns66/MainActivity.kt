@@ -101,13 +101,13 @@ class MainActivity : AppCompatActivity() {
                 logcat.append('\n')
             }
 
-            val eMailIntent = Intent(Intent.ACTION_SEND)
+            val sendIntent = Intent(Intent.ACTION_SEND)
                 .setType("text/plain")
                 .putExtra(Intent.EXTRA_EMAIL, arrayOf("jak@jak-linux.org"))
                 .putExtra(Intent.EXTRA_SUBJECT, "DNS66 Logcat")
                 .putExtra(Intent.EXTRA_TEXT, logcat.toString())
-                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            startActivity(eMailIntent)
+            val shareIntent = Intent.createChooser(sendIntent, null)
+            startActivity(shareIntent)
         } catch (e: Exception) {
             e.printStackTrace()
             Toast.makeText(this, "Not supported: $e", Toast.LENGTH_LONG).show()
