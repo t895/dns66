@@ -250,6 +250,37 @@ fun HomeScreen(
                 var watchConnection by remember { mutableStateOf(vm.config.watchDog) }
                 var ipv6Support by remember { mutableStateOf(vm.config.ipV6Support) }
                 val status by vm.vpnStatus.collectAsState()
+
+                val showWatchdogWarningDialog by vm.showWatchdogWarningDialog.collectAsState()
+                if (showWatchdogWarningDialog) {
+                    AlertDialog(
+                        onDismissRequest = { vm.onDismissWatchdogWarning() },
+                        confirmButton = {
+                            TextButton(onClick = { vm.onDismissWatchdogWarning() }) {
+                                Text(text = stringResource(R.string.button_continue))
+                            }
+                        },
+                        dismissButton = {
+                            TextButton(
+                                onClick = {
+                                    vm.config.watchDog = !vm.config.watchDog
+                                    watchConnection = vm.config.watchDog
+                                    FileHelper.writeSettings(vm.config)
+                                    vm.onDismissWatchdogWarning()
+                                }
+                            ) {
+                                Text(text = stringResource(R.string.button_cancel))
+                            }
+                        },
+                        title = {
+                            Text(text = stringResource(R.string.unstable_feature))
+                        },
+                        text = {
+                            Text(text = stringResource(R.string.unstable_watchdog_message))
+                        },
+                    )
+                }
+
                 StartScreen(
                     modifier = Modifier.padding(contentPadding),
                     resumeOnStartup = resumeOnStartup,
@@ -263,6 +294,10 @@ fun HomeScreen(
                         vm.config.watchDog = !vm.config.watchDog
                         watchConnection = vm.config.watchDog
                         FileHelper.writeSettings(vm.config)
+
+                        if (watchConnection) {
+                            vm.onEnableWatchdog()
+                        }
                     },
                     ipv6Support = ipv6Support,
                     onIpv6SupportClick = {

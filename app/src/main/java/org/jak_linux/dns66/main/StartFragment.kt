@@ -100,40 +100,6 @@ class StartFragment : Fragment() {
 
         updateStatus(rootView, status)
 
-//        switchOnBoot.setChecked(MainActivity.config.autoStart)
-//        switchOnBoot.setOnCheckedChangeListener { _, isChecked ->
-//            MainActivity.config.autoStart = isChecked
-//            FileHelper.writeSettings(MainActivity.config)
-//        }
-
-        val watchDog = rootView.findViewById<Switch>(R.id.watchdog)
-//        watchDog.setChecked(MainActivity.config.watchDog)
-//        watchDog.setOnCheckedChangeListener { _, isChecked ->
-//            MainActivity.config.watchDog = isChecked
-//            FileHelper.writeSettings(MainActivity.config)
-//
-//            if (isChecked) {
-//                AlertDialog.Builder(requireActivity())
-//                    .setIcon(R.drawable.ic_warning)
-//                    .setTitle(R.string.unstable_feature)
-//                    .setMessage(R.string.unstable_watchdog_message)
-//                    .setNegativeButton(R.string.button_cancel) { _, _ ->
-//                        watchDog.isChecked = false
-//                        MainActivity.config.watchDog = false
-//                        FileHelper.writeSettings(MainActivity.config)
-//                    }
-//                    .setPositiveButton(R.string.button_continue, null)
-//                    .show()
-//            }
-//        }
-
-        val ipV6Support = rootView.findViewById<Switch>(R.id.ipv6_support)
-//        ipV6Support.isChecked = MainActivity.config.ipV6Support
-//        ipV6Support.setOnCheckedChangeListener { _, isChecked ->
-//            MainActivity.config.ipV6Support = isChecked
-//            FileHelper.writeSettings(MainActivity.config)
-//        }
-
         ExtraBar.setup(rootView.findViewById(R.id.extra_bar), "start")
 
         return rootView

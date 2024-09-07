@@ -42,6 +42,9 @@ class HomeViewModel : ViewModel() {
     private val _showHostsFilesNotFoundDialog = MutableStateFlow(false)
     val showHostsFilesNotFoundDialog = _showHostsFilesNotFoundDialog.asStateFlow()
 
+    private val _showWatchdogWarningDialog = MutableStateFlow(false)
+    val showWatchdogWarningDialog = _showWatchdogWarningDialog.asStateFlow()
+
     init {
         populateAppList()
         _vpnStatus.value = AdVpnService.status
@@ -98,5 +101,13 @@ class HomeViewModel : ViewModel() {
 
     fun onHostsFilesNotFoundDismissed() {
         _showHostsFilesNotFoundDialog.value = false
+    }
+
+    fun onEnableWatchdog() {
+        _showWatchdogWarningDialog.value = true
+    }
+
+    fun onDismissWatchdogWarning() {
+        _showWatchdogWarningDialog.value = false
     }
 }
