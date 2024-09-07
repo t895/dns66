@@ -24,7 +24,6 @@ import org.jak_linux.dns66.viewmodel.HomeViewModel
 import org.jak_linux.dns66.vpn.AdVpnService
 import org.jak_linux.dns66.vpn.Command
 import org.jak_linux.dns66.vpn.VpnStatus
-import org.jak_linux.dns66.vpn.VpnStatus.Companion.toVpnStatus
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
@@ -81,7 +80,8 @@ class MainActivity : AppCompatActivity() {
                         startActivityForResult(exportIntent, REQUEST_FILE_STORE)
                     },
                     onShareLogcat = ::sendLogcat,
-                    onToggleService = { AdVpnService.toggleService(vm, this) },
+                    onTryToggleService = { AdVpnService.tryToggleService(vm, this) },
+                    onCreateService = ::createService,
                 )
             }
         }

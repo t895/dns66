@@ -28,7 +28,6 @@ import android.os.Looper
 import android.os.Message
 import android.util.Log
 import androidx.annotation.StringRes
-import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -134,7 +133,7 @@ class AdVpnService : VpnService(), Handler.Callback {
                 putExtra("NOTIFICATION_INTENT", pendingIntent)
             }
 
-        fun toggleService(
+        fun tryToggleService(
             vm: HomeViewModel,
             activity: MainActivity,
         ) {
@@ -153,17 +152,7 @@ class AdVpnService : VpnService(), Handler.Callback {
             activity: MainActivity,
         ) {
             if (!areHostsFilesExistent(vm)) {
-//                AlertDialog.Builder(activity)
-//                    .setIcon(R.drawable.ic_warning)
-//                    .setTitle(R.string.missing_hosts_files_title)
-//                    .setMessage(R.string.missing_hosts_files_message)
-//                    .setNegativeButton(R.string.button_no, null)
-//                    .setPositiveButton(R.string.button_yes) { _, _ ->
-//                        startService()
-//                    }
-//                    .show()
-
-                // vm.onHostFilesNotFound()
+                vm.onHostsFilesNotFound()
                 return
             }
             startService(activity)

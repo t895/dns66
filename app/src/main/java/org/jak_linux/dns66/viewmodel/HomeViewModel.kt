@@ -39,6 +39,9 @@ class HomeViewModel : ViewModel() {
     private val _vpnStatus = MutableStateFlow(VpnStatus.STOPPED)
     val vpnStatus = _vpnStatus.asStateFlow()
 
+    private val _showHostsFilesNotFoundDialog = MutableStateFlow(false)
+    val showHostsFilesNotFoundDialog = _showHostsFilesNotFoundDialog.asStateFlow()
+
     init {
         populateAppList()
         _vpnStatus.value = AdVpnService.status
@@ -87,5 +90,13 @@ class HomeViewModel : ViewModel() {
 
     fun onUpdateVpnStatus(status: VpnStatus) {
         _vpnStatus.value = status
+    }
+
+    fun onHostsFilesNotFound() {
+        _showHostsFilesNotFoundDialog.value = true
+    }
+
+    fun onHostsFilesNotFoundDismissed() {
+        _showHostsFilesNotFoundDialog.value = false
     }
 }

@@ -56,7 +56,6 @@ import org.jak_linux.dns66.Host
 import org.jak_linux.dns66.R
 import org.jak_linux.dns66.db.RuleDatabaseUpdateJobService
 import org.jak_linux.dns66.viewmodel.HomeViewModel
-import org.jak_linux.dns66.vpn.AdVpnService
 
 enum class Destination(
     val route: String,
@@ -79,7 +78,8 @@ fun HomeScreen(
     onImport: () -> Unit,
     onExport: () -> Unit,
     onShareLogcat: () -> Unit,
-    onToggleService: () -> Unit,
+    onTryToggleService: () -> Unit,
+    onCreateService: () -> Unit,
 ) {
     val navController = rememberNavController()
     val backstackState by navController.currentBackStackEntryAsState()
@@ -122,6 +122,29 @@ fun HomeScreen(
                         Text(text = it)
                     }
                 }
+            },
+        )
+    }
+
+    val showHostsFilesNotFoundDialog by vm.showHostsFilesNotFoundDialog.collectAsState()
+    if (showHostsFilesNotFoundDialog) {
+        AlertDialog(
+            onDismissRequest = { vm.onHostsFilesNotFoundDismissed() },
+            confirmButton = {
+                TextButton(onClick = onCreateService) {
+                    Text(text = stringResource(R.string.button_yes))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { vm.onHostsFilesNotFoundDismissed() }) {
+                    Text(text = stringResource(R.string.button_no))
+                }
+            },
+            title = {
+                Text(text = stringResource(R.string.missing_hosts_files_title))
+            },
+            text = {
+                Text(text = stringResource(R.string.missing_hosts_files_message))
             },
         )
     }
@@ -248,7 +271,7 @@ fun HomeScreen(
                         FileHelper.writeSettings(vm.config)
                     },
                     status = status,
-                    onChangeVpnStatusClick = onToggleService,
+                    onChangeVpnStatusClick = onTryToggleService,
                 )
             }
             composable(Destination.Hosts.route) {
@@ -356,6 +379,7 @@ fun HomeScreenPreview() {
         onImport = {},
         onExport = {},
         onShareLogcat = {},
-        onToggleService = {},
+        onTryToggleService = {},
+        onCreateService = {},
     )
 }
