@@ -54,7 +54,9 @@ import org.jak_linux.dns66.DnsServer
 import org.jak_linux.dns66.FileHelper
 import org.jak_linux.dns66.Host
 import org.jak_linux.dns66.R
+import org.jak_linux.dns66.db.RuleDatabaseUpdateJobService
 import org.jak_linux.dns66.viewmodel.HomeViewModel
+import org.jak_linux.dns66.vpn.AdVpnService
 
 enum class Destination(
     val route: String,
@@ -77,6 +79,7 @@ fun HomeScreen(
     onImport: () -> Unit,
     onExport: () -> Unit,
     onShareLogcat: () -> Unit,
+    onToggleService: () -> Unit,
 ) {
     val navController = rememberNavController()
     val backstackState by navController.currentBackStackEntryAsState()
@@ -223,6 +226,7 @@ fun HomeScreen(
                 var resumeOnStartup by remember { mutableStateOf(vm.config.autoStart) }
                 var watchConnection by remember { mutableStateOf(vm.config.watchDog) }
                 var ipv6Support by remember { mutableStateOf(vm.config.ipV6Support) }
+                val status by vm.vpnStatus.collectAsState()
                 StartScreen(
                     modifier = Modifier.padding(contentPadding),
                     resumeOnStartup = resumeOnStartup,
@@ -243,6 +247,8 @@ fun HomeScreen(
                         ipv6Support = vm.config.ipV6Support
                         FileHelper.writeSettings(vm.config)
                     },
+                    status = status,
+                    onChangeVpnStatusClick = onToggleService,
                 )
             }
             composable(Destination.Hosts.route) {
@@ -261,6 +267,7 @@ fun HomeScreen(
                         vm.config.hosts.automaticRefresh = !vm.config.hosts.automaticRefresh
                         refreshDaily = vm.config.hosts.automaticRefresh
                         FileHelper.writeSettings(vm.config)
+                        RuleDatabaseUpdateJobService.scheduleOrCancel(vm.config)
                     },
                     hosts = vm.config.hosts.items,
                     onItemClick = { item ->
@@ -349,5 +356,6 @@ fun HomeScreenPreview() {
         onImport = {},
         onExport = {},
         onShareLogcat = {},
+        onToggleService = {},
     )
 }

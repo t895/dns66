@@ -1,9 +1,12 @@
 package org.jak_linux.dns66
 
+import android.app.Activity
+import android.app.PendingIntent
 import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
@@ -19,6 +22,9 @@ import org.jak_linux.dns66.ui.HomeScreen
 import org.jak_linux.dns66.ui.theme.Dns66Theme
 import org.jak_linux.dns66.viewmodel.HomeViewModel
 import org.jak_linux.dns66.vpn.AdVpnService
+import org.jak_linux.dns66.vpn.Command
+import org.jak_linux.dns66.vpn.VpnStatus
+import org.jak_linux.dns66.vpn.VpnStatus.Companion.toVpnStatus
 import java.io.BufferedReader
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
@@ -30,17 +36,16 @@ class MainActivity : AppCompatActivity() {
         private const val REQUEST_FILE_OPEN = 1
         private const val REQUEST_FILE_STORE = 2
         private const val REQUEST_ITEM_EDIT = 3
+        const val REQUEST_START_VPN = 4
     }
 
     private val vm: HomeViewModel by viewModels()
 
     private val vpnServiceBroadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context, intent: Intent) {
-            val strId = intent.getIntExtra(
-                AdVpnService.VPN_UPDATE_STATUS_EXTRA,
-                R.string.notification_stopped
-            )
-            updateStatus(strId)
+            val status = intent.getSerializable<VpnStatus>(AdVpnService.VPN_UPDATE_STATUS_EXTRA)
+                ?: VpnStatus.STOPPED
+            vm.onUpdateVpnStatus(status)
         }
     }
 
@@ -76,11 +81,12 @@ class MainActivity : AppCompatActivity() {
                         startActivityForResult(exportIntent, REQUEST_FILE_STORE)
                     },
                     onShareLogcat = ::sendLogcat,
+                    onToggleService = { AdVpnService.toggleService(vm, this) },
                 )
             }
         }
 
-        RuleDatabaseUpdateJobService.scheduleOrCancel(this, vm.config)
+        RuleDatabaseUpdateJobService.scheduleOrCancel(vm.config)
     }
 
     private fun sendLogcat() {
@@ -129,15 +135,16 @@ class MainActivity : AppCompatActivity() {
         task.execute()
     }
 
+    @Deprecated("Deprecated in Java")
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         Log.d(TAG, "onActivityResult: Received result=$resultCode for request=$requestCode")
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == REQUEST_FILE_OPEN && resultCode == RESULT_OK) {
-            val selectedfile = data!!.data //The uri with the location of the file
+            val selectedfile = data?.data ?: return //The uri with the location of the file
             try {
                 vm.config = Configuration.read(
-                    InputStreamReader(contentResolver.openInputStream(selectedfile!!))
+                    InputStreamReader(contentResolver.openInputStream(selectedfile))
                 )
             } catch (e: Exception) {
                 Toast.makeText(this, "Cannot read file: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -159,6 +166,19 @@ class MainActivity : AppCompatActivity() {
             recreate()
         }
 
+        if (requestCode == REQUEST_START_VPN && resultCode == Activity.RESULT_CANCELED) {
+            Toast.makeText(
+                applicationContext,
+                R.string.could_not_configure_vpn_service,
+                Toast.LENGTH_LONG
+            ).show()
+        }
+
+        if (requestCode == REQUEST_START_VPN && resultCode == Activity.RESULT_OK) {
+            Log.d("MainActivity", "onActivityResult: Starting service")
+            createService()
+        }
+
 //        if (requestCode == REQUEST_ITEM_EDIT && resultCode == RESULT_OK) {
 //            val item = Configuration.Item()
 //            Log.d("FOOOO", "onActivityResult: item title = " + data!!.getStringExtra("ITEM_TITLE"))
@@ -176,12 +196,24 @@ class MainActivity : AppCompatActivity() {
 //        }
     }
 
-    private fun updateStatus(status: Int) {
-//        if (viewPager.getChildAt(0) == null) {
-//            return
-//        }
-//
-//        StartFragment.updateStatus(viewPager.getChildAt(0).getRootView(), status)
+    fun createService() {
+        val intent = Intent(applicationContext, AdVpnService::class.java)
+            .putExtra("COMMAND", Command.START.ordinal)
+            .putExtra(
+                "NOTIFICATION_INTENT",
+                PendingIntent.getActivity(
+                    applicationContext,
+                    0,
+                    Intent(applicationContext, MainActivity::class.java),
+                    PendingIntent.FLAG_IMMUTABLE
+                )
+            )
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForegroundService(intent)
+        } else {
+            startService(intent)
+        }
     }
 
     override fun onPause() {
@@ -197,7 +229,7 @@ class MainActivity : AppCompatActivity() {
             vm.onUpdateIncomplete(errors)
         }
 
-        updateStatus(AdVpnService.vpnStatus)
+        vm.onUpdateVpnStatus(AdVpnService.status)
         LocalBroadcastManager.getInstance(this)
             .registerReceiver(
                 vpnServiceBroadcastReceiver,

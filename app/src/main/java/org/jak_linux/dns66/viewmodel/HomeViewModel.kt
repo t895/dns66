@@ -14,6 +14,8 @@ import kotlinx.coroutines.launch
 import org.jak_linux.dns66.Configuration
 import org.jak_linux.dns66.Dns66Application.Companion.applicationContext
 import org.jak_linux.dns66.FileHelper
+import org.jak_linux.dns66.vpn.AdVpnService
+import org.jak_linux.dns66.vpn.VpnStatus
 
 class HomeViewModel : ViewModel() {
     private val _showUpdateIncompleteDialog = MutableStateFlow(false)
@@ -34,8 +36,12 @@ class HomeViewModel : ViewModel() {
 
     var config: Configuration = FileHelper.loadCurrentSettings()
 
+    private val _vpnStatus = MutableStateFlow(VpnStatus.STOPPED)
+    val vpnStatus = _vpnStatus.asStateFlow()
+
     init {
         populateAppList()
+        _vpnStatus.value = AdVpnService.status
     }
 
     fun onUpdateIncomplete(errors: List<String>) {
@@ -77,5 +83,9 @@ class HomeViewModel : ViewModel() {
             _appListRefreshing.value = false
             refreshingLock = false
         }
+    }
+
+    fun onUpdateVpnStatus(status: VpnStatus) {
+        _vpnStatus.value = status
     }
 }

@@ -28,14 +28,46 @@ import android.os.Looper
 import android.os.Message
 import android.util.Log
 import androidx.annotation.StringRes
+import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.NotificationCompat
 import androidx.core.content.ContextCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import org.jak_linux.dns66.Dns66Application.Companion.applicationContext
 import org.jak_linux.dns66.FileHelper
+import org.jak_linux.dns66.HostState
 import org.jak_linux.dns66.MainActivity
 import org.jak_linux.dns66.NotificationChannels
 import org.jak_linux.dns66.R
 import org.jak_linux.dns66.getParcel
+import org.jak_linux.dns66.viewmodel.HomeViewModel
+import org.jak_linux.dns66.vpn.VpnStatus.Companion.toVpnStatus
+import java.io.IOException
+
+enum class VpnStatus {
+    STARTING,
+    RUNNING,
+    STOPPING,
+    WAITING_FOR_NETWORK,
+    RECONNECTING,
+    RECONNECTING_NETWORK_ERROR,
+    STOPPED;
+
+    @StringRes
+    fun toTextId(): Int =
+        when (this) {
+            STARTING -> R.string.notification_starting
+            RUNNING -> R.string.notification_running
+            STOPPING -> R.string.notification_stopping
+            WAITING_FOR_NETWORK -> R.string.notification_waiting_for_net
+            RECONNECTING -> R.string.notification_reconnecting
+            RECONNECTING_NETWORK_ERROR -> R.string.notification_reconnecting_error
+            STOPPED -> R.string.notification_stopped
+        }
+
+    companion object {
+        fun Int.toVpnStatus(): VpnStatus = entries.firstOrNull { it.ordinal == this } ?: STOPPED
+    }
+}
 
 class AdVpnService : VpnService(), Handler.Callback {
     companion object {
@@ -46,14 +78,6 @@ class AdVpnService : VpnService(), Handler.Callback {
 
         const val REQUEST_CODE_PAUSE = 42
 
-        const val VPN_STATUS_STARTING = 0
-        const val VPN_STATUS_RUNNING = 1
-        const val VPN_STATUS_STOPPING = 2
-        const val VPN_STATUS_WAITING_FOR_NETWORK = 3
-        const val VPN_STATUS_RECONNECTING = 4
-        const val VPN_STATUS_RECONNECTING_NETWORK_ERROR = 5
-
-        const val VPN_STATUS_STOPPED = 6
         const val VPN_UPDATE_STATUS_INTENT = "org.jak_linux.dns66.VPN_UPDATE_STATUS"
 
         const val VPN_UPDATE_STATUS_EXTRA = "VPN_STATUS"
@@ -61,18 +85,7 @@ class AdVpnService : VpnService(), Handler.Callback {
 
         const val VPN_MSG_NETWORK_CHANGED = 1
 
-        @StringRes
-        fun vpnStatusToTextId(status: Int): Int =
-            when (status) {
-                VPN_STATUS_STARTING -> R.string.notification_starting
-                VPN_STATUS_RUNNING -> R.string.notification_running
-                VPN_STATUS_STOPPING -> R.string.notification_stopping
-                VPN_STATUS_WAITING_FOR_NETWORK -> R.string.notification_waiting_for_net
-                VPN_STATUS_RECONNECTING -> R.string.notification_reconnecting
-                VPN_STATUS_RECONNECTING_NETWORK_ERROR -> R.string.notification_reconnecting_error
-                VPN_STATUS_STOPPED -> R.string.notification_stopped
-                else -> throw IllegalArgumentException("Invalid vpnStatus value - $status")
-            }
+        var status = VpnStatus.STOPPED
 
         fun checkStartVpnOnBoot(context: Context) {
             Log.i("BOOT", "Checking whether to start ad buster on boot")
@@ -86,7 +99,7 @@ class AdVpnService : VpnService(), Handler.Callback {
                 return
             }
 
-            if (VpnService.prepare(context) != null) {
+            if (prepare(context) != null) {
                 Log.i("BOOT", "VPN preparation not confirmed by user, changing enabled to false")
             }
 
@@ -121,16 +134,81 @@ class AdVpnService : VpnService(), Handler.Callback {
                 putExtra("NOTIFICATION_INTENT", pendingIntent)
             }
 
-        var vpnStatus = VPN_STATUS_STOPPED
+        fun toggleService(
+            vm: HomeViewModel,
+            activity: MainActivity,
+        ) {
+            if (status != VpnStatus.STOPPED) {
+                Log.i(TAG, "Attempting to disconnect")
+                val intent = Intent(activity, AdVpnService::class.java)
+                    .putExtra("COMMAND", Command.STOP.ordinal)
+                activity.startService(intent)
+            } else {
+                checkHostsFilesAndStartService(vm, activity)
+            }
+        }
+
+        private fun checkHostsFilesAndStartService(
+            vm: HomeViewModel,
+            activity: MainActivity,
+        ) {
+            if (!areHostsFilesExistent(vm)) {
+//                AlertDialog.Builder(activity)
+//                    .setIcon(R.drawable.ic_warning)
+//                    .setTitle(R.string.missing_hosts_files_title)
+//                    .setMessage(R.string.missing_hosts_files_message)
+//                    .setNegativeButton(R.string.button_no, null)
+//                    .setPositiveButton(R.string.button_yes) { _, _ ->
+//                        startService()
+//                    }
+//                    .show()
+
+                // vm.onHostFilesNotFound()
+                return
+            }
+            startService(activity)
+        }
+
+        /**
+         * Check if all configured hosts files exist.
+         *
+         * @return true if all host files exist or no host files were configured.
+         */
+        private fun areHostsFilesExistent(vm: HomeViewModel): Boolean {
+            if (!vm.config.hosts.enabled) {
+                return true
+            }
+
+            for (item in vm.config.hosts.items) {
+                if (item.state != HostState.IGNORE) {
+                    try {
+                        val reader = FileHelper.openItemFile(item) ?: continue
+                        reader.close()
+                    } catch (e: IOException) {
+                        return false
+                    }
+                }
+            }
+            return true
+        }
+
+        @Suppress("DEPRECATION")
+        private fun startService(activity: MainActivity) {
+            Log.i(TAG, "Attempting to connect")
+            val intent = prepare(applicationContext)
+            if (intent != null) {
+                activity.startActivityForResult(intent, MainActivity.REQUEST_START_VPN)
+            } else {
+                activity.createService()
+            }
+        }
     }
 
     private val handler = Handler(Looper.myLooper()!!, this)
 
-    private var vpnThread: AdVpnThread? = AdVpnThread(this, object : Notify {
-        override fun run(value: Int) {
-            handler.sendMessage(handler.obtainMessage(VPN_MSG_STATUS_UPDATE, value, 0))
-        }
-    })
+    private var vpnThread: AdVpnThread? = AdVpnThread(this) { status ->
+        handler.sendMessage(handler.obtainMessage(VPN_MSG_STATUS_UPDATE, status.ordinal, 0))
+    }
 
     private val connectivityChangedReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
@@ -221,9 +299,9 @@ class AdVpnService : VpnService(), Handler.Callback {
         }
     }
 
-    private fun updateVpnStatus(status: Int) {
-        vpnStatus = status
-        val notificationTextId = vpnStatusToTextId(status)
+    private fun updateVpnStatus(newStatus: VpnStatus) {
+        status = newStatus
+        val notificationTextId = newStatus.toTextId()
         notificationBuilder.setContentTitle(getString(notificationTextId))
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ||
@@ -233,7 +311,7 @@ class AdVpnService : VpnService(), Handler.Callback {
         }
 
         val intent = Intent(VPN_UPDATE_STATUS_INTENT)
-            .putExtra(VPN_UPDATE_STATUS_EXTRA, status)
+            .putExtra(VPN_UPDATE_STATUS_EXTRA, newStatus)
         LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
     }
 
@@ -242,7 +320,7 @@ class AdVpnService : VpnService(), Handler.Callback {
         if (notificationIntent != null) {
             notificationBuilder.setContentIntent(notificationIntent)
         }
-        updateVpnStatus(VPN_STATUS_STARTING)
+        updateVpnStatus(VpnStatus.STARTING)
 
         registerReceiver(
             connectivityChangedReceiver,
@@ -266,11 +344,11 @@ class AdVpnService : VpnService(), Handler.Callback {
 
     private fun waitForNetVpn() {
         stopVpnThread()
-        updateVpnStatus(VPN_STATUS_WAITING_FOR_NETWORK)
+        updateVpnStatus(VpnStatus.WAITING_FOR_NETWORK)
     }
 
     private fun reconnect() {
-        updateVpnStatus(VPN_STATUS_RECONNECTING)
+        updateVpnStatus(VpnStatus.RECONNECTING)
         restartVpnThread()
     }
 
@@ -286,7 +364,7 @@ class AdVpnService : VpnService(), Handler.Callback {
         } catch (e: IllegalArgumentException) {
             Log.i(TAG, "Ignoring exception on unregistering receiver")
         }
-        updateVpnStatus(VPN_STATUS_STOPPED)
+        updateVpnStatus(VpnStatus.STOPPED)
         stopSelf()
     }
 
@@ -297,7 +375,7 @@ class AdVpnService : VpnService(), Handler.Callback {
 
     override fun handleMessage(msg: Message): Boolean {
         when (msg.what) {
-            VPN_MSG_STATUS_UPDATE -> updateVpnStatus(msg.arg1)
+            VPN_MSG_STATUS_UPDATE -> updateVpnStatus(msg.arg1.toVpnStatus())
             VPN_MSG_NETWORK_CHANGED -> connectivityChanged(msg.obj as Intent)
             else -> throw IllegalArgumentException("Invalid message with what = ${msg.what}")
         }

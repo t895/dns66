@@ -47,7 +47,7 @@ import java.util.Queue
 
 class AdVpnThread(
     private val vpnService: VpnService,
-    private val notify: Notify
+    private val notify: (VpnStatus) -> Unit,
 ) : Runnable, EventLoop {
     companion object {
         private const val TAG = "AdVpnThread"
@@ -154,7 +154,7 @@ class AdVpnThread(
             return
         }
 
-        notify.run(AdVpnService.VPN_STATUS_STARTING)
+        notify(VpnStatus.STARTING)
 
         var retryTimeout = MIN_RETRY_TIME
         // Try connecting the vpn continuously
@@ -166,7 +166,7 @@ class AdVpnThread(
                 runVpn()
 
                 Log.i(TAG, "Told to stop")
-                notify.run(AdVpnService.VPN_STATUS_STOPPING)
+                notify(VpnStatus.STOPPING)
                 break
             } catch (e: InterruptedException) {
                 break
@@ -175,11 +175,11 @@ class AdVpnThread(
                 // are exceptions that we expect to happen from network errors
                 Log.w(TAG, "Network exception in vpn thread, ignoring and reconnecting", e)
                 // If an exception was thrown, show to the user and try again
-                notify.run(AdVpnService.VPN_STATUS_RECONNECTING_NETWORK_ERROR)
+                notify(VpnStatus.RECONNECTING_NETWORK_ERROR)
             } catch (e: Exception) {
                 Log.e(TAG, "Network exception in vpn thread, reconnecting", e)
                 //ExceptionHandler.saveException(e, Thread.currentThread(), null);
-                notify.run(AdVpnService.VPN_STATUS_RECONNECTING_NETWORK_ERROR)
+                notify(VpnStatus.RECONNECTING_NETWORK_ERROR)
             }
 
             if (System.currentTimeMillis() - connectTimeMillis >= RETRY_RESET_SEC * 1000) {
@@ -200,7 +200,7 @@ class AdVpnThread(
             }
         }
 
-        notify.run(AdVpnService.VPN_STATUS_STOPPED)
+        notify(VpnStatus.STOPPED)
         Log.i(TAG, "Exiting")
     }
 
@@ -227,7 +227,7 @@ class AdVpnThread(
                 val outFd = FileOutputStream(pfd.fileDescriptor)
 
                 // Now we are connected. Set the flag and show the message.
-                notify.run(AdVpnService.VPN_STATUS_RUNNING)
+                notify(VpnStatus.RUNNING)
 
                 // We keep forwarding packets till something goes wrong.
                 while (doOne(inputStream, outFd, packet)) {

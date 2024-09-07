@@ -15,6 +15,7 @@ import android.content.ComponentName
 import android.content.Context
 import android.util.Log
 import org.jak_linux.dns66.Configuration
+import org.jak_linux.dns66.Dns66Application.Companion.applicationContext
 import org.jak_linux.dns66.FileHelper
 import java.util.concurrent.TimeUnit
 
@@ -32,8 +33,9 @@ class RuleDatabaseUpdateJobService : JobService() {
          * @return true if the job could be scheduled.
          */
         @JvmStatic
-        fun scheduleOrCancel(context: Context, configuration: Configuration): Boolean {
-            val scheduler = context.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
+        fun scheduleOrCancel(configuration: Configuration): Boolean {
+            val scheduler =
+                applicationContext.getSystemService(Context.JOB_SCHEDULER_SERVICE) as JobScheduler
 
             if (!configuration.hosts.automaticRefresh) {
                 Log.d(TAG, "scheduleOrCancel: Cancelling Job")
@@ -43,7 +45,8 @@ class RuleDatabaseUpdateJobService : JobService() {
             }
             Log.d(TAG, "scheduleOrCancel: Scheduling Job")
 
-            val serviceName = ComponentName(context, RuleDatabaseUpdateJobService::class.java)
+            val serviceName =
+                ComponentName(applicationContext, RuleDatabaseUpdateJobService::class.java)
 
             val jobInfo = JobInfo.Builder(JOB_ID, serviceName)
                 .setRequiresCharging(true)

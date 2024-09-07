@@ -18,6 +18,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.jak_linux.dns66.R
+import org.jak_linux.dns66.vpn.VpnStatus
 
 // TODO: Viewmodel hookup
 @Composable
@@ -29,6 +30,8 @@ fun StartScreen(
     onWatchConnectionClick: () -> Unit,
     ipv6Support: Boolean,
     onIpv6SupportClick: () -> Unit,
+    status: VpnStatus,
+    onChangeVpnStatusClick: () -> Unit,
 ) {
     Box(
         modifier = modifier
@@ -73,11 +76,10 @@ fun StartScreen(
         ) {
             ExtendedFloatingActionButton(
                 modifier = Modifier.size(width = 148.dp, height = 80.dp).padding(bottom = 16.dp),
-                onClick = { /*TODO*/ },
+                onClick = onChangeVpnStatusClick,
             ) {
-                // TODO: Replace with icon
                 Text(
-                    text = stringResource(id = R.string.action_stop),
+                    text = stringResource(id = status.toTextId()),
                     style = MaterialTheme.typography.titleLarge,
                 )
             }
@@ -95,5 +97,7 @@ private fun StartScreenPreview(modifier: Modifier = Modifier) {
         onWatchConnectionClick = {},
         ipv6Support = false,
         onIpv6SupportClick = {},
+        status = VpnStatus.STOPPED,
+        onChangeVpnStatusClick = {},
     )
 }
