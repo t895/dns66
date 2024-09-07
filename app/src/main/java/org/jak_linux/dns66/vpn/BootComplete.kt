@@ -18,6 +18,8 @@ import android.content.Intent
 
 class BootComplete : BroadcastReceiver() {
     override fun onReceive(context: Context, intent: Intent?) {
-        AdVpnService.checkStartVpnOnBoot(context)
+        if (intent?.action == Intent.ACTION_BOOT_COMPLETED) {
+            AdVpnService.checkStartVpnOnBoot(context)
+        }
     }
 }
