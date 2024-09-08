@@ -11,8 +11,10 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
@@ -57,6 +59,41 @@ class MainActivity : AppCompatActivity() {
         setContent {
             enableEdgeToEdge()
             Dns66Theme {
+                val importLauncher =
+                    rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
+                        it ?: return@rememberLauncherForActivityResult
+                        try {
+                            vm.config = Configuration.read(
+                                InputStreamReader(contentResolver.openInputStream(it))
+                            )
+                        } catch (e: Exception) {
+                            Toast.makeText(
+                                this,
+                                "Cannot read file: ${e.message}",
+                                Toast.LENGTH_SHORT,
+                            ).show()
+                        }
+                        FileHelper.writeSettings(vm.config)
+                        vm.onReloadSettings()
+                        recreate()
+                    }
+
+                val exportLauncher =
+                    rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("*/*")) { uri ->
+                        uri ?: return@rememberLauncherForActivityResult
+                        try {
+                            OutputStreamWriter(contentResolver.openOutputStream(uri)).use {
+                                vm.config.write(it)
+                            }
+                        } catch (e: Exception) {
+                            Toast.makeText(
+                                this,
+                                "Cannot write file: ${e.message}",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+
                 HomeScreen(
                     vm = vm,
                     onRefresh = ::refresh,
@@ -66,22 +103,8 @@ class MainActivity : AppCompatActivity() {
                         vm.onReloadSettings()
                         recreate()
                     },
-                    onImport = {
-                        val intent = Intent()
-                            .setType("*/*")
-                            .setAction(Intent.ACTION_OPEN_DOCUMENT)
-                            .addCategory(Intent.CATEGORY_OPENABLE)
-
-                        startActivityForResult(intent, REQUEST_FILE_OPEN)
-                    },
-                    onExport = {
-                        val exportIntent = Intent(Intent.ACTION_CREATE_DOCUMENT)
-                            .addCategory(Intent.CATEGORY_OPENABLE)
-                            .setType("*/*")
-                            .putExtra(Intent.EXTRA_TITLE, "dns66.json")
-
-                        startActivityForResult(exportIntent, REQUEST_FILE_STORE)
-                    },
+                    onImport = { importLauncher.launch(arrayOf("*/*")) },
+                    onExport = { exportLauncher.launch("dns66.json") },
                     onShareLogcat = ::sendLogcat,
                     onTryToggleService = ::tryToggleService,
                     onStartWithoutChecks = ::startService,
@@ -142,33 +165,6 @@ class MainActivity : AppCompatActivity() {
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
         Log.d(TAG, "onActivityResult: Received result=$resultCode for request=$requestCode")
         super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == REQUEST_FILE_OPEN && resultCode == RESULT_OK) {
-            val selectedfile = data?.data ?: return //The uri with the location of the file
-            try {
-                vm.config = Configuration.read(
-                    InputStreamReader(contentResolver.openInputStream(selectedfile))
-                )
-            } catch (e: Exception) {
-                Toast.makeText(this, "Cannot read file: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-            FileHelper.writeSettings(vm.config)
-            vm.onReloadSettings()
-            recreate()
-        }
-
-        if (requestCode == REQUEST_FILE_STORE && resultCode == RESULT_OK) {
-            // The uri with the location of the file
-            val selectedfile = data!!.data
-            try {
-                OutputStreamWriter(contentResolver.openOutputStream(selectedfile!!)).use {
-                    vm.config.write(it)
-                }
-            } catch (e: Exception) {
-                Toast.makeText(this, "Cannot write file: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
-            recreate()
-        }
 
         if (requestCode == REQUEST_START_VPN && resultCode == Activity.RESULT_CANCELED) {
             Toast.makeText(
