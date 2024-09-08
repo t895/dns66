@@ -10,6 +10,14 @@
  * Contributions shall also be provided under any later versions of the
  * GPL.
  */
+
+/**
+ * Currently there is no supported way to parse the current Wifi/LTE/etc
+ * network. Here we just use the deprecated NetworkInfo API and suppress
+ * the warning until a better solution comes along.
+ */
+@file:Suppress("DEPRECATION")
+
 package org.jak_linux.dns66.vpn
 
 import android.app.PendingIntent
@@ -61,7 +69,6 @@ class AdVpnThread(
         const val DNS_MAXIMUM_WAITING = 1024
         const val DNS_TIMEOUT_SEC: Long = 10
 
-        @Suppress("DEPRECATION")
         @Throws(VpnNetworkException::class)
         private fun getDnsServers(context: Context): List<InetAddress> {
             val known = HashSet<InetAddress>()
