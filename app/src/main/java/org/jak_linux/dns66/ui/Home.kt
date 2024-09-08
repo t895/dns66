@@ -84,9 +84,14 @@ fun HomeScreen(
 ) {
     val navController = rememberNavController()
     val backstackState by navController.currentBackStackEntryAsState()
+    var savedState by rememberSaveable { mutableStateOf(Destination.Start.route) }
     val selectedDestination by remember {
         derivedStateOf {
-            backstackState?.destination?.route ?: Destination.Start.route
+            val currentState = backstackState?.destination?.route
+            if (currentState != null && currentState != savedState) {
+                savedState = currentState
+            }
+            currentState ?: savedState
         }
     }
 
@@ -294,6 +299,10 @@ fun HomeScreen(
         NavHost(
             navController = navController,
             startDestination = Destination.Start.route,
+            enterTransition = { fadeIn() },
+            exitTransition = { fadeOut() },
+            popEnterTransition = { fadeIn() },
+            popExitTransition = { fadeOut() },
         ) {
             composable(Destination.Start.route) {
                 var resumeOnStartup by remember { mutableStateOf(vm.config.autoStart) }
