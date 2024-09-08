@@ -5,6 +5,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -46,11 +47,13 @@ fun AboutText(text: String = "") {
 @Composable
 fun About(
     modifier: Modifier = Modifier,
+    columnPadding: PaddingValues = PaddingValues(),
 ) {
     val scrollState = rememberScrollState()
     Column(
         modifier = modifier
-            .verticalScroll(scrollState),
+            .verticalScroll(scrollState)
+            .padding(columnPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
@@ -102,7 +105,10 @@ fun AboutScreen(
             )
         },
     ) { innerPadding ->
-        About(Modifier.padding(innerPadding).padding(horizontal = 16.dp))
+        About(
+            modifier = Modifier.padding(horizontal = 16.dp),
+            columnPadding = innerPadding,
+        )
     }
 }
 
