@@ -18,6 +18,7 @@ import androidx.annotation.Keep
 import kotlinx.parcelize.Parceler
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.SerializationException
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
 import org.jak_linux.dns66.HostState.Companion.toHostState
@@ -54,7 +55,7 @@ data class Configuration(
                     Json.decodeFromString<Configuration>(data)
                 } catch (e: Exception) {
                     Log.e(TAG, "Failed to decode config! - ${e.localizedMessage}")
-                    Configuration()
+                    throw IOException()
                 }
             } ?: Configuration()
             if (config.version > VERSION) {
@@ -127,11 +128,17 @@ data class Configuration(
 
     @Throws(IOException::class)
     fun write(writer: Writer?) {
+        val error = { e: Exception ->
+            Log.e(TAG, "Failed to write config to disk! - ${e.localizedMessage}")
+            throw IOException()
+        }
         try {
             val data = Json.encodeToString(this)
             writer?.write(data)
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to write config to disk! - ${e.localizedMessage}")
+        } catch (e: SerializationException) {
+            error(e)
+        } catch (e: IllegalArgumentException) {
+            error(e)
         }
     }
 }
