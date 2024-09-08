@@ -118,9 +118,9 @@ fun HomeScreen(
     val showUpdateIncompleteDialog by vm.showUpdateIncompleteDialog.collectAsState()
     if (showUpdateIncompleteDialog) {
         AlertDialog(
-            onDismissRequest = { vm.onUpdateIncompleteDismiss() },
+            onDismissRequest = { vm.onDismissUpdateIncomplete() },
             confirmButton = {
-                TextButton(onClick = { vm.onUpdateIncompleteDismiss() }) {
+                TextButton(onClick = { vm.onDismissUpdateIncomplete() }) {
                     Text(text = stringResource(android.R.string.ok))
                 }
             },
@@ -141,14 +141,14 @@ fun HomeScreen(
     val showHostsFilesNotFoundDialog by vm.showHostsFilesNotFoundDialog.collectAsState()
     if (showHostsFilesNotFoundDialog) {
         AlertDialog(
-            onDismissRequest = { vm.onHostsFilesNotFoundDismissed() },
+            onDismissRequest = { vm.onDismissHostsFilesNotFound() },
             confirmButton = {
                 TextButton(onClick = onCreateService) {
                     Text(text = stringResource(R.string.button_yes))
                 }
             },
             dismissButton = {
-                TextButton(onClick = { vm.onHostsFilesNotFoundDismissed() }) {
+                TextButton(onClick = { vm.onDismissHostsFilesNotFound() }) {
                     Text(text = stringResource(R.string.button_no))
                 }
             },
@@ -157,6 +157,24 @@ fun HomeScreen(
             },
             text = {
                 Text(text = stringResource(R.string.missing_hosts_files_message))
+            },
+        )
+    }
+
+    val showFilePermissionDeniedDialog by vm.showFilePermissionDeniedDialog.collectAsState()
+    if (showFilePermissionDeniedDialog) {
+        AlertDialog(
+            onDismissRequest = { vm.onDismissFilePermissionDenied() },
+            confirmButton = {
+                TextButton(onClick = { vm.onDismissFilePermissionDenied() }) {
+                    Text(text = stringResource(android.R.string.ok))
+                }
+            },
+            title = {
+                Text(text = stringResource(R.string.permission_denied))
+            },
+            text = {
+                Text(text = stringResource(R.string.persistable_uri_permission_failed))
             },
         )
     }
@@ -384,34 +402,36 @@ fun HomeScreen(
                             navController.popBackStack()
                         }
                     },
-                    onOpenUri = {},
+                    onUriPermissionAcquireFailed = { vm.onFilePermissionDenied() },
                 )
             }
             composable(Destination.Apps.route) {
                 val apps by vm.appList.collectAsState()
                 val isRefreshing by vm.appListRefreshing.collectAsState()
-                var showSystemApps by remember { mutableStateOf(vm.config.allowlist.showSystemApps) }
-                var allowlistDefault by remember { mutableStateOf(vm.config.allowlist.defaultMode) }
+                var showSystemApps by remember { mutableStateOf(vm.config.appList.showSystemApps) }
+                var allowlistDefault by remember { mutableStateOf(vm.config.appList.defaultMode) }
                 AppsScreen(
                     modifier = Modifier.padding(contentPadding),
                     isRefreshing = isRefreshing,
                     onRefresh = { vm.populateAppList() },
                     showSystemApps = showSystemApps,
                     onShowSystemAppsClick = {
-                        vm.config.allowlist.showSystemApps = !vm.config.allowlist.showSystemApps
-                        showSystemApps = vm.config.allowlist.showSystemApps
+                        vm.config.appList.showSystemApps = !vm.config.appList.showSystemApps
+                        showSystemApps = vm.config.appList.showSystemApps
                         FileHelper.writeSettings(vm.config)
                         vm.populateAppList()
                     },
                     bypassSelection = allowlistDefault,
                     onBypassSelection = { selection ->
-                        vm.config.allowlist.defaultMode = selection
+                        vm.config.appList.defaultMode = selection
                         allowlistDefault = selection
                         FileHelper.writeSettings(vm.config)
                         vm.populateAppList()
                     },
                     apps = apps,
-                    onAppClick = {},
+                    onAppClick = { app ->
+                        vm.onToggleApp(app)
+                    },
                 )
             }
             composable(Destination.DNS.route) {

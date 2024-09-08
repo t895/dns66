@@ -1,5 +1,8 @@
 package org.jak_linux.dns66.ui
 
+import android.content.Intent
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -43,6 +46,7 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import org.jak_linux.dns66.Dns66Application.Companion.applicationContext
 import org.jak_linux.dns66.Host
 import org.jak_linux.dns66.HostState
 import org.jak_linux.dns66.HostState.Companion.toHostState
@@ -218,6 +222,11 @@ fun EditHost(
             value = titleText,
             onValueChange = onTitleTextChanged,
             isError = titleTextError,
+            supportingText = {
+                if (titleTextError) {
+                    Text(text = stringResource(R.string.input_blank_error))
+                }
+            },
         )
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
@@ -232,6 +241,11 @@ fun EditHost(
                 }
             },
             isError = locationTextError,
+            supportingText = {
+                if (locationTextError) {
+                    Text(text = stringResource(R.string.input_blank_error))
+                }
+            },
         )
 
         val itemStates = stringArrayResource(id = R.array.item_states)
@@ -313,13 +327,39 @@ fun EditHostScreen(
     onNavigateUp: () -> Unit,
     onSave: (Host) -> Unit,
     onDelete: (() -> Unit)? = null,
-    onOpenUri: () -> Unit,
+    onUriPermissionAcquireFailed: () -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     var titleInput by rememberSaveable { mutableStateOf(host.title) }
+    var titleInputError by rememberSaveable { mutableStateOf(false) }
     var locationInput by rememberSaveable { mutableStateOf(host.location) }
+    var locationInputError by rememberSaveable { mutableStateOf(false) }
     var stateInput by rememberSaveable { mutableStateOf(host.state) }
+
+    if (titleInput.isNotBlank()) {
+        titleInputError = false
+    }
+    if (locationInput.isNotBlank()) {
+        locationInputError = false
+    }
+
+    val locationLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
+            it ?: return@rememberLauncherForActivityResult
+
+            try {
+                applicationContext.contentResolver.takePersistableUriPermission(
+                    it,
+                    Intent.FLAG_GRANT_READ_URI_PERMISSION,
+                )
+            } catch (e: SecurityException) {
+                onUriPermissionAcquireFailed()
+                return@rememberLauncherForActivityResult
+            }
+
+            locationInput = it.toString()
+        }
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
@@ -345,7 +385,17 @@ fun EditHostScreen(
                         }
                     }
 
-                    IconButton(onClick = { onSave(Host(titleInput, locationInput, stateInput)) }) {
+                    IconButton(
+                        onClick = {
+                            titleInputError = titleInput.isBlank()
+                            locationInputError = locationInput.isBlank()
+                            if (titleInputError || locationInputError) {
+                                return@IconButton
+                            }
+
+                            onSave(Host(titleInput, locationInput, stateInput))
+                        }
+                    ) {
                         Icon(
                             imageVector = Icons.Default.Check,
                             contentDescription = null,
@@ -359,12 +409,12 @@ fun EditHostScreen(
         EditHost(
             modifier = Modifier.padding(paddingValues).padding(horizontal = 16.dp),
             titleText = titleInput,
-            titleTextError = false,
+            titleTextError = titleInputError,
             onTitleTextChanged = { titleInput = it },
             locationText = locationInput,
-            locationTextError = false,
+            locationTextError = locationInputError,
             onLocationTextChanged = { locationInput = it },
-            onOpenHostsDirectoryClick = onOpenUri,
+            onOpenHostsDirectoryClick = { locationLauncher.launch(arrayOf("*/*")) },
             state = stateInput,
             onStateChanged = { stateInput = it },
         )
@@ -380,7 +430,7 @@ private fun EditHostScreenPreview() {
             onNavigateUp = {},
             onSave = {},
             onDelete = {},
-            onOpenUri = {},
+            onUriPermissionAcquireFailed = {},
         )
     }
 }

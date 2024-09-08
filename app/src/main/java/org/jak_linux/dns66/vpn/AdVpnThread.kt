@@ -424,9 +424,9 @@ class AdVpnThread(
         val allowOnVpn: MutableSet<String> = HashSet()
         val doNotAllowOnVpn: MutableSet<String> = HashSet()
 
-        config.allowlist.resolve(vpnService.packageManager, allowOnVpn, doNotAllowOnVpn)
+        config.appList.resolve(vpnService.packageManager, allowOnVpn, doNotAllowOnVpn)
 
-        if (config.allowlist.defaultMode == AllowListMode.NOT_ON_VPN) {
+        if (config.appList.defaultMode == AllowListMode.NOT_ON_VPN) {
             for (app in allowOnVpn) {
                 try {
                     Log.d(TAG, "configure: Allowing $app to use the DNS VPN")

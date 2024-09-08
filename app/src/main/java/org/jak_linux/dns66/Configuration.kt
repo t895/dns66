@@ -31,7 +31,7 @@ data class Configuration(
     var autoStart: Boolean = false,
     var hosts: Hosts = Hosts(),
     var dnsServers: DnsServers = DnsServers(),
-    var allowlist: Allowlist = Allowlist(),
+    var appList: AppList = AppList(),
     var showNotification: Boolean = true,
     var nightMode: Boolean = false,
     var watchDog: Boolean = false,
@@ -63,12 +63,6 @@ data class Configuration(
             for (i in config.minorVersion + 1..MINOR_VERSION) {
                 config.runUpdate(i)
             }
-
-            config.updateURL(
-                "http://someonewhocares.org/hosts/hosts",
-                "https://someonewhocares.org/hosts/hosts",
-                HostState.IGNORE
-            )
 
             return config
         }
@@ -142,21 +136,26 @@ data class Configuration(
 }
 
 @Serializable
-data class Allowlist(
+data class AppList(
     var showSystemApps: Boolean = false,
     var defaultMode: AllowListMode = AllowListMode.ON_VPN,
-    var itemsNotOnVpn: MutableList<String> = mutableListOf(),
-    var itemsOnVpn: MutableList<String> = mutableListOf(),
+    var allowlist: MutableList<String> = mutableListOf(),
+    var denylist: MutableList<String> = mutableListOf(),
 ) {
     /**
-     * Categorizes all packages in the system into "on vpn" or
-     * "not on vpn".
+     * Categorizes all packages in the system into an allowlist
+     * and denylist based on the [Configuration]-defined
+     * [AppList.allowlist] and [AppList.denylist].
      *
-     * @param pm       A {@link PackageManager}
-     * @param onVpn    names of packages to use the VPN
-     * @param notOnVpn Names of packages not to use the VPN
+     * @param pm             A [PackageManager]
+     * @param totalAllowlist Names of packages to use the VPN
+     * @param totalDenylist  Names of packages not to use the VPN
      */
-    fun resolve(pm: PackageManager, onVpn: MutableSet<String>, notOnVpn: MutableSet<String>) {
+    fun resolve(
+        pm: PackageManager,
+        totalAllowlist: MutableSet<String>,
+        totalDenylist: MutableSet<String>,
+    ) {
         val webBrowserPackageNames: MutableSet<String> = HashSet()
         val resolveInfoList = pm.queryIntentActivities(newBrowserIntent(), 0)
         for (resolveInfo in resolveInfoList) {
@@ -175,22 +174,22 @@ data class Allowlist(
             // We need to always keep ourselves using the VPN, otherwise our
             // watchdog does not work.
             if (applicationInfo.packageName == BuildConfig.APPLICATION_ID) {
-                onVpn.add(applicationInfo.packageName)
-            } else if (itemsOnVpn.contains(applicationInfo.packageName)) {
-                onVpn.add(applicationInfo.packageName)
-            } else if (itemsNotOnVpn.contains(applicationInfo.packageName)) {
-                notOnVpn.add(applicationInfo.packageName)
+                totalAllowlist.add(applicationInfo.packageName)
+            } else if (allowlist.contains(applicationInfo.packageName)) {
+                totalAllowlist.add(applicationInfo.packageName)
+            } else if (denylist.contains(applicationInfo.packageName)) {
+                totalDenylist.add(applicationInfo.packageName)
             } else if (defaultMode == AllowListMode.ON_VPN) {
-                onVpn.add(applicationInfo.packageName)
+                totalDenylist.add(applicationInfo.packageName)
             } else if (defaultMode == AllowListMode.NOT_ON_VPN) {
-                notOnVpn.add(applicationInfo.packageName)
+                totalDenylist.add(applicationInfo.packageName)
             } else if (defaultMode == AllowListMode.AUTO) {
                 if (webBrowserPackageNames.contains(applicationInfo.packageName)) {
-                    onVpn.add(applicationInfo.packageName)
+                    totalAllowlist.add(applicationInfo.packageName)
                 } else if (applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM != 0) {
-                    notOnVpn.add(applicationInfo.packageName)
+                    totalDenylist.add(applicationInfo.packageName)
                 } else {
-                    onVpn.add(applicationInfo.packageName)
+                    totalAllowlist.add(applicationInfo.packageName)
                 }
             }
         }

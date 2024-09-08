@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import org.jak_linux.dns66.BuildConfig
-import org.jak_linux.dns66.main.AppItem
+import org.jak_linux.dns66.ui.App
 import java.util.Collections
 import kotlinx.atomicfu.*
 import kotlinx.coroutines.Dispatchers
@@ -32,11 +32,8 @@ class HomeViewModel : ViewModel() {
     private val _appListRefreshing = MutableStateFlow(false)
     val appListRefreshing = _appListRefreshing.asStateFlow()
 
-    private val _appList = MutableStateFlow<List<AppItem>>(emptyList())
+    private val _appList = MutableStateFlow<List<App>>(emptyList())
     val appList = _appList.asStateFlow()
-
-    val onVpn = HashSet<String>()
-    val notOnVpn = HashSet<String>()
 
     var config: Configuration = FileHelper.loadCurrentSettings()
 
@@ -61,6 +58,9 @@ class HomeViewModel : ViewModel() {
     private val _showHomeNavigationBar = MutableStateFlow(true)
     val showHomeNavigationBar = _showHomeNavigationBar.asStateFlow()
 
+    private val _showFilePermissionDeniedDialog = MutableStateFlow(false)
+    val showFilePermissionDeniedDialog = _showFilePermissionDeniedDialog.asStateFlow()
+
     init {
         populateAppList()
         _vpnStatus.value = AdVpnService.status
@@ -71,7 +71,7 @@ class HomeViewModel : ViewModel() {
         this.errors = errors
     }
 
-    fun onUpdateIncompleteDismiss() {
+    fun onDismissUpdateIncomplete() {
         errors = null
         _showUpdateIncompleteDialog.value = false
     }
@@ -89,17 +89,23 @@ class HomeViewModel : ViewModel() {
 
             Collections.sort(apps, ApplicationInfo.DisplayNameComparator(pm))
 
-            val entries = ArrayList<AppItem>()
+            val entries = ArrayList<App>()
+            val notOnVpn = HashSet<String>()
+            config.appList.resolve(pm, HashSet(), notOnVpn)
             apps.forEach {
                 if (it.packageName != BuildConfig.APPLICATION_ID &&
-                    (config.allowlist.showSystemApps ||
+                    (config.appList.showSystemApps ||
                             (it.flags and ApplicationInfo.FLAG_SYSTEM) == 0)
                 ) {
-                    entries.add(AppItem(it, it.packageName, it.loadLabel(pm).toString()))
+                    entries.add(
+                        App(
+                            info = it,
+                            label = it.loadLabel(pm).toString(),
+                            enabled = notOnVpn.contains(it.packageName),
+                        )
+                    )
                 }
             }
-
-            config.allowlist.resolve(pm, onVpn, notOnVpn)
 
             _appList.value = entries
             _appListRefreshing.value = false
@@ -115,7 +121,7 @@ class HomeViewModel : ViewModel() {
         _showHostsFilesNotFoundDialog.value = true
     }
 
-    fun onHostsFilesNotFoundDismissed() {
+    fun onDismissHostsFilesNotFound() {
         _showHostsFilesNotFoundDialog.value = false
     }
 
@@ -208,6 +214,45 @@ class HomeViewModel : ViewModel() {
         populateAppList()
         _hosts.value = config.hosts.items
         _dnsServers.value = config.dnsServers.items
+    }
+
+    fun onToggleApp(app: App) {
+        val newApp = app.copy()
+        newApp.enabled = !newApp.enabled
+        if (!_appList.value.contains(app)) {
+            Log.w(TAG, "Tried to toggle app that does not exist in list! - $app")
+            return
+        }
+        val oldIndex = _appList.value.indexOf(app)
+        val newAppList = _appList.value.toMutableList()
+        newAppList.removeAt(oldIndex)
+        newAppList.add(oldIndex, newApp)
+        _appList.value = newAppList.toList()
+
+        // No change
+        if (newApp.enabled && config.appList.allowlist.contains(newApp.info.packageName)) {
+            return
+        }
+        if (!newApp.enabled && config.appList.allowlist.contains(newApp.info.packageName)) {
+            return
+        }
+
+        if (newApp.enabled) {
+            config.appList.denylist.add(newApp.info.packageName)
+            config.appList.allowlist.remove(newApp.info.packageName)
+        } else {
+            config.appList.denylist.remove(newApp.info.packageName)
+            config.appList.allowlist.add(newApp.info.packageName)
+        }
+        FileHelper.writeSettings(config)
+    }
+
+    fun onFilePermissionDenied() {
+        _showFilePermissionDeniedDialog.value = true
+    }
+
+    fun onDismissFilePermissionDenied() {
+        _showFilePermissionDeniedDialog.value = false
     }
 
     companion object {

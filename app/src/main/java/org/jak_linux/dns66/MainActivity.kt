@@ -117,8 +117,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onNewIntent(intent: Intent?) {
-        if (intent!!.getBooleanExtra("UPDATE", false)) {
+    override fun onNewIntent(intent: Intent) {
+        if (intent.getBooleanExtra("UPDATE", false)) {
             refresh()
         }
 
@@ -180,22 +180,6 @@ class MainActivity : AppCompatActivity() {
             Log.d("MainActivity", "onActivityResult: Starting service")
             createService()
         }
-
-//        if (requestCode == REQUEST_ITEM_EDIT && resultCode == RESULT_OK) {
-//            val item = Configuration.Item()
-//            Log.d("FOOOO", "onActivityResult: item title = " + data!!.getStringExtra("ITEM_TITLE"))
-//            if (data.hasExtra("DELETE")) {
-//                itemChangedListener!!.onItemChanged(null)
-//                return
-//            }
-//
-//            item.apply {
-//                title = data.getStringExtra("ITEM_TITLE") ?: ""
-//                location = data.getStringExtra("ITEM_LOCATION") ?: ""
-//                state = data.getIntExtra("ITEM_STATE", 0)
-//            }
-//            itemChangedListener!!.onItemChanged(item)
-//        }
     }
 
     fun createService() {

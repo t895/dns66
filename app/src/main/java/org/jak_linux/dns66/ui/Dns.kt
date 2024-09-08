@@ -98,8 +98,10 @@ private fun DnsScreenPreview() {
 fun EditDns(
     modifier: Modifier = Modifier,
     titleText: String,
+    titleTextError: Boolean,
     onTitleTextChanged: (String) -> Unit,
     locationText: String,
+    locationTextError: Boolean,
     onLocationTextChanged: (String) -> Unit,
     enabled: Boolean,
     onEnable: () -> Unit,
@@ -116,6 +118,12 @@ fun EditDns(
             },
             value = titleText,
             onValueChange = onTitleTextChanged,
+            isError = titleTextError,
+            supportingText = {
+                if (titleTextError) {
+                    Text(text = stringResource(R.string.input_blank_error))
+                }
+            },
         )
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
@@ -124,6 +132,12 @@ fun EditDns(
             },
             value = locationText,
             onValueChange = onLocationTextChanged,
+            isError = locationTextError,
+            supportingText = {
+                if (locationTextError) {
+                    Text(text = stringResource(R.string.input_blank_error))
+                }
+            },
         )
         SwitchListItem(
             title = stringResource(id = R.string.state_dns_enabled),
@@ -141,8 +155,10 @@ private fun EditDnsPreview() {
         EditDns(
             modifier = Modifier.background(MaterialTheme.colorScheme.surface),
             titleText = "Title",
+            titleTextError = false,
             onTitleTextChanged = {},
             locationText = "Location",
+            locationTextError = false,
             onLocationTextChanged = {},
             enabled = true,
             onEnable = {},
@@ -160,8 +176,17 @@ fun EditDnsScreen(
     onDelete: (() -> Unit)? = null,
 ) {
     var titleInput by rememberSaveable { mutableStateOf(server.title) }
+    var titleInputError by rememberSaveable { mutableStateOf(false) }
     var locationInput by rememberSaveable { mutableStateOf(server.location) }
+    var locationInputError by rememberSaveable { mutableStateOf(false) }
     var enabledInput by rememberSaveable { mutableStateOf(server.enabled) }
+
+    if (titleInput.isNotBlank()) {
+        titleInputError = false
+    }
+    if (locationInput.isNotBlank()) {
+        locationInputError = false
+    }
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
@@ -191,6 +216,12 @@ fun EditDnsScreen(
 
                     IconButton(
                         onClick = {
+                            titleInputError = titleInput.isBlank()
+                            locationInputError = locationInput.isBlank()
+                            if (titleInputError || locationInputError) {
+                                return@IconButton
+                            }
+
                             onSave(DnsServer(titleInput, locationInput, enabledInput))
                         }
                     ) {
@@ -209,8 +240,10 @@ fun EditDnsScreen(
                 .padding(contentPadding)
                 .padding(horizontal = 16.dp),
             titleText = titleInput,
+            titleTextError = titleInputError,
             onTitleTextChanged = { titleInput = it },
             locationText = locationInput,
+            locationTextError = locationInputError,
             onLocationTextChanged = { locationInput = it },
             enabled = enabledInput,
             onEnable = { enabledInput = !enabledInput },

@@ -35,7 +35,6 @@ import coil.compose.AsyncImage
 import org.jak_linux.dns66.AllowListMode
 import org.jak_linux.dns66.AllowListMode.Companion.toAllowListMode
 import org.jak_linux.dns66.R
-import org.jak_linux.dns66.main.AppItem
 import org.jak_linux.dns66.ui.theme.Dns66Theme
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,8 +47,8 @@ fun AppsScreen(
     onShowSystemAppsClick: () -> Unit,
     bypassSelection: AllowListMode,
     onBypassSelection: (AllowListMode) -> Unit,
-    apps: List<AppItem> = emptyList(),
-    onAppClick: (AppItem) -> Unit,
+    apps: List<App> = emptyList(),
+    onAppClick: (App) -> Unit,
 ) {
     val pm = LocalContext.current.packageManager
     PullToRefreshBox(
@@ -110,7 +109,8 @@ fun AppsScreen(
             items(apps) {
                 IconSwitchListItem(
                     title = it.label,
-                    details = it.packageName,
+                    details = it.info.packageName,
+                    checked = it.enabled,
                     onCheckedChange = { _ -> onAppClick(it) },
                     onClick = { onAppClick(it) },
                     iconContent = {
@@ -135,7 +135,7 @@ private fun AppsScreenPreview() {
         AppsScreen(
             isRefreshing = false,
             onRefresh = {},
-            apps = listOf(AppItem(ApplicationInfo(), "Package", "Label")),
+            apps = listOf(App(ApplicationInfo(), "Label", true)),
             onAppClick = {},
             showSystemApps = false,
             onShowSystemAppsClick = {},
