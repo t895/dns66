@@ -10,12 +10,12 @@ plugins {
 
 android {
     namespace = "org.jak_linux.dns66"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
         applicationId = "org.jak_linux.dns66"
         minSdk = 23
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 29
         versionName = "0.6.8"
     }
