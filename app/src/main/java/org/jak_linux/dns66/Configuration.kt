@@ -14,6 +14,7 @@ import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable
 import android.util.Log
+import androidx.annotation.Keep
 import kotlinx.parcelize.Parceler
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.Serializable
@@ -305,6 +306,7 @@ data class DnsServers(
 }
 
 // DO NOT change the order of these states. They correspond to UI functionality.
+@Keep
 enum class HostState {
     IGNORE, DENY, ALLOW;
 
