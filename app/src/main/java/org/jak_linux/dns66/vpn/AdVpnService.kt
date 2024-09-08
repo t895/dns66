@@ -12,15 +12,14 @@
  */
 package org.jak_linux.dns66.vpn
 
-import android.app.Notification
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.app.Service
-import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.net.ConnectivityManager
+import android.net.ConnectivityManager.NetworkCallback
+import android.net.Network
 import android.net.VpnService
 import android.os.Build
 import android.os.Handler
@@ -74,7 +73,6 @@ class AdVpnService : VpnService(), Handler.Callback {
         const val REQUEST_CODE_PAUSE = 42
 
         const val VPN_MSG_STATUS_UPDATE = 0
-        const val VPN_MSG_NETWORK_CHANGED = 1
 
         private val _status = MutableStateFlow(VpnStatus.STOPPED)
         val status = _status.asStateFlow()
@@ -133,15 +131,21 @@ class AdVpnService : VpnService(), Handler.Callback {
         handler.sendMessage(handler.obtainMessage(VPN_MSG_STATUS_UPDATE, status.ordinal, 0))
     }
 
-    private val connectivityChangedReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context?, intent: Intent?) {
-            handler.sendMessage(handler.obtainMessage(VPN_MSG_NETWORK_CHANGED, intent))
+    private val connectivityChangedCallback = object : NetworkCallback() {
+        override fun onAvailable(network: Network) {
+            super.onAvailable(network)
+            reconnect()
+        }
+
+        override fun onLost(network: Network) {
+            super.onLost(network)
+            waitForNetVpn()
         }
     }
 
     private val notificationBuilder =
         NotificationCompat.Builder(this, NotificationChannels.SERVICE_RUNNING)
-            .setSmallIcon(R.drawable.ic_state_deny) // TODO: Notification icon
+            .setSmallIcon(R.drawable.ic_state_deny)
             .setPriority(NotificationCompat.PRIORITY_MIN)
 
     override fun onCreate() {
@@ -158,6 +162,9 @@ class AdVpnService : VpnService(), Handler.Callback {
                 getString(R.string.notification_action_pause),
                 pendingIntent
             )
+
+        val connectivityManager = getSystemService(ConnectivityManager::class.java)
+        connectivityManager.registerDefaultNetworkCallback(connectivityChangedCallback)
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -210,11 +217,10 @@ class AdVpnService : VpnService(), Handler.Callback {
             )
             val notification =
                 NotificationCompat.Builder(this@AdVpnService, NotificationChannels.SERVICE_PAUSED)
-                    .setSmallIcon(R.drawable.ic_state_deny) // TODO: Notification icon
-                    .setPriority(Notification.PRIORITY_LOW)
+                    .setSmallIcon(R.drawable.ic_state_deny)
+                    .setPriority(NotificationCompat.PRIORITY_LOW)
                     .setContentTitle(getString(R.string.notification_paused_title))
-                    .setContentText(getString(R.string.notification_paused_text))
-                    .setContentIntent(pendingIntent)
+                    .addAction(0, getString(R.string.resume), pendingIntent)
                     .build()
             notify(NOTIFICATION_ID_STATE, notification)
         }
@@ -239,11 +245,6 @@ class AdVpnService : VpnService(), Handler.Callback {
         }
         updateVpnStatus(VpnStatus.STARTING)
 
-        registerReceiver(
-            connectivityChangedReceiver,
-            IntentFilter(ConnectivityManager.CONNECTIVITY_ACTION)
-        )
-
         restartVpnThread()
     }
 
@@ -260,11 +261,19 @@ class AdVpnService : VpnService(), Handler.Callback {
     private fun stopVpnThread() = vpnThread?.stopThread()
 
     private fun waitForNetVpn() {
+        if (status.value != VpnStatus.RUNNING) {
+            return
+        }
+
         stopVpnThread()
         updateVpnStatus(VpnStatus.WAITING_FOR_NETWORK)
     }
 
     private fun reconnect() {
+        if (status.value != VpnStatus.WAITING_FOR_NETWORK) {
+            return
+        }
+
         updateVpnStatus(VpnStatus.RECONNECTING)
         restartVpnThread()
     }
@@ -276,12 +285,11 @@ class AdVpnService : VpnService(), Handler.Callback {
         }
         vpnThread = null
 
-        try {
-            unregisterReceiver(connectivityChangedReceiver)
-        } catch (e: IllegalArgumentException) {
-            Log.i(TAG, "Ignoring exception on unregistering receiver")
-        }
         updateVpnStatus(VpnStatus.STOPPED)
+
+        val connectivityManager = getSystemService(ConnectivityManager::class.java)
+        connectivityManager.unregisterNetworkCallback(connectivityChangedCallback)
+
         stopSelf()
     }
 
@@ -293,29 +301,8 @@ class AdVpnService : VpnService(), Handler.Callback {
     override fun handleMessage(msg: Message): Boolean {
         when (msg.what) {
             VPN_MSG_STATUS_UPDATE -> updateVpnStatus(msg.arg1.toVpnStatus())
-            VPN_MSG_NETWORK_CHANGED -> connectivityChanged(msg.obj as Intent)
             else -> throw IllegalArgumentException("Invalid message with what = ${msg.what}")
         }
         return true
-    }
-
-    private fun connectivityChanged(intent: Intent) {
-        if (intent.getIntExtra(ConnectivityManager.EXTRA_NETWORK_TYPE, 0) ==
-            ConnectivityManager.TYPE_VPN
-        ) {
-            Log.i(TAG, "Ignoring connectivity changed for our own network")
-            return
-        }
-
-        if (ConnectivityManager.CONNECTIVITY_ACTION != intent.action) {
-            Log.e(TAG, "Got bad intent on connectivity changed ${intent.action}")
-        }
-        if (intent.getBooleanExtra(ConnectivityManager.EXTRA_NO_CONNECTIVITY, false)) {
-            Log.i(TAG, "Connectivity changed to no connectivity, wait for a network")
-            waitForNetVpn()
-        } else {
-            Log.i(TAG, "Network changed, try to reconnect")
-            reconnect()
-        }
     }
 }

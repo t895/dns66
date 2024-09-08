@@ -229,8 +229,8 @@ class AdVpnThread(
                 // Now we are connected. Set the flag and show the message.
                 notify(VpnStatus.RUNNING)
 
-                // We keep forwarding packets till something goes wrong.
                 while (doOne(inputStream, outFd, packet)) {
+                    // We keep forwarding packets till something goes wrong.
                 }
             }
         } finally {
