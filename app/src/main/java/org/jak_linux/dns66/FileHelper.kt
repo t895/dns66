@@ -123,22 +123,22 @@ object FileHelper {
         }
 
     @Throws(FileNotFoundException::class)
-    fun openItemFile(item: Host): InputStreamReader? {
-        return if (item.location.startsWith("content://")) {
+    fun openItemFile(host: Host): InputStreamReader? {
+        return if (host.location.startsWith("content://")) {
             try {
-                InputStreamReader(applicationContext.contentResolver.openInputStream(Uri.parse(item.location)))
+                InputStreamReader(applicationContext.contentResolver.openInputStream(Uri.parse(host.location)))
             } catch (e: SecurityException) {
                 Log.d("FileHelper", "openItemFile: Cannot open", e)
                 throw FileNotFoundException(e.message)
             }
         } else {
-            getItemFile(item) ?: return null
-            if (item.isDownloadable()) {
+            val itemFile = getItemFile(host) ?: return null
+            if (host.isDownloadable()) {
                 InputStreamReader(
-                    SingleWriterMultipleReaderFile(getItemFile(item)!!).openRead()
+                    SingleWriterMultipleReaderFile(itemFile).openRead()
                 )
             } else {
-                FileReader(getItemFile(item))
+                FileReader(itemFile)
             }
         }
     }

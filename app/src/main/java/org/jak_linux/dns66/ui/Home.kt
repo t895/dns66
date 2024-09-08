@@ -79,7 +79,7 @@ fun HomeScreen(
     onExport: () -> Unit,
     onShareLogcat: () -> Unit,
     onTryToggleService: () -> Unit,
-    onCreateService: () -> Unit,
+    onStartWithoutChecks: () -> Unit,
 ) {
     val navController = rememberNavController()
     val backstackState by navController.currentBackStackEntryAsState()
@@ -143,7 +143,12 @@ fun HomeScreen(
         AlertDialog(
             onDismissRequest = { vm.onDismissHostsFilesNotFound() },
             confirmButton = {
-                TextButton(onClick = onCreateService) {
+                TextButton(
+                    onClick = {
+                        onStartWithoutChecks()
+                        vm.onDismissHostsFilesNotFound()
+                    },
+                ) {
                     Text(text = stringResource(R.string.button_yes))
                 }
             },
@@ -296,23 +301,22 @@ fun HomeScreen(
                 val status by vm.vpnStatus.collectAsState()
 
                 val showWatchdogWarningDialog by vm.showWatchdogWarningDialog.collectAsState()
+                val dismiss = {
+                    vm.config.watchDog = !vm.config.watchDog
+                    watchConnection = vm.config.watchDog
+                    FileHelper.writeSettings(vm.config)
+                    vm.onDismissWatchdogWarning()
+                }
                 if (showWatchdogWarningDialog) {
                     AlertDialog(
-                        onDismissRequest = { vm.onDismissWatchdogWarning() },
+                        onDismissRequest = dismiss,
                         confirmButton = {
                             TextButton(onClick = { vm.onDismissWatchdogWarning() }) {
                                 Text(text = stringResource(R.string.button_continue))
                             }
                         },
                         dismissButton = {
-                            TextButton(
-                                onClick = {
-                                    vm.config.watchDog = !vm.config.watchDog
-                                    watchConnection = vm.config.watchDog
-                                    FileHelper.writeSettings(vm.config)
-                                    vm.onDismissWatchdogWarning()
-                                }
-                            ) {
+                            TextButton(onClick = dismiss) {
                                 Text(text = stringResource(R.string.button_cancel))
                             }
                         },
@@ -494,6 +498,6 @@ fun HomeScreenPreview() {
         onExport = {},
         onShareLogcat = {},
         onTryToggleService = {},
-        onCreateService = {},
+        onStartWithoutChecks = {},
     )
 }

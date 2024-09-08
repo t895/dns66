@@ -23,8 +23,6 @@ import org.jak_linux.dns66.ui.HomeScreen
 import org.jak_linux.dns66.ui.theme.Dns66Theme
 import org.jak_linux.dns66.viewmodel.HomeViewModel
 import org.jak_linux.dns66.vpn.AdVpnService
-import org.jak_linux.dns66.vpn.AdVpnService.Companion
-import org.jak_linux.dns66.vpn.AdVpnService.Companion.status
 import org.jak_linux.dns66.vpn.Command
 import org.jak_linux.dns66.vpn.VpnStatus
 import java.io.BufferedReader
@@ -85,8 +83,8 @@ class MainActivity : AppCompatActivity() {
                         startActivityForResult(exportIntent, REQUEST_FILE_STORE)
                     },
                     onShareLogcat = ::sendLogcat,
-                    onTryToggleService = { tryToggleService() },
-                    onCreateService = ::createService,
+                    onTryToggleService = ::tryToggleService,
+                    onStartWithoutChecks = ::startService,
                 )
             }
         }
@@ -187,7 +185,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     fun tryToggleService() {
-        if (status != VpnStatus.STOPPED) {
+        if (AdVpnService.status != VpnStatus.STOPPED) {
             Log.i(TAG, "Attempting to disconnect")
             val intent = Intent(this, AdVpnService::class.java)
                 .putExtra("COMMAND", Command.STOP.ordinal)
@@ -218,7 +216,7 @@ class MainActivity : AppCompatActivity() {
         for (item in vm.config.hosts.items) {
             if (item.state != HostState.IGNORE) {
                 try {
-                    val reader = FileHelper.openItemFile(item) ?: continue
+                    val reader = FileHelper.openItemFile(item) ?: return false
                     reader.close()
                 } catch (e: IOException) {
                     return false
