@@ -5,6 +5,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.parcelize")
     id("org.jetbrains.kotlin.plugin.serialization")
     id("org.jetbrains.kotlinx.atomicfu")
+    id("androidx.baselineprofile")
 }
 
 android {
@@ -26,15 +27,6 @@ android {
                 getDefaultProguardFile("proguard-android.txt"),
                 "proguard-rules.pro"
             )
-        }
-
-        create("benchmark") {
-            isMinifyEnabled = true
-            proguardFiles(
-                getDefaultProguardFile("proguard-android.txt"),
-                "proguard-rules.pro"
-            )
-            signingConfig = signingConfigs.getByName("debug")
         }
     }
 
@@ -84,4 +76,8 @@ dependencies {
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.2")
 
     implementation("org.jetbrains.kotlinx:atomicfu:0.25.0")
+
+    // Baseline profiles
+    implementation("androidx.profileinstaller:profileinstaller:1.3.1")
+    "baselineProfile"(project(":baselineprofile"))
 }

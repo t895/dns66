@@ -10,4 +10,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization") version kotlinVersion apply false
 
     id("org.jetbrains.kotlinx.atomicfu") version "0.25.0" apply false
+    id("com.android.test") version "8.6.0" apply false
+
+    id("androidx.baselineprofile") version "1.3.0" apply false
 }

@@ -14,3 +14,4 @@ dependencyResolutionManagement {
 }
 
 include(":app")
+include(":baselineprofile")
