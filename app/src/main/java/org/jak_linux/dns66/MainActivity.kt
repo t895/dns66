@@ -6,6 +6,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
+import android.net.VpnService.prepare
 import android.os.Build
 import android.os.Bundle
 import android.util.Log
@@ -22,9 +23,12 @@ import org.jak_linux.dns66.ui.HomeScreen
 import org.jak_linux.dns66.ui.theme.Dns66Theme
 import org.jak_linux.dns66.viewmodel.HomeViewModel
 import org.jak_linux.dns66.vpn.AdVpnService
+import org.jak_linux.dns66.vpn.AdVpnService.Companion
+import org.jak_linux.dns66.vpn.AdVpnService.Companion.status
 import org.jak_linux.dns66.vpn.Command
 import org.jak_linux.dns66.vpn.VpnStatus
 import java.io.BufferedReader
+import java.io.IOException
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
 
@@ -81,7 +85,7 @@ class MainActivity : AppCompatActivity() {
                         startActivityForResult(exportIntent, REQUEST_FILE_STORE)
                     },
                     onShareLogcat = ::sendLogcat,
-                    onTryToggleService = { AdVpnService.tryToggleService(vm, this) },
+                    onTryToggleService = { tryToggleService() },
                     onCreateService = ::createService,
                 )
             }
@@ -178,6 +182,59 @@ class MainActivity : AppCompatActivity() {
 
         if (requestCode == REQUEST_START_VPN && resultCode == Activity.RESULT_OK) {
             Log.d("MainActivity", "onActivityResult: Starting service")
+            createService()
+        }
+    }
+
+    fun tryToggleService() {
+        if (status != VpnStatus.STOPPED) {
+            Log.i(TAG, "Attempting to disconnect")
+            val intent = Intent(this, AdVpnService::class.java)
+                .putExtra("COMMAND", Command.STOP.ordinal)
+            startService(intent)
+        } else {
+            checkHostsFilesAndStartService()
+        }
+    }
+
+    private fun checkHostsFilesAndStartService() {
+        if (!areHostsFilesExistent()) {
+            vm.onHostsFilesNotFound()
+            return
+        }
+        startService()
+    }
+
+    /**
+     * Check if all configured hosts files exist.
+     *
+     * @return true if all host files exist or no host files were configured.
+     */
+    private fun areHostsFilesExistent(): Boolean {
+        if (!vm.config.hosts.enabled) {
+            return true
+        }
+
+        for (item in vm.config.hosts.items) {
+            if (item.state != HostState.IGNORE) {
+                try {
+                    val reader = FileHelper.openItemFile(item) ?: continue
+                    reader.close()
+                } catch (e: IOException) {
+                    return false
+                }
+            }
+        }
+        return true
+    }
+
+    @Suppress("DEPRECATION")
+    private fun startService() {
+        Log.i(TAG, "Attempting to connect")
+        val intent = prepare(Dns66Application.applicationContext)
+        if (intent != null) {
+            startActivityForResult(intent, REQUEST_START_VPN)
+        } else {
             createService()
         }
     }

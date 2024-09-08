@@ -30,16 +30,12 @@ import android.util.Log
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
-import org.jak_linux.dns66.Dns66Application.Companion.applicationContext
 import org.jak_linux.dns66.FileHelper
-import org.jak_linux.dns66.HostState
 import org.jak_linux.dns66.MainActivity
 import org.jak_linux.dns66.NotificationChannels
 import org.jak_linux.dns66.R
 import org.jak_linux.dns66.getParcel
-import org.jak_linux.dns66.viewmodel.HomeViewModel
 import org.jak_linux.dns66.vpn.VpnStatus.Companion.toVpnStatus
-import java.io.IOException
 
 enum class VpnStatus {
     STARTING,
@@ -131,65 +127,6 @@ class AdVpnService : VpnService(), Handler.Callback {
                     PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
                 putExtra("NOTIFICATION_INTENT", pendingIntent)
             }
-
-        fun tryToggleService(
-            vm: HomeViewModel,
-            activity: MainActivity,
-        ) {
-            if (status != VpnStatus.STOPPED) {
-                Log.i(TAG, "Attempting to disconnect")
-                val intent = Intent(activity, AdVpnService::class.java)
-                    .putExtra("COMMAND", Command.STOP.ordinal)
-                activity.startService(intent)
-            } else {
-                checkHostsFilesAndStartService(vm, activity)
-            }
-        }
-
-        private fun checkHostsFilesAndStartService(
-            vm: HomeViewModel,
-            activity: MainActivity,
-        ) {
-            if (!areHostsFilesExistent(vm)) {
-                vm.onHostsFilesNotFound()
-                return
-            }
-            startService(activity)
-        }
-
-        /**
-         * Check if all configured hosts files exist.
-         *
-         * @return true if all host files exist or no host files were configured.
-         */
-        private fun areHostsFilesExistent(vm: HomeViewModel): Boolean {
-            if (!vm.config.hosts.enabled) {
-                return true
-            }
-
-            for (item in vm.config.hosts.items) {
-                if (item.state != HostState.IGNORE) {
-                    try {
-                        val reader = FileHelper.openItemFile(item) ?: continue
-                        reader.close()
-                    } catch (e: IOException) {
-                        return false
-                    }
-                }
-            }
-            return true
-        }
-
-        @Suppress("DEPRECATION")
-        private fun startService(activity: MainActivity) {
-            Log.i(TAG, "Attempting to connect")
-            val intent = prepare(applicationContext)
-            if (intent != null) {
-                activity.startActivityForResult(intent, MainActivity.REQUEST_START_VPN)
-            } else {
-                activity.createService()
-            }
-        }
     }
 
     private val handler = Handler(Looper.myLooper()!!, this)
