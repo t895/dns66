@@ -18,9 +18,14 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import androidx.work.Constraints
+import androidx.work.ExistingPeriodicWorkPolicy
+import androidx.work.NetworkType
+import androidx.work.OneTimeWorkRequestBuilder
+import androidx.work.PeriodicWorkRequestBuilder
+import androidx.work.WorkManager
 import org.jak_linux.dns66.NotificationChannels.onCreate
-import org.jak_linux.dns66.db.RuleDatabaseUpdateJobService
-import org.jak_linux.dns66.db.RuleDatabaseUpdateTask
+import org.jak_linux.dns66.db.RuleDatabaseUpdateWorker
 import org.jak_linux.dns66.ui.HomeScreen
 import org.jak_linux.dns66.ui.theme.Dns66Theme
 import org.jak_linux.dns66.viewmodel.HomeViewModel
@@ -31,15 +36,13 @@ import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
 import java.io.OutputStreamWriter
+import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
     companion object {
         const val TAG = "MainActivity"
 
-        private const val REQUEST_FILE_OPEN = 1
-        private const val REQUEST_FILE_STORE = 2
-        private const val REQUEST_ITEM_EDIT = 3
-        const val REQUEST_START_VPN = 4
+        const val REQUEST_START_VPN = 1
     }
 
     private val vm: HomeViewModel by viewModels()
@@ -108,11 +111,12 @@ class MainActivity : AppCompatActivity() {
                     onShareLogcat = ::sendLogcat,
                     onTryToggleService = ::tryToggleService,
                     onStartWithoutChecks = ::startService,
+                    onUpdateRefreshWork = ::updateRefreshWork,
                 )
             }
         }
 
-        RuleDatabaseUpdateJobService.scheduleOrCancel(vm.config)
+        updateRefreshWork()
     }
 
     private fun sendLogcat() {
@@ -147,8 +151,8 @@ class MainActivity : AppCompatActivity() {
             refresh()
         }
 
-        val errors = RuleDatabaseUpdateTask.lastErrors.getAndSet(null)
-        if (errors != null && errors.isNotEmpty()) {
+        val errors = RuleDatabaseUpdateWorker.lastErrors
+        if (!errors.isNullOrEmpty()) {
             Log.d(TAG, "onNewIntent: It's an error")
             vm.onUpdateIncomplete(errors)
         }
@@ -157,8 +161,9 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun refresh() {
-        val task = RuleDatabaseUpdateTask(vm.config, true)
-        task.execute()
+        val workRequest = OneTimeWorkRequestBuilder<RuleDatabaseUpdateWorker>()
+            .build()
+        WorkManager.getInstance(this).enqueue(workRequest)
     }
 
     @Deprecated("Deprecated in Java")
@@ -263,6 +268,30 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
+    private fun updateRefreshWork() {
+        val workManager = WorkManager.getInstance(this)
+        if (vm.config.hosts.automaticRefresh) {
+            val constraints = Constraints.Builder()
+                .setRequiredNetworkType(NetworkType.UNMETERED)
+                .setRequiresDeviceIdle(true)
+                .setRequiresStorageNotLow(true)
+                .build()
+
+            val work = PeriodicWorkRequestBuilder<RuleDatabaseUpdateWorker>(1, TimeUnit.DAYS)
+                .addTag(RuleDatabaseUpdateWorker.PERIODIC_TAG)
+                .setConstraints(constraints)
+                .build()
+
+            workManager.enqueueUniquePeriodicWork(
+                RuleDatabaseUpdateWorker.PERIODIC_TAG,
+                ExistingPeriodicWorkPolicy.KEEP,
+                work,
+            )
+        } else {
+            workManager.cancelAllWorkByTag(RuleDatabaseUpdateWorker.PERIODIC_TAG)
+        }
+    }
+
     override fun onPause() {
         super.onPause()
         LocalBroadcastManager.getInstance(this).unregisterReceiver(vpnServiceBroadcastReceiver)
@@ -270,8 +299,8 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        val errors = RuleDatabaseUpdateTask.lastErrors.getAndSet(null)
-        if (errors != null && errors.isNotEmpty()) {
+        val errors = RuleDatabaseUpdateWorker.lastErrors
+        if (!errors.isNullOrEmpty()) {
             Log.d(TAG, "onNewIntent: It's an error")
             vm.onUpdateIncomplete(errors)
         }

@@ -80,4 +80,6 @@ dependencies {
     // Baseline profiles
     implementation("androidx.profileinstaller:profileinstaller:1.3.1")
     "baselineProfile"(project(":baselineprofile"))
+
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
 }

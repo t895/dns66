@@ -110,7 +110,6 @@ class RuleDatabase private constructor() {
     /**
      * Load the hosts according to the configuration
      *
-     * @param context A context used for opening files.
      * @throws InterruptedException Thrown if the thread was interrupted, so we don't waste time
      *                              reading more host files than needed.
      */
@@ -141,7 +140,6 @@ class RuleDatabase private constructor() {
     /**
      * Loads an item. An item can be backed by a file or contain a value in the location field.
      *
-     * @param context Context to open files
      * @param item    The item to load.
      * @throws InterruptedException If the thread was interrupted.
      */

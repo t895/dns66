@@ -12,103 +12,96 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.AsyncTask
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import org.jak_linux.dns66.Configuration
-import org.jak_linux.dns66.Dns66Application.Companion.applicationContext
+import androidx.work.CoroutineWorker
+import androidx.work.WorkerParameters
+import kotlinx.atomicfu.atomic
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.TimeoutCancellationException
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
+import org.jak_linux.dns66.FileHelper
 import org.jak_linux.dns66.Host
 import org.jak_linux.dns66.MainActivity
 import org.jak_linux.dns66.NotificationChannels
 import org.jak_linux.dns66.R
-import java.util.concurrent.Executors
-import java.util.concurrent.TimeUnit
-import java.util.concurrent.atomic.AtomicReference
 
-/**
- * Asynchronous task to update the database.
- * <p>
- * This spawns a thread pool fetching updating host files from
- * remote servers.
- */
-open class RuleDatabaseUpdateTask(
-    private val configuration: Configuration,
-    notifications: Boolean,
-) : AsyncTask<Void, Void, Void>() {
+class RuleDatabaseUpdateWorker(
+    val context: Context,
+    params: WorkerParameters
+) : CoroutineWorker(context, params) {
     companion object {
-        private const val TAG = "RuleDatabaseUpdateTask"
+        private const val TAG = "RuleDatabaseUpdateWorker"
         private const val UPDATE_NOTIFICATION_ID = 42
 
-        @JvmField
-        val lastErrors = AtomicReference<MutableList<String>>(null)
+        const val PERIODIC_TAG = "RuleDatabaseUpdatePeriodicWorker"
+
+        var lastErrors by atomic<MutableList<String>?>(null)
     }
 
     private val errors = ArrayList<String>()
     private val pending = ArrayList<String>()
     private val done = ArrayList<String>()
 
-    private var notificationManager: NotificationManager? = null
-    private var notificationBuilder: NotificationCompat.Builder? = null
+    private lateinit var notificationManager: NotificationManager
+    private lateinit var notificationBuilder: NotificationCompat.Builder
+
+    private val config = FileHelper.loadCurrentSettings()
 
     init {
-        Log.d(TAG, "RuleDatabaseUpdateTask: Begin")
-
-        if (notifications) {
-            setupNotificationBuilder()
-        }
-
-        Log.d(TAG, "RuleDatabaseUpdateTask: Setup")
+        Log.d(TAG, "Begin")
+        setupNotificationBuilder()
+        Log.d(TAG, "Setup")
     }
 
-    private fun setupNotificationBuilder() {
-        notificationManager =
-            applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        notificationBuilder =
-            NotificationCompat.Builder(applicationContext, NotificationChannels.UPDATE_STATUS)
-                .setContentTitle(applicationContext.getString(R.string.updating_hostfiles))
-                .setSmallIcon(R.drawable.ic_refresh)
-                .setProgress(configuration.hosts.items.size, 0, false)
-    }
-
-    @Deprecated("Deprecated in Java")
-    override fun doInBackground(vararg params: Void?): Void? {
-        Log.d(TAG, "doInBackground: begin")
+    override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
+        Log.d(TAG, "doWork: Begin")
         val start = System.currentTimeMillis()
-        val executor = Executors.newCachedThreadPool()
-
-        for (item in configuration.hosts.items) {
-            val runnable = getCommand(item)
-            if (runnable.shouldDownload()) {
-                executor.execute(runnable)
+        val jobs = mutableListOf<Deferred<Unit>>()
+        config.hosts.items.forEach {
+            val update = RuleDatabaseItemUpdate(context, this@RuleDatabaseUpdateWorker, it)
+            if (update.shouldDownload()) {
+                val job = async { update.run() }
+                job.start()
+                jobs.add(job)
             }
         }
 
         releaseGarbagePermissions()
 
-        executor.shutdown()
-        while (true) {
-            try {
-                if (executor.awaitTermination(1, TimeUnit.HOURS)) {
-                    break
-                }
-
-                Log.d(TAG, "doInBackground: Waiting for completion")
-            } catch (_: InterruptedException) {
+        try {
+            withTimeout(3600000) {
+                jobs.awaitAll()
             }
+        } catch (_: TimeoutCancellationException) {
         }
         val end = System.currentTimeMillis()
-        Log.d(TAG, "doInBackground: end after ${end - start} milliseconds")
+        Log.d(TAG, "doWork: end after ${end - start} milliseconds")
 
         postExecute()
 
-        return null
+        Result.success()
+    }
+
+    private fun setupNotificationBuilder() {
+        notificationManager =
+            context.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        notificationBuilder =
+            NotificationCompat.Builder(context, NotificationChannels.UPDATE_STATUS)
+                .setContentTitle(context.getString(R.string.updating_hostfiles))
+                .setSmallIcon(R.drawable.ic_refresh)
+                .setProgress(config.hosts.items.size, 0, false)
     }
 
     /**
      * Releases all persisted URI permissions that are no longer referenced
      */
-    fun releaseGarbagePermissions() {
-        val contentResolver = applicationContext.contentResolver
+    private fun releaseGarbagePermissions() {
+        val contentResolver = context.contentResolver
         for (permission in contentResolver.persistedUriPermissions) {
             if (isGarbage(permission.uri)) {
                 Log.i(TAG, "releaseGarbagePermissions: Releasing permission for ${permission.uri}")
@@ -128,7 +121,7 @@ open class RuleDatabaseUpdateTask(
      * @param uri URI to check
      */
     private fun isGarbage(uri: Uri): Boolean {
-        for (item in configuration.hosts.items) {
+        for (item in config.hosts.items) {
             if (Uri.parse(item.location) == uri) {
                 return false
             }
@@ -137,29 +130,22 @@ open class RuleDatabaseUpdateTask(
     }
 
     /**
-     * RuleDatabaseItemUpdateRunnable factory for unit tests
-     */
-    fun getCommand(item: Host): RuleDatabaseItemUpdateRunnable =
-        RuleDatabaseItemUpdateRunnable(this, applicationContext, item)
-
-    /**
      * Sets progress message.
      */
     @Synchronized
     private fun updateProgressNotification() {
         val builder = StringBuilder()
         for (p in pending) {
-            if (builder.length > 0) {
+            if (builder.isNotEmpty()) {
                 builder.append("\n")
             }
             builder.append(p)
         }
 
-        notificationBuilder ?: return
-        notificationBuilder!!.setProgress(pending.size + done.size, done.size, false)
+        notificationBuilder.setProgress(pending.size + done.size, done.size, false)
             .setStyle(NotificationCompat.BigTextStyle().bigText(builder.toString()))
-            .setContentText(applicationContext.getString(R.string.updating_n_host_files, pending.size))
-        notificationManager!!.notify(UPDATE_NOTIFICATION_ID, notificationBuilder!!.build())
+            .setContentText(context.getString(R.string.updating_n_host_files, pending.size))
+        notificationManager.notify(UPDATE_NOTIFICATION_ID, notificationBuilder.build())
     }
 
     /**
@@ -174,30 +160,28 @@ open class RuleDatabaseUpdateTask(
             e.printStackTrace()
         }
 
-        notificationBuilder ?: return
-        notificationManager ?: return
         if (errors.isEmpty()) {
-            notificationManager!!.cancel(UPDATE_NOTIFICATION_ID)
+            notificationManager.cancel(UPDATE_NOTIFICATION_ID)
         } else {
-            val intent = Intent(applicationContext, MainActivity::class.java).apply {
+            val intent = Intent(context, MainActivity::class.java).apply {
                 addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
             }
 
-            lastErrors.set(errors)
+            lastErrors = errors
             val pendingIntent = PendingIntent.getActivity(
-                applicationContext,
+                context,
                 0,
                 intent,
                 PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
             )
 
-            notificationBuilder!!
+            notificationBuilder
                 .setProgress(0, 0, false)
-                .setContentText(applicationContext.getString(R.string.could_not_update_all_hosts))
+                .setContentText(context.getString(R.string.could_not_update_all_hosts))
                 .setSmallIcon(R.drawable.ic_warning)
                 .setContentIntent(pendingIntent)
                 .setAutoCancel(true)
-            notificationManager!!.notify(UPDATE_NOTIFICATION_ID, notificationBuilder!!.build())
+            notificationManager.notify(UPDATE_NOTIFICATION_ID, notificationBuilder.build())
         }
     }
 

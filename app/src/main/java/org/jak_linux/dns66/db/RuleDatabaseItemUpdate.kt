@@ -10,7 +10,6 @@ package org.jak_linux.dns66.db
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.os.Process
 import android.util.Log
 import org.jak_linux.dns66.FileHelper
 import org.jak_linux.dns66.Host
@@ -33,11 +32,11 @@ import javax.net.ssl.HttpsURLConnection
 /**
  * Updates a single item.
  */
-class RuleDatabaseItemUpdateRunnable(
-    private val parentTask: RuleDatabaseUpdateTask,
+class RuleDatabaseItemUpdate(
     private val context: Context,
+    private val worker: RuleDatabaseUpdateWorker,
     private val item: Host,
-) : Runnable {
+) {
     companion object {
         private const val CONNECT_TIMEOUT_MILLIS = 3000
         private const val READ_TIMEOUT_MILLIS = 10000
@@ -65,7 +64,7 @@ class RuleDatabaseItemUpdateRunnable(
         try {
             url = URL(item.location)
         } catch (e: MalformedURLException) {
-            parentTask.addError(item, context.getString(R.string.invalid_url_s, item.location))
+            worker.addError(item, context.getString(R.string.invalid_url_s, item.location))
             return false
         }
 
@@ -75,16 +74,7 @@ class RuleDatabaseItemUpdateRunnable(
     /**
      * Runs the item download, and marks it as done when finished.getLocalizedMessage
      */
-    override fun run() {
-        try {
-            Process.setThreadPriority(Process.THREAD_PRIORITY_BACKGROUND)
-        } catch (_: UnsatisfiedLinkError) {
-        } catch (e: RuntimeException) {
-            if (!e.toString().contains("not mocked")) {
-                throw e
-            }
-        }
-
+    fun run() {
         if (item.location.startsWith("content://")) {
             try {
                 val uri = parseUri(item.location)
@@ -97,11 +87,11 @@ class RuleDatabaseItemUpdateRunnable(
                 Log.d(TAG, "run: Permission requested for ${item.location}")
             } catch (e: SecurityException) {
                 Log.d(TAG, "doInBackground: Error taking permission: $e")
-                parentTask.addError(item, context.getString(R.string.permission_denied))
+                worker.addError(item, context.getString(R.string.permission_denied))
             } catch (e: FileNotFoundException) {
-                parentTask.addError(item, context.getString(R.string.file_not_found))
+                worker.addError(item, context.getString(R.string.file_not_found))
             } catch (e: IOException) {
-                parentTask.addError(
+                worker.addError(
                     item,
                     context.getString(R.string.unknown_error_s, e.getLocalizedMessage())
                 )
@@ -111,7 +101,7 @@ class RuleDatabaseItemUpdateRunnable(
 
         val singleWriterMultipleReaderFile = SingleWriterMultipleReaderFile(file!!)
         var connection: HttpURLConnection? = null
-        parentTask.addBegin(item)
+        worker.addBegin(item)
         try {
             connection = getHttpURLConnection(file!!, singleWriterMultipleReaderFile, url)
 
@@ -120,13 +110,13 @@ class RuleDatabaseItemUpdateRunnable(
             }
             downloadFile(file!!, singleWriterMultipleReaderFile, connection)
         } catch (e: SocketTimeoutException) {
-            parentTask.addError(item, context.getString(R.string.requested_timed_out))
+            worker.addError(item, context.getString(R.string.requested_timed_out))
         } catch (e: IOException) {
-            parentTask.addError(item, context.getString(R.string.unknown_error_s, e.toString()))
+            worker.addError(item, context.getString(R.string.unknown_error_s, e.toString()))
         } catch (e: NullPointerException) {
-            parentTask.addError(item, context.getString(R.string.unknown_error_s, e.toString()))
+            worker.addError(item, context.getString(R.string.unknown_error_s, e.toString()))
         } finally {
-            parentTask.addDone(item)
+            worker.addDone(item)
             connection?.disconnect()
         }
     }
@@ -195,10 +185,10 @@ class RuleDatabaseItemUpdateRunnable(
             )
 
             if (connection.responseCode == 404) {
-                parentTask.addError(item, context.getString(R.string.file_not_found))
+                worker.addError(item, context.getString(R.string.file_not_found))
             } else if (connection.responseCode != 304) {
                 context.resources.getString(R.string.host_update_error_item)
-                parentTask.addError(
+                worker.addError(
                     item,
                     context.resources.getString(
                         R.string.host_update_error_item,

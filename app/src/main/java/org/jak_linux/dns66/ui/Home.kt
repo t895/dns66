@@ -54,7 +54,6 @@ import org.jak_linux.dns66.DnsServer
 import org.jak_linux.dns66.FileHelper
 import org.jak_linux.dns66.Host
 import org.jak_linux.dns66.R
-import org.jak_linux.dns66.db.RuleDatabaseUpdateJobService
 import org.jak_linux.dns66.viewmodel.HomeViewModel
 
 enum class Destination(
@@ -80,6 +79,7 @@ fun HomeScreen(
     onShareLogcat: () -> Unit,
     onTryToggleService: () -> Unit,
     onStartWithoutChecks: () -> Unit,
+    onUpdateRefreshWork: () -> Unit,
 ) {
     val navController = rememberNavController()
     val backstackState by navController.currentBackStackEntryAsState()
@@ -374,7 +374,7 @@ fun HomeScreen(
                         vm.config.hosts.automaticRefresh = !vm.config.hosts.automaticRefresh
                         refreshDaily = vm.config.hosts.automaticRefresh
                         FileHelper.writeSettings(vm.config)
-                        RuleDatabaseUpdateJobService.scheduleOrCancel(vm.config)
+                        onUpdateRefreshWork()
                     },
                     hosts = hosts,
                     onHostClick = { host ->
@@ -499,5 +499,6 @@ fun HomeScreenPreview() {
         onShareLogcat = {},
         onTryToggleService = {},
         onStartWithoutChecks = {},
+        onUpdateRefreshWork = {},
     )
 }
