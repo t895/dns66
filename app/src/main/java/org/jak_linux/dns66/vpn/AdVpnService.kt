@@ -29,7 +29,6 @@ import android.os.Message
 import android.util.Log
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import org.jak_linux.dns66.Dns66Application.Companion.applicationContext
 import org.jak_linux.dns66.FileHelper
@@ -220,11 +219,10 @@ class AdVpnService : VpnService(), Handler.Callback {
             PendingIntent.getService(this, REQUEST_CODE_PAUSE, intent, PendingIntent.FLAG_IMMUTABLE)
         notificationBuilder
             .addAction(
-                R.drawable.ic_pause_black_24dp,
+                R.drawable.ic_pause,
                 getString(R.string.notification_action_pause),
                 pendingIntent
             )
-            .setColor(ContextCompat.getColor(this, R.color.colorPrimaryDark))
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -279,7 +277,6 @@ class AdVpnService : VpnService(), Handler.Callback {
                 NotificationCompat.Builder(this@AdVpnService, NotificationChannels.SERVICE_PAUSED)
                     .setSmallIcon(R.drawable.ic_state_deny) // TODO: Notification icon
                     .setPriority(Notification.PRIORITY_LOW)
-                    .setColor(ContextCompat.getColor(this@AdVpnService, R.color.colorPrimaryDark))
                     .setContentTitle(getString(R.string.notification_paused_title))
                     .setContentText(getString(R.string.notification_paused_text))
                     .setContentIntent(pendingIntent)

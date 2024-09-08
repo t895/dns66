@@ -15,7 +15,6 @@ import android.net.Uri
 import android.os.AsyncTask
 import android.util.Log
 import androidx.core.app.NotificationCompat
-import androidx.core.content.ContextCompat
 import org.jak_linux.dns66.Configuration
 import org.jak_linux.dns66.Dns66Application.Companion.applicationContext
 import org.jak_linux.dns66.Host
@@ -68,7 +67,6 @@ open class RuleDatabaseUpdateTask(
             NotificationCompat.Builder(applicationContext, NotificationChannels.UPDATE_STATUS)
                 .setContentTitle(applicationContext.getString(R.string.updating_hostfiles))
                 .setSmallIcon(R.drawable.ic_refresh)
-                .setColor(ContextCompat.getColor(applicationContext, R.color.colorPrimaryDark))
                 .setProgress(configuration.hosts.items.size, 0, false)
     }
 
