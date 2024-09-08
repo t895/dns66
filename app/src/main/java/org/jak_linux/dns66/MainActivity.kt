@@ -228,6 +228,16 @@ class MainActivity : AppCompatActivity() {
         return true
     }
 
+    /**
+     * Starts the AdVpnService. If the user has not allowed this
+     * VPN to run before, it will show a dialog and then call
+     * onActivityResult with either [Activity.RESULT_CANCELED]
+     * or [Activity.RESULT_OK] for deny/allow respectively.
+     *
+     * This is currently the only way of requesting permission
+     * to start a VPN service. There are no activity result
+     * contracts that can replace this deprecated functionality.
+     */
     @Suppress("DEPRECATION")
     private fun startService() {
         Log.i(TAG, "Attempting to connect")
