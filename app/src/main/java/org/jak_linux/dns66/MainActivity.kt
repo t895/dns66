@@ -2,10 +2,7 @@ package org.jak_linux.dns66
 
 import android.app.Activity
 import android.app.PendingIntent
-import android.content.BroadcastReceiver
-import android.content.Context
 import android.content.Intent
-import android.content.IntentFilter
 import android.net.VpnService.prepare
 import android.os.Build
 import android.os.Bundle
@@ -17,7 +14,6 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
@@ -46,14 +42,6 @@ class MainActivity : AppCompatActivity() {
     }
 
     private val vm: HomeViewModel by viewModels()
-
-    private val vpnServiceBroadcastReceiver = object : BroadcastReceiver() {
-        override fun onReceive(context: Context, intent: Intent) {
-            val status = intent.getSerializable<VpnStatus>(AdVpnService.VPN_UPDATE_STATUS_EXTRA)
-                ?: VpnStatus.STOPPED
-            vm.onUpdateVpnStatus(status)
-        }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -185,8 +173,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun tryToggleService() {
-        if (AdVpnService.status != VpnStatus.STOPPED) {
+    private fun tryToggleService() {
+        if (AdVpnService.status.value != VpnStatus.STOPPED) {
             Log.i(TAG, "Attempting to disconnect")
             val intent = Intent(this, AdVpnService::class.java)
                 .putExtra("COMMAND", Command.STOP.ordinal)
@@ -248,7 +236,7 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    fun createService() {
+    private fun createService() {
         val intent = Intent(applicationContext, AdVpnService::class.java)
             .putExtra("COMMAND", Command.START.ordinal)
             .putExtra(
@@ -292,11 +280,6 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    override fun onPause() {
-        super.onPause()
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(vpnServiceBroadcastReceiver)
-    }
-
     override fun onResume() {
         super.onResume()
         val errors = RuleDatabaseUpdateWorker.lastErrors
@@ -304,12 +287,5 @@ class MainActivity : AppCompatActivity() {
             Log.d(TAG, "onNewIntent: It's an error")
             vm.onUpdateIncomplete(errors)
         }
-
-        vm.onUpdateVpnStatus(AdVpnService.status)
-        LocalBroadcastManager.getInstance(this)
-            .registerReceiver(
-                vpnServiceBroadcastReceiver,
-                IntentFilter(AdVpnService.VPN_UPDATE_STATUS_INTENT)
-            )
     }
 }

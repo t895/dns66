@@ -29,7 +29,8 @@ import android.os.Message
 import android.util.Log
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
-import androidx.localbroadcastmanager.content.LocalBroadcastManager
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import org.jak_linux.dns66.FileHelper
 import org.jak_linux.dns66.MainActivity
 import org.jak_linux.dns66.NotificationChannels
@@ -72,14 +73,11 @@ class AdVpnService : VpnService(), Handler.Callback {
 
         const val REQUEST_CODE_PAUSE = 42
 
-        const val VPN_UPDATE_STATUS_INTENT = "org.jak_linux.dns66.VPN_UPDATE_STATUS"
-
-        const val VPN_UPDATE_STATUS_EXTRA = "VPN_STATUS"
         const val VPN_MSG_STATUS_UPDATE = 0
-
         const val VPN_MSG_NETWORK_CHANGED = 1
 
-        var status = VpnStatus.STOPPED
+        private val _status = MutableStateFlow(VpnStatus.STOPPED)
+        val status = _status.asStateFlow()
 
         fun checkStartVpnOnBoot(context: Context) {
             Log.i("BOOT", "Checking whether to start ad buster on boot")
@@ -223,7 +221,6 @@ class AdVpnService : VpnService(), Handler.Callback {
     }
 
     private fun updateVpnStatus(newStatus: VpnStatus) {
-        status = newStatus
         val notificationTextId = newStatus.toTextId()
         notificationBuilder.setContentTitle(getString(notificationTextId))
 
@@ -232,10 +229,7 @@ class AdVpnService : VpnService(), Handler.Callback {
         ) {
             startForeground(NOTIFICATION_ID_STATE, notificationBuilder.build())
         }
-
-        val intent = Intent(VPN_UPDATE_STATUS_INTENT)
-            .putExtra(VPN_UPDATE_STATUS_EXTRA, newStatus)
-        LocalBroadcastManager.getInstance(this).sendBroadcast(intent)
+        _status.value = newStatus
     }
 
     private fun startVpn(notificationIntent: PendingIntent?) {

@@ -55,6 +55,7 @@ import org.jak_linux.dns66.FileHelper
 import org.jak_linux.dns66.Host
 import org.jak_linux.dns66.R
 import org.jak_linux.dns66.viewmodel.HomeViewModel
+import org.jak_linux.dns66.vpn.AdVpnService
 
 enum class Destination(
     val route: String,
@@ -298,7 +299,7 @@ fun HomeScreen(
                 var resumeOnStartup by remember { mutableStateOf(vm.config.autoStart) }
                 var watchConnection by remember { mutableStateOf(vm.config.watchDog) }
                 var ipv6Support by remember { mutableStateOf(vm.config.ipV6Support) }
-                val status by vm.vpnStatus.collectAsState()
+                val status by AdVpnService.status.collectAsState()
 
                 val showWatchdogWarningDialog by vm.showWatchdogWarningDialog.collectAsState()
                 val dismiss = {

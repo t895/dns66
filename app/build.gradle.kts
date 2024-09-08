@@ -42,7 +42,6 @@ kotlin {
 
 dependencies {
     implementation("androidx.appcompat:appcompat:1.7.0")
-    implementation("androidx.localbroadcastmanager:localbroadcastmanager:1.1.0")
 
     // Proxy stuff
     implementation("org.pcap4j:pcap4j-core:1.8.2")

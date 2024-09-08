@@ -18,8 +18,6 @@ import org.jak_linux.dns66.DnsServer
 import org.jak_linux.dns66.FileHelper
 import org.jak_linux.dns66.Host
 import org.jak_linux.dns66.HostState
-import org.jak_linux.dns66.vpn.AdVpnService
-import org.jak_linux.dns66.vpn.VpnStatus
 
 class HomeViewModel : ViewModel() {
     private val _showUpdateIncompleteDialog = MutableStateFlow(false)
@@ -43,9 +41,6 @@ class HomeViewModel : ViewModel() {
     private val _dnsServers = MutableStateFlow(config.dnsServers.items.toList())
     val dnsServers = _dnsServers.asStateFlow()
 
-    private val _vpnStatus = MutableStateFlow(VpnStatus.STOPPED)
-    val vpnStatus = _vpnStatus.asStateFlow()
-
     private val _showHostsFilesNotFoundDialog = MutableStateFlow(false)
     val showHostsFilesNotFoundDialog = _showHostsFilesNotFoundDialog.asStateFlow()
 
@@ -63,7 +58,6 @@ class HomeViewModel : ViewModel() {
 
     init {
         populateAppList()
-        _vpnStatus.value = AdVpnService.status
     }
 
     fun onUpdateIncomplete(errors: List<String>) {
@@ -111,10 +105,6 @@ class HomeViewModel : ViewModel() {
             _appListRefreshing.value = false
             refreshingLock = false
         }
-    }
-
-    fun onUpdateVpnStatus(status: VpnStatus) {
-        _vpnStatus.value = status
     }
 
     fun onHostsFilesNotFound() {
