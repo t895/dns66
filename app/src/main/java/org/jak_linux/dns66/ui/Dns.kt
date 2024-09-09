@@ -48,7 +48,6 @@ fun DnsScreen(
     LazyColumn(
         modifier
             .fillMaxSize()
-            .background(MaterialTheme.colorScheme.surface)
             .padding(horizontal = 16.dp)
     ) {
         item {

@@ -34,7 +34,6 @@ fun StartScreen(
 ) {
     Box(
         modifier = modifier
-            .background(MaterialTheme.colorScheme.surface)
             .fillMaxSize()
     ) {
         Column(

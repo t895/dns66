@@ -2,8 +2,8 @@ package org.jak_linux.dns66.ui
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -56,6 +56,12 @@ import org.jak_linux.dns66.DnsServer
 import org.jak_linux.dns66.FileHelper
 import org.jak_linux.dns66.Host
 import org.jak_linux.dns66.R
+import org.jak_linux.dns66.ui.theme.HomeEnterTransition
+import org.jak_linux.dns66.ui.theme.HomeExitTransition
+import org.jak_linux.dns66.ui.theme.TopLevelEnter
+import org.jak_linux.dns66.ui.theme.TopLevelExit
+import org.jak_linux.dns66.ui.theme.TopLevelPopEnter
+import org.jak_linux.dns66.ui.theme.TopLevelPopExit
 import org.jak_linux.dns66.viewmodel.HomeViewModel
 import org.jak_linux.dns66.vpn.AdVpnService
 
@@ -161,23 +167,22 @@ fun App(
         modifier = Modifier.background(MaterialTheme.colorScheme.surface),
         navController = navController,
         startDestination = TopLevelDestination.Home.route,
-        enterTransition = { fadeIn() },
-        exitTransition = { fadeOut() },
-        popEnterTransition = { fadeIn() },
-        popExitTransition = { fadeOut() },
+        enterTransition = { TopLevelEnter },
+        exitTransition = { TopLevelExit },
+        popEnterTransition = { TopLevelPopEnter },
+        popExitTransition = { TopLevelPopExit },
     ) {
         composable(TopLevelDestination.Home.route) {
             HomeScreen(
-                Modifier,
-                vm,
-                navController,
-                onRefresh,
-                onLoadDefaults,
-                onImport,
-                onExport,
-                onShareLogcat,
-                onTryToggleService,
-                onUpdateRefreshWork,
+                vm = vm,
+                topLevelNavController = navController,
+                onRefresh = onRefresh,
+                onLoadDefaults = onLoadDefaults,
+                onImport = onImport,
+                onExport = onExport,
+                onShareLogcat = onShareLogcat,
+                onTryToggleService = onTryToggleService,
+                onUpdateRefreshWork = onUpdateRefreshWork,
             )
         }
         composable<Host> { backstackEntry ->
@@ -363,8 +368,8 @@ fun HomeScreen(
             AnimatedVisibility(
                 visible = selectedRoute == HomeDestination.Hosts.route ||
                         selectedRoute == HomeDestination.DNS.route,
-                enter = fadeIn(),
-                exit = fadeOut(),
+                enter = scaleIn(),
+                exit = scaleOut(),
             ) {
                 FloatingActionButton(
                     onClick = {
@@ -384,10 +389,10 @@ fun HomeScreen(
         NavHost(
             navController = navController,
             startDestination = HomeDestination.Start.route,
-            enterTransition = { fadeIn() },
-            exitTransition = { fadeOut() },
-            popEnterTransition = { fadeIn() },
-            popExitTransition = { fadeOut() },
+            enterTransition = { HomeEnterTransition },
+            exitTransition = { HomeExitTransition },
+            popEnterTransition = { HomeEnterTransition },
+            popExitTransition = { HomeExitTransition },
         ) {
             composable(HomeDestination.Start.route) {
                 var resumeOnStartup by remember { mutableStateOf(vm.config.autoStart) }
