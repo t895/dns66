@@ -2,6 +2,7 @@ package org.jak_linux.dns66.ui
 
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
@@ -56,6 +57,8 @@ import org.jak_linux.dns66.DnsServer
 import org.jak_linux.dns66.FileHelper
 import org.jak_linux.dns66.Host
 import org.jak_linux.dns66.R
+import org.jak_linux.dns66.ui.theme.EmphasizedAccelerateEasing
+import org.jak_linux.dns66.ui.theme.EmphasizedDecelerateEasing
 import org.jak_linux.dns66.ui.theme.HomeEnterTransition
 import org.jak_linux.dns66.ui.theme.HomeExitTransition
 import org.jak_linux.dns66.ui.theme.TopLevelEnter
@@ -368,8 +371,8 @@ fun HomeScreen(
             AnimatedVisibility(
                 visible = selectedRoute == HomeDestination.Hosts.route ||
                         selectedRoute == HomeDestination.DNS.route,
-                enter = scaleIn(),
-                exit = scaleOut(),
+                enter = scaleIn(animationSpec = tween(easing = EmphasizedDecelerateEasing)),
+                exit = scaleOut(animationSpec = tween(easing = EmphasizedAccelerateEasing)),
             ) {
                 FloatingActionButton(
                     onClick = {
