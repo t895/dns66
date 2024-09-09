@@ -47,12 +47,6 @@ class HomeViewModel : ViewModel() {
     private val _showWatchdogWarningDialog = MutableStateFlow(false)
     val showWatchdogWarningDialog = _showWatchdogWarningDialog.asStateFlow()
 
-    private val _showHomeTopAppBar = MutableStateFlow(true)
-    val showHomeTopAppBar = _showHomeTopAppBar.asStateFlow()
-
-    private val _showHomeNavigationBar = MutableStateFlow(true)
-    val showHomeNavigationBar = _showHomeNavigationBar.asStateFlow()
-
     private val _showFilePermissionDeniedDialog = MutableStateFlow(false)
     val showFilePermissionDeniedDialog = _showFilePermissionDeniedDialog.asStateFlow()
 
@@ -121,11 +115,6 @@ class HomeViewModel : ViewModel() {
 
     fun onDismissWatchdogWarning() {
         _showWatchdogWarningDialog.value = false
-    }
-
-    fun showHomeInterface(topAppBar: Boolean = true, navigationBar: Boolean = true) {
-        _showHomeTopAppBar.value = topAppBar
-        _showHomeNavigationBar.value = navigationBar
     }
 
     fun addHost(host: Host) {

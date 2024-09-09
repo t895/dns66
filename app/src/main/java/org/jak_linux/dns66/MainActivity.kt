@@ -22,7 +22,7 @@ import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import org.jak_linux.dns66.NotificationChannels.onCreate
 import org.jak_linux.dns66.db.RuleDatabaseUpdateWorker
-import org.jak_linux.dns66.ui.HomeScreen
+import org.jak_linux.dns66.ui.App
 import org.jak_linux.dns66.ui.theme.Dns66Theme
 import org.jak_linux.dns66.viewmodel.HomeViewModel
 import org.jak_linux.dns66.vpn.AdVpnService
@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
 
-                HomeScreen(
+                App(
                     vm = vm,
                     onRefresh = ::refresh,
                     onLoadDefaults = {
