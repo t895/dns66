@@ -1,6 +1,7 @@
 package org.jak_linux.dns66.ui
 
 import android.content.pm.ApplicationInfo
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Spacer
@@ -9,7 +10,6 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Android
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
@@ -25,13 +25,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import com.google.accompanist.drawablepainter.rememberDrawablePainter
 import org.jak_linux.dns66.AllowListMode
 import org.jak_linux.dns66.AllowListMode.Companion.toAllowListMode
 import org.jak_linux.dns66.R
@@ -115,11 +114,10 @@ fun AppsScreen(
                     onClick = { onAppClick(it) },
                     iconContent = {
                         it.loadIcon(pm)
-                        AsyncImage(
+                        Image(
                             modifier = Modifier.fillMaxSize(),
-                            model = it.getIcon(),
+                            painter = rememberDrawablePainter(it.getIcon()),
                             contentDescription = null,
-                            placeholder = rememberVectorPainter(Icons.Default.Android),
                         )
                     }
                 )

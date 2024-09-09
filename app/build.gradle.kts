@@ -59,9 +59,7 @@ dependencies {
     implementation("androidx.compose.material:material-icons-core")
     implementation("androidx.compose.material:material-icons-extended")
 
-    val coilVersion = "2.7.0"
-    implementation("io.coil-kt:coil:$coilVersion")
-    implementation("io.coil-kt:coil-compose:$coilVersion")
+    implementation("com.google.accompanist:accompanist-drawablepainter:0.36.0")
 
     implementation("androidx.navigation:navigation-compose:2.8.0")
 
