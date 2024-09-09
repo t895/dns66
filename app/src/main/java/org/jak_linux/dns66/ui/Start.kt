@@ -72,15 +72,11 @@ fun StartScreen(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.BottomCenter,
         ) {
-            ExtendedFloatingActionButton(
-                modifier = Modifier.size(width = 148.dp, height = 80.dp).padding(bottom = 16.dp),
+            VpnFab(
+                modifier = Modifier.padding(bottom = 16.dp),
+                status = status,
                 onClick = onChangeVpnStatusClick,
-            ) {
-                Text(
-                    text = stringResource(id = status.toTextId()),
-                    style = MaterialTheme.typography.titleLarge,
-                )
-            }
+            )
         }
     }
 }
