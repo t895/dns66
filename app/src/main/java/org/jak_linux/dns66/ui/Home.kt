@@ -288,10 +288,9 @@ fun HomeScreen(
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
-        modifier = modifier,
+        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
-                modifier = Modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
                 title = {
                     Text(text = stringResource(R.string.app_name))
                 },
