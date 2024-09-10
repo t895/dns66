@@ -194,7 +194,7 @@ class RuleDatabaseUpdateWorker(
     @Synchronized
     fun addError(item: Host, message: String) {
         Log.d(TAG, "error: ${item.title}:$message")
-        errors.add("<b>${item.title}</b><br>$message")
+        errors.add("${item.title}\n$message")
     }
 
     @Synchronized
