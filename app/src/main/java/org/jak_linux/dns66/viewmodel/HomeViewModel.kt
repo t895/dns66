@@ -54,6 +54,9 @@ class HomeViewModel : ViewModel() {
     private val _showNotificationPermissionDialog = MutableStateFlow(false)
     val showNotificationPermissionDialog = _showNotificationPermissionDialog.asStateFlow()
 
+    private val _showVpnConfigurationFailureDialog = MutableStateFlow(false)
+    val showVpnConfigurationFailureDialog = _showVpnConfigurationFailureDialog.asStateFlow()
+
     init {
         populateAppList()
     }
@@ -255,6 +258,14 @@ class HomeViewModel : ViewModel() {
 
     fun onDismissNotificationPermission() {
         _showNotificationPermissionDialog.value = false
+    }
+
+    fun onVpnConfigurationFailure() {
+        _showVpnConfigurationFailureDialog.value = true
+    }
+
+    fun onDismissVpnConfigurationFailure() {
+        _showVpnConfigurationFailureDialog.value = false
     }
 
     companion object {

@@ -43,7 +43,6 @@
     <string name="button_yes">Si</string>
     <string name="allowlist_tab">Aplicaciones</string>
     <string name="show_notification">Ver notificación</string>
-    <string name="could_not_configure_vpn_service">No se pudo configurar el servicio VPN - Compruebe si utiliza otro servicio VPN predeterminado como el Asistente WiFi y deshabilítelo</string>
     <string name="dns_description">Habilitar los servidores DNS preferidos</string>
     <string name="host_description">Reglas rojas bloquean, las reglas verdes permiten</string>
     <string name="disable_notification_title"> Desactivar notificación</string>

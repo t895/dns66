@@ -46,7 +46,6 @@
 
     <string name="allowlist_tab">アプリ</string>
     <string name="show_notification">通知を表示</string>
-    <string name="could_not_configure_vpn_service">VPN サービスを設定できません - WiFi Assistant のような VPN サービスを常にオンにしていないかを確認して、無効にしてください</string>
     <string name="dns_description">優先の DNS サーバーを有効にする</string>
     <string name="host_description">赤のルールはブロック、緑のルールは許可</string>
     <string name="disable_notification_title">通知を無効にしています</string>

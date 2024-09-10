@@ -44,7 +44,6 @@
     <string name="button_yes">Sì</string>
     <string name="allowlist_tab">Apps</string>
     <string name="show_notification">Mostra notifica</string>
-    <string name="could_not_configure_vpn_service">Impossibile configurare il servizio VPN - Controlla che non sia attivo un servizio di VPN sempre attiva (tipo: Assistente WiFi) e, nel caso, disattivalo</string>
     <string name="dns_description">Abilita i tuoi server DNS preferiti</string>
     <string name="host_description">Regola rossa: blocca; Regola verde: permette</string>
     <string name="disable_notification_title">Disabilitazione della notifica</string>

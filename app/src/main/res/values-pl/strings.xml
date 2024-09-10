@@ -43,7 +43,6 @@
     <string name="button_yes">Tak</string>
     <string name="allowlist_tab">Aplikacje</string>
     <string name="show_notification">Pokaż powiadomienie</string>
-    <string name="could_not_configure_vpn_service">Nie można skonfigurować usługi VPN - Sprawdź, czy inne aplikacje nie kolidują z usługą VPN, np. WiFi Assistant i wyłącz ją</string>
     <string name="dns_description">Włącz preferowane serwery DNS</string>
     <string name="host_description">Czerwone reguły blokują, zielone reguły pozwalają</string>
     <string name="disable_notification_title">Wyłączanie powiadomień</string>

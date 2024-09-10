@@ -52,7 +52,6 @@
     <string name="button_yes">Evet</string>
     <string name="allowlist_tab">Uygulamalar</string>
     <string name="show_notification">Bildirimi Göster</string>
-    <string name="could_not_configure_vpn_service">VPN servisi ayarlanamadı - Eğer VPN servisi ile birlikte Wifi Asistanı gibi uygulama kullanıyorsan onu kapatmayı dene.</string>
     <string name="dns_description">Tercih edilen DNS sunucularını aktif et</string>
     <string name="host_description">Kırmızı kurallar engeller, Yeşil kurallar izin verir</string>
     <string name="disable_notification_title">Bildirimi Devredışı Bırakma</string>

@@ -48,7 +48,6 @@
     <string name="button_yes">Oui</string>
     <string name="allowlist_tab">Apps</string>
     <string name="show_notification">Montrer la notification</string>
-    <string name="could_not_configure_vpn_service">Impossible de configurer le service de VPN – vérifiez que vous n\'utilisez pas déjà un service VPN toujours actif comme Wifi Assistant et désactivez-le le cas échéant</string>
     <string name="dns_description">Active vos serveurs DNS préférés</string>
     <string name="host_description">Règle rouge pour bloquer, règle verte pour permettre</string>
     <string name="disable_notification_title">Désactivation de la notification</string>

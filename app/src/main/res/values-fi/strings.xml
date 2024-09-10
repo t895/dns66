@@ -44,7 +44,6 @@
     <string name="button_yes">Kyllä</string>
     <string name="allowlist_tab">Apps</string>
     <string name="show_notification">Näytä ilmoitus</string>
-    <string name="could_not_configure_vpn_service">Ei voitu konfiguroida VPN-palvelua - Tarkista, onko käytössä aina päällä oleva VPN-palvelu, kuten WiFi-apuri, ja sammuta se.</string>
     <string name="dns_description">Aktivoi haluamasi DNS-palvelimet</string>
     <string name="host_description">Punaiset säännöt estävät, vihreät säännöt sallivat</string>
     <string name="disable_notification_title">Poistetaan ilmoitus käytöstä</string>

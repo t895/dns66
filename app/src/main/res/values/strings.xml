@@ -46,7 +46,6 @@
     <string name="website" translatable="false">https://github.com/t895/dns66</string>
     <string name="allowlist_tab">Apps</string>
     <string name="show_notification">Show Notification</string>
-    <string name="could_not_configure_vpn_service">Could not configure VPN service - Check if you use an always on VPN service like WiFi Assistant and disable it</string>
     <string name="dns_description">Enable your preferred DNS servers</string>
     <string name="host_description">Red rules block, green rules allow</string>
     <string name="disable_notification_title">Disabling Notification</string>
@@ -121,4 +120,6 @@
     <string name="resume">Resume</string>
     <string name="notification_permission">Notification permission needed</string>
     <string name="notification_permission_description">We need the notification permission to show the status of the host blocker and updates for it.</string>
+    <string name="could_not_start_vpn">Could not start VPN</string>
+    <string name="could_not_start_vpn_description">You need to accept the request to start a VPN for DNS66 to work. If this still fails, you may need to disable an existing always-on VPN service.</string>
 </resources>

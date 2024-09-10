@@ -45,7 +45,6 @@
     <string name="automatic_refresh_description">当使用不计费的网络且处于空闲和充电状态时会触发自动更新</string>
     <string name="button_no">否</string>
     <string name="button_yes">是</string>
-    <string name="could_not_configure_vpn_service">无法配置 VPN 服务 - 请检查你是否使用过 WiFi 助手等始终开启的 VPN 服务并禁用它</string>
     <string name="could_not_update_all_hosts">无法更新所有host文件</string>
     <string name="disable_notification_ack">禁用通知</string>
     <string name="disable_notification_message">禁用通知会导致 DNS66 在后台内存不足时被停止. 你确实希望禁用通知吗?</string>

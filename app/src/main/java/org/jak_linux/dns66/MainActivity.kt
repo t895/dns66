@@ -160,11 +160,7 @@ class MainActivity : AppCompatActivity() {
         super.onActivityResult(requestCode, resultCode, data)
 
         if (requestCode == REQUEST_START_VPN && resultCode == Activity.RESULT_CANCELED) {
-            Toast.makeText(
-                applicationContext,
-                R.string.could_not_configure_vpn_service,
-                Toast.LENGTH_LONG
-            ).show()
+            vm.onVpnConfigurationFailure()
         }
 
         if (requestCode == REQUEST_START_VPN && resultCode == Activity.RESULT_OK) {

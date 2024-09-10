@@ -43,7 +43,6 @@
     <string name="button_yes">Ja</string>
     <string name="allowlist_tab">Apper</string>
     <string name="show_notification">Vis notifikasjoner</string>
-    <string name="could_not_configure_vpn_service">Klarte ikke å sette opp VPN-tjenesten - Sjekk om du bruker en alltid-skrudd-på VPN-tjeneste som f.eks. WiFi Assistant, og skru den av.</string>
     <string name="dns_description">Aktiver dine foretrukkede DNS-tjenere</string>
     <string name="host_description">Røde regler blokkerer, mens grønne regler tillater.</string>
     <string name="disable_notification_title">Skrur av notifikasjonen</string>

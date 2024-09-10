@@ -206,6 +206,20 @@ fun App(
         )
     }
 
+    val showVpnConfigurationFailureDialog by vm.showVpnConfigurationFailureDialog.collectAsState()
+    if (showVpnConfigurationFailureDialog) {
+        AlertDialog(
+            onDismissRequest = { vm.onDismissVpnConfigurationFailure() },
+            confirmButton = {
+                TextButton(onClick = { vm.onDismissVpnConfigurationFailure() }) {
+                    Text(text = stringResource(android.R.string.ok))
+                }
+            },
+            title = { Text(text = stringResource(R.string.could_not_start_vpn)) },
+            text = { Text(text = stringResource(R.string.could_not_start_vpn_description)) },
+        )
+    }
+
     val navController = rememberNavController()
     NavHost(
         modifier = Modifier.background(MaterialTheme.colorScheme.surface),

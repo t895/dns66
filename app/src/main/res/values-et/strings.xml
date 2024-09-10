@@ -43,7 +43,6 @@
     <string name="button_yes">Jah</string>
     <string name="allowlist_tab">Rakendused</string>
     <string name="show_notification">Kuva teadet</string>
-    <string name="could_not_configure_vpn_service">VPN-teenust ei suudetud konfigureerida - kontrolli, kas kasutad alati sees olevat VPN-teenust nagu WiFi Assistant ja keela see</string>
     <string name="dns_description">Luba oma eelistatud DNS-serverid</string>
     <string name="host_description">Punased reeglid keelavad, rohelised lubavad</string>
     <string name="disable_notification_title">Teate keelamine</string>

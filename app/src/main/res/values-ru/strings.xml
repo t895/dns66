@@ -74,7 +74,6 @@
     <string name="missing_hosts_files_title">Отсутствующие файлы hosts</string>
     <string name="button_no">Нет</string>
     <string name="button_yes">Да</string>
-    <string name="could_not_configure_vpn_service">Не удалось настроить службу VPN - Убедитесь, что вы всегда используете VPN-сервис, например, WiFi Assistant, и отключите его</string>
     <string name="dns_description">Включить предпочитаемые DNS-сервера</string>
     <string name="host_description">Красные правила блокируется, зеленые правила разрешены</string>
     <string name="disable_notification_title">Отключить Уведомления</string>

@@ -43,7 +43,6 @@
     <string name="button_yes">Ja</string>
     <string name="allowlist_tab">Apps</string>
     <string name="show_notification">Melding weergeven</string>
-    <string name="could_not_configure_vpn_service">Kan VPN-service niet configureren - Controleer of je een persistente service zoals wifi assistent gebruikt en schakel deze uit</string>
     <string name="dns_description">Jouw voorkeurs-DNS-servers inschakelen</string>
     <string name="host_description">Rode regels blokkeren, groene regels toestaan</string>
     <string name="disable_notification_title">Melding uitschakelen</string>
