@@ -1,11 +1,8 @@
 package org.jak_linux.dns66.ui
 
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
@@ -47,8 +44,6 @@ fun VpnFab(
     val isPressed by interactionSource.collectIsPressedAsState()
 
     val animationDurationMillis = 100
-    val fadeIn = fadeIn(animationSpec = tween(durationMillis = animationDurationMillis))
-    val fadeOut = fadeOut(animationSpec = tween(durationMillis = animationDurationMillis))
     val elevation by animateDpAsState(
         targetValue = if (isPressed) 0.dp else 6.dp,
         animationSpec = tween(durationMillis = animationDurationMillis),
@@ -91,11 +86,7 @@ fun VpnFab(
             label = "contentColor",
         )
 
-        AnimatedVisibility(
-            visible = status == VpnStatus.RUNNING,
-            enter = fadeIn,
-            exit = fadeOut,
-        ) {
+        if (status == VpnStatus.RUNNING) {
             Icon(
                 modifier = Modifier.size(contentSize),
                 imageVector = Icons.Default.Stop,
@@ -104,11 +95,7 @@ fun VpnFab(
             )
         }
 
-        AnimatedVisibility(
-            visible = status == VpnStatus.STOPPED,
-            enter = fadeIn,
-            exit = fadeOut,
-        ) {
+        if (status == VpnStatus.STOPPED) {
             Icon(
                 modifier = Modifier.size(contentSize),
                 imageVector = Icons.Default.PlayArrow,

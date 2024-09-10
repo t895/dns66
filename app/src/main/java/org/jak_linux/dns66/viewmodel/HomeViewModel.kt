@@ -1,6 +1,7 @@
 package org.jak_linux.dns66.viewmodel
 
 import android.content.pm.ApplicationInfo
+import androidx.preference.PreferenceManager
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -49,6 +50,9 @@ class HomeViewModel : ViewModel() {
 
     private val _showFilePermissionDeniedDialog = MutableStateFlow(false)
     val showFilePermissionDeniedDialog = _showFilePermissionDeniedDialog.asStateFlow()
+
+    private val _showNotificationPermissionDialog = MutableStateFlow(false)
+    val showNotificationPermissionDialog = _showNotificationPermissionDialog.asStateFlow()
 
     init {
         populateAppList()
@@ -234,7 +238,28 @@ class HomeViewModel : ViewModel() {
         _showFilePermissionDeniedDialog.value = false
     }
 
+    fun onNotificationPermissionNotGranted() {
+        val denied = PreferenceManager.getDefaultSharedPreferences(applicationContext)
+            .getBoolean(NOTIFICATION_PERMISSION_DENIED, false)
+        if (!denied) {
+            _showNotificationPermissionDialog.value = true
+        }
+    }
+
+    fun onNotificationPermissionDenied() {
+        onDismissNotificationPermission()
+        PreferenceManager.getDefaultSharedPreferences(applicationContext).edit()
+            .putBoolean(NOTIFICATION_PERMISSION_DENIED, true)
+            .apply()
+    }
+
+    fun onDismissNotificationPermission() {
+        _showNotificationPermissionDialog.value = false
+    }
+
     companion object {
         const val TAG = "HomeViewModel"
+
+        private const val NOTIFICATION_PERMISSION_DENIED = "NotificationPermissionDenied"
     }
 }

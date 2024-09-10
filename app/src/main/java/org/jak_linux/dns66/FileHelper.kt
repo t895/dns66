@@ -29,15 +29,14 @@ object FileHelper {
     private const val TAG = "FileHelper"
 
     /**
-     * Try open the file with [Context.openFileInput], falling back to a file of
-     * the same name in the assets.
+     * Try open the file with [Context.openFileInput]
      */
     @Throws(IOException::class)
-    fun openRead(filename: String?): InputStream =
+    fun openRead(filename: String?): InputStream? =
         try {
             applicationContext.openFileInput(filename)
         } catch (e: FileNotFoundException) {
-            applicationContext.assets.open(filename!!)
+            null
         }
 
     /**
@@ -57,8 +56,15 @@ object FileHelper {
     }
 
     @Throws(IOException::class)
-    private fun readConfigFile(name: String): Configuration =
-        Configuration.read(InputStreamReader(openRead(name)))
+    private fun readConfigFile(name: String): Configuration {
+        val stream = openRead(name)
+        return if (stream != null) {
+            Configuration.read(InputStreamReader(stream))
+        } else {
+            Log.d(TAG, "Config file not found, creating new file.")
+            Configuration()
+        }
+    }
 
     fun loadCurrentSettings(): Configuration =
         try {

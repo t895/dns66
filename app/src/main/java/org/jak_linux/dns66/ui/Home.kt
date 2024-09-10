@@ -1,5 +1,6 @@
 package org.jak_linux.dns66.ui
 
+import android.os.Build
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -19,7 +20,6 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
@@ -34,6 +34,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -53,6 +54,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.isGranted
+import com.google.accompanist.permissions.rememberPermissionState
 import org.jak_linux.dns66.DnsServer
 import org.jak_linux.dns66.FileHelper
 import org.jak_linux.dns66.Host
@@ -84,6 +88,7 @@ enum class TopLevelDestination(val route: String) {
     Home("home");
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun App(
     vm: HomeViewModel = viewModel(),
@@ -96,6 +101,42 @@ fun App(
     onStartWithoutChecks: () -> Unit,
     onUpdateRefreshWork: () -> Unit,
 ) {
+    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+        val notificationPermissionState =
+            rememberPermissionState(android.Manifest.permission.POST_NOTIFICATIONS) {
+                vm.onNotificationPermissionDenied()
+            }
+        LaunchedEffect(Unit) {
+            if (!notificationPermissionState.status.isGranted) {
+                vm.onNotificationPermissionNotGranted()
+            }
+        }
+
+        val showNotificationPermissionDialog by vm.showNotificationPermissionDialog.collectAsState()
+        if (showNotificationPermissionDialog) {
+            AlertDialog(
+                onDismissRequest = {},
+                confirmButton = {
+                    TextButton(
+                        onClick = {
+                            notificationPermissionState.launchPermissionRequest()
+                            vm.onDismissNotificationPermission()
+                        }
+                    ) {
+                        Text(text = stringResource(android.R.string.ok))
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { vm.onNotificationPermissionDenied() }) {
+                        Text(text = stringResource(android.R.string.cancel))
+                    }
+                },
+                title = { Text(text = stringResource(R.string.notification_permission)) },
+                text = { Text(text = stringResource(R.string.notification_permission_description)) },
+            )
+        }
+    }
+
     val showUpdateIncompleteDialog by vm.showUpdateIncompleteDialog.collectAsState()
     if (showUpdateIncompleteDialog) {
         AlertDialog(
@@ -323,24 +364,22 @@ fun HomeScreen(
                             onDismissRequest = { expanded = false },
                         ) {
                             val item = @Composable { text: String, onClick: () -> Unit ->
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(text = text)
-                                    },
+                                MenuItem(
+                                    text = text,
                                     onClick = {
                                         expanded = false
                                         onClick()
-                                    },
+                                    }
                                 )
                             }
 
                             item(stringResource(R.string.load_defaults), onLoadDefaults)
                             item(stringResource(R.string.action_import), onImport)
                             item(stringResource(R.string.action_export), onExport)
+                            item(stringResource(R.string.action_logcat), onShareLogcat)
                             item(stringResource(R.string.action_about)) {
                                 topLevelNavController.navigate(TopLevelDestination.About.route)
                             }
-                            item(stringResource(R.string.action_logcat), onShareLogcat)
                         }
                     }
                 },

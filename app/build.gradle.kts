@@ -59,7 +59,9 @@ dependencies {
     implementation("androidx.compose.material:material-icons-core")
     implementation("androidx.compose.material:material-icons-extended")
 
-    implementation("com.google.accompanist:accompanist-drawablepainter:0.36.0")
+    val accompanistVersion = "0.36.0"
+    implementation("com.google.accompanist:accompanist-drawablepainter:$accompanistVersion")
+    implementation("com.google.accompanist:accompanist-permissions:$accompanistVersion")
 
     implementation("androidx.navigation:navigation-compose:2.8.0")
 
@@ -79,4 +81,6 @@ dependencies {
     "baselineProfile"(project(":baselineprofile"))
 
     implementation("androidx.work:work-runtime-ktx:2.9.1")
+
+    implementation("androidx.preference:preference-ktx:1.2.1")
 }
