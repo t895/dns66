@@ -1,23 +1,20 @@
 package org.jak_linux.dns66.ui
 
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
-import androidx.compose.ui.unit.dp
 import org.jak_linux.dns66.R
+import org.jak_linux.dns66.ui.theme.FabPadding
+import org.jak_linux.dns66.ui.theme.ListPadding
+import org.jak_linux.dns66.ui.theme.VpnFabSize
 import org.jak_linux.dns66.vpn.VpnStatus
 
 @Composable
@@ -39,11 +36,10 @@ fun StartScreen(
         Column(
             modifier = Modifier
                 .verticalScroll(rememberScrollState())
+                .padding(bottom = VpnFabSize + FabPadding)
+                .padding(ListPadding)
         ) {
-            ListSettingsContainer(
-                modifier = Modifier.padding(12.dp),
-                title = "",
-            ) {
+            ListSettingsContainer {
                 SwitchListItem(
                     title = stringResource(id = R.string.switch_onboot),
                     details = stringResource(id = R.string.switch_onboot_description),
@@ -73,7 +69,7 @@ fun StartScreen(
             contentAlignment = Alignment.BottomCenter,
         ) {
             VpnFab(
-                modifier = Modifier.padding(bottom = 16.dp),
+                modifier = Modifier.padding(bottom = FabPadding),
                 status = status,
                 onClick = onChangeVpnStatusClick,
             )

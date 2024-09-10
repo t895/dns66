@@ -33,6 +33,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.jak_linux.dns66.ui.theme.Dns66Theme
+import org.jak_linux.dns66.ui.theme.VpnFabSize
 import org.jak_linux.dns66.vpn.VpnStatus
 
 @Composable
@@ -70,7 +71,7 @@ fun VpnFab(
             )
             .clip(shape)
             .background(containerColor)
-            .size(96.dp)
+            .size(VpnFabSize)
             .clickable(
                 interactionSource = interactionSource,
                 indication = ripple(),

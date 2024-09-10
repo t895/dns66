@@ -465,7 +465,7 @@ fun HomeScreen(
                 var refreshDaily by remember { mutableStateOf(vm.config.hosts.automaticRefresh) }
                 val hosts by vm.hosts.collectAsState()
                 HostsScreen(
-                    modifier = Modifier.padding(contentPadding),
+                    contentPadding = contentPadding,
                     filterHosts = filterHosts,
                     onFilterHostsClick = {
                         vm.config.hosts.enabled = !vm.config.hosts.enabled
@@ -495,7 +495,7 @@ fun HomeScreen(
                 var showSystemApps by remember { mutableStateOf(vm.config.appList.showSystemApps) }
                 var allowlistDefault by remember { mutableStateOf(vm.config.appList.defaultMode) }
                 AppsScreen(
-                    modifier = Modifier.padding(contentPadding),
+                    contentPadding = contentPadding,
                     isRefreshing = isRefreshing,
                     onRefresh = { vm.populateAppList() },
                     showSystemApps = showSystemApps,
@@ -522,7 +522,7 @@ fun HomeScreen(
                 var customDnsServers by remember { mutableStateOf(vm.config.dnsServers.enabled) }
                 val servers by vm.dnsServers.collectAsState()
                 DnsScreen(
-                    modifier = Modifier.padding(contentPadding),
+                    contentPadding = contentPadding,
                     servers = servers,
                     customDnsServers = customDnsServers,
                     onCustomDnsServersClick = {

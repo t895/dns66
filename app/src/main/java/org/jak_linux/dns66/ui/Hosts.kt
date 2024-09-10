@@ -6,9 +6,9 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -51,7 +51,10 @@ import org.jak_linux.dns66.Host
 import org.jak_linux.dns66.HostState
 import org.jak_linux.dns66.HostState.Companion.toHostState
 import org.jak_linux.dns66.R
+import org.jak_linux.dns66.ui.theme.DefaultFabSize
 import org.jak_linux.dns66.ui.theme.Dns66Theme
+import org.jak_linux.dns66.ui.theme.FabPadding
+import org.jak_linux.dns66.ui.theme.ListPadding
 
 @Composable
 private fun IconText(
@@ -76,6 +79,7 @@ private fun IconText(
 @Composable
 fun HostsScreen(
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(),
     filterHosts: Boolean,
     onFilterHostsClick: () -> Unit,
     refreshDaily: Boolean,
@@ -85,9 +89,10 @@ fun HostsScreen(
     onHostStateChanged: (Host) -> Unit,
 ) {
     LazyColumn(
-        modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp),
+        modifier = modifier
+            .padding(ListPadding)
+            .padding(bottom = DefaultFabSize + FabPadding),
+        contentPadding = contentPadding,
     ) {
         item {
             ListSettingsContainer {

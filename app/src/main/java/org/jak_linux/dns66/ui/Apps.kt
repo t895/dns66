@@ -3,6 +3,7 @@ package org.jak_linux.dns66.ui
 import android.content.pm.ApplicationInfo
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
@@ -33,11 +34,13 @@ import org.jak_linux.dns66.AllowListMode
 import org.jak_linux.dns66.AllowListMode.Companion.toAllowListMode
 import org.jak_linux.dns66.R
 import org.jak_linux.dns66.ui.theme.Dns66Theme
+import org.jak_linux.dns66.ui.theme.ListPadding
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AppsScreen(
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(),
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
     showSystemApps: Boolean,
@@ -49,13 +52,11 @@ fun AppsScreen(
 ) {
     val pm = LocalContext.current.packageManager
     PullToRefreshBox(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(horizontal = 16.dp),
+        modifier = modifier.padding(ListPadding),
         isRefreshing = isRefreshing,
         onRefresh = onRefresh,
     ) {
-        LazyColumn {
+        LazyColumn(contentPadding = contentPadding) {
             item {
                 ListSettingsContainer(
                     title = stringResource(R.string.allowlist_description),
