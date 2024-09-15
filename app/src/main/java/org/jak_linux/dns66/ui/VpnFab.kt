@@ -93,9 +93,7 @@ fun VpnFab(
                 contentDescription = null,
                 tint = contentColor,
             )
-        }
-
-        if (status == VpnStatus.STOPPED) {
+        } else {
             Icon(
                 modifier = Modifier.size(contentSize),
                 imageVector = Icons.Default.PlayArrow,
