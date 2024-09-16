@@ -278,10 +278,20 @@ data class Hosts(
     companion object {
         val defaultHosts = listOf(
             Host(
-                title = "StevenBlack's hosts file (includes all others)",
+                title = "StevenBlack's unified hosts file (adware + malware)",
                 location = "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts",
                 state = HostState.DENY,
-            )
+            ),
+            Host(
+                title = "Adaway hosts file",
+                location = "https://adaway.org/hosts.txt",
+                state = HostState.ALLOW,
+            ),
+            Host(
+                title = "Dan Pollock's hosts file",
+                location = "https://someonewhocares.org/hosts/hosts",
+                state = HostState.ALLOW,
+            ),
         )
     }
 }
