@@ -9,6 +9,8 @@ jobs:
   publish:
     if: ${{ github.repository == 't895/DNSNet' }}
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
     steps:
      - name: Checkout
        uses: actions/checkout@v4
@@ -30,6 +32,7 @@ jobs:
           echo "${{secrets.STORE_FILE}}" | base64 --decode > ${HOME}/keyfile.jks
           export STORE_FILE_PATH=${HOME}/keyfile.jks
           ./gradlew :app:assembleRelease
-     - uses: ncipollo/release-action@v1
+     - name: Release
+       uses: ncipollo/release-action@v1
        with:
          artifacts: "*.apk,*.aab"
