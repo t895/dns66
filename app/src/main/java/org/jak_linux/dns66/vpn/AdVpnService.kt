@@ -147,21 +147,23 @@ class AdVpnService : VpnService(), Handler.Callback {
             .setSmallIcon(R.drawable.ic_state_deny)
             .setPriority(NotificationCompat.PRIORITY_MIN)
 
-    override fun onCreate() {
-        super.onCreate()
-        NotificationChannels.onCreate(this)
-
+    private fun getOpenAppIntent(context: Context): PendingIntent {
         val mainActivityIntent = Intent(applicationContext, MainActivity::class.java)
             .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        val pendingMainActivityIntent =
-            PendingIntent.getActivity(
+        return PendingIntent.getActivity(
                 applicationContext,
                 0,
                 mainActivityIntent,
                 PendingIntent.FLAG_IMMUTABLE
             )
+    }
+
+    override fun onCreate() {
+        super.onCreate()
+        NotificationChannels.onCreate(this)
+
         notificationBuilder
-            .setContentIntent(pendingMainActivityIntent)
+            .setContentIntent(getOpenAppIntent(applicationContext))
 
         val intent = Intent(this, AdVpnService::class.java)
             .putExtra("COMMAND", Command.PAUSE.ordinal)
@@ -230,6 +232,7 @@ class AdVpnService : VpnService(), Handler.Callback {
                     .setPriority(NotificationCompat.PRIORITY_LOW)
                     .setContentTitle(getString(R.string.notification_paused_title))
                     .addAction(0, getString(R.string.resume), pendingIntent)
+                    .setContentIntent(getOpenAppIntent(applicationContext))
                     .build()
             notify(NOTIFICATION_ID_STATE, notification)
         }
