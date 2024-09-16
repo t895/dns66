@@ -2,21 +2,13 @@ package org.jak_linux.dns66.ui
 
 import android.content.pm.ApplicationInfo
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material3.DropdownMenu
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
-import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -70,32 +62,20 @@ fun AppsScreen(
 
                     var expanded by rememberSaveable { mutableStateOf(false) }
                     val bypassOptions = stringArrayResource(R.array.allowlist_defaults)
-                    Box {
-                        IconListItem(
-                            title = bypassOptions[bypassSelection.ordinal],
-                            onClick = { expanded = true },
-                            iconContent = {
-                                IconButton(onClick = { expanded = true }) {
-                                    Icon(Icons.Default.KeyboardArrowDown, null)
-                                }
-                            }
-                        )
-
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
-                        ) {
-                            bypassOptions.forEachIndexed { i, option ->
-                                DropdownMenuItem(
-                                    text = {
-                                        Text(text = option)
-                                    },
-                                    onClick = {
-                                        onBypassSelection(i.toAllowListMode())
-                                        expanded = false
-                                    },
-                                )
-                            }
+                    ExpandableOptionsItem(
+                        expanded = expanded,
+                        title = stringResource(R.string.allowlist_defaults_title),
+                        details = bypassOptions[bypassSelection.ordinal],
+                        onExpandClick = { expanded = !expanded },
+                    ) {
+                        bypassOptions.forEachIndexed { i, option ->
+                            val thisMode = i.toAllowListMode()
+                            RadioListItem(
+                                selected = thisMode == bypassSelection,
+                                title = option,
+                                onClick = { onBypassSelection(thisMode) },
+                                onButtonClick = { onBypassSelection(thisMode) },
+                            )
                         }
                     }
                 }
