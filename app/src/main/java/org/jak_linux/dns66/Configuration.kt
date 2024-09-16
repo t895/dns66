@@ -272,7 +272,7 @@ data class Host(
 
 @Serializable
 data class Hosts(
-    var enabled: Boolean = false,
+    var enabled: Boolean = true,
     var automaticRefresh: Boolean = false,
     var items: MutableList<Host> = defaultHosts.toMutableList(),
 ) {
