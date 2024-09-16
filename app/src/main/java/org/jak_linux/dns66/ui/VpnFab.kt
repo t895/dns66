@@ -14,6 +14,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Stop
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ripple
@@ -93,13 +94,15 @@ fun VpnFab(
                 contentDescription = null,
                 tint = contentColor,
             )
-        } else {
+        } else if (status == VpnStatus.STOPPED) {
             Icon(
                 modifier = Modifier.size(contentSize),
                 imageVector = Icons.Default.PlayArrow,
                 contentDescription = null,
                 tint = contentColor,
             )
+        } else {
+            CircularProgressIndicator(color = contentColor)
         }
     }
 }
