@@ -25,13 +25,13 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
 import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
-import com.t895.dnsnet.NotificationChannels.onCreate
 import com.t895.dnsnet.db.RuleDatabaseUpdateWorker
 import com.t895.dnsnet.ui.App
 import com.t895.dnsnet.ui.theme.DnsNetTheme
@@ -55,8 +55,9 @@ class MainActivity : AppCompatActivity() {
     private val vm: HomeViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
+        installSplashScreen()
         super.onCreate(savedInstanceState)
-        onCreate(this)
+        NotificationChannels.onCreate(this)
 
         setContent {
             enableEdgeToEdge()
