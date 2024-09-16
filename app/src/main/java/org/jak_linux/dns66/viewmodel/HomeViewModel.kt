@@ -216,19 +216,19 @@ class HomeViewModel : ViewModel() {
         _appList.value = newAppList.toList()
 
         // No change
-        if (newApp.enabled && config.appList.allowlist.contains(newApp.info.packageName)) {
+        if (newApp.enabled && config.appList.onVpn.contains(newApp.info.packageName)) {
             return
         }
-        if (!newApp.enabled && config.appList.allowlist.contains(newApp.info.packageName)) {
+        if (!newApp.enabled && config.appList.onVpn.contains(newApp.info.packageName)) {
             return
         }
 
         if (newApp.enabled) {
-            config.appList.denylist.add(newApp.info.packageName)
-            config.appList.allowlist.remove(newApp.info.packageName)
+            config.appList.notOnVpn.add(newApp.info.packageName)
+            config.appList.onVpn.remove(newApp.info.packageName)
         } else {
-            config.appList.denylist.remove(newApp.info.packageName)
-            config.appList.allowlist.add(newApp.info.packageName)
+            config.appList.notOnVpn.remove(newApp.info.packageName)
+            config.appList.onVpn.add(newApp.info.packageName)
         }
         FileHelper.writeSettings(config)
     }

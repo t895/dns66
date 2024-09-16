@@ -147,22 +147,22 @@ data class Configuration(
 data class AppList(
     var showSystemApps: Boolean = false,
     var defaultMode: AllowListMode = AllowListMode.ON_VPN,
-    var allowlist: MutableList<String> = mutableListOf(),
-    var denylist: MutableList<String> = mutableListOf(),
+    var onVpn: MutableList<String> = mutableListOf(),
+    var notOnVpn: MutableList<String> = mutableListOf(),
 ) {
     /**
      * Categorizes all packages in the system into an allowlist
      * and denylist based on the [Configuration]-defined
-     * [AppList.allowlist] and [AppList.denylist].
+     * [AppList.onVpn] and [AppList.notOnVpn].
      *
      * @param pm             A [PackageManager]
-     * @param totalAllowlist Names of packages to use the VPN
-     * @param totalDenylist  Names of packages not to use the VPN
+     * @param totalOnVpn     Names of packages to use the VPN
+     * @param totalNotOnVpn  Names of packages not to use the VPN
      */
     fun resolve(
         pm: PackageManager,
-        totalAllowlist: MutableSet<String>,
-        totalDenylist: MutableSet<String>,
+        totalOnVpn: MutableSet<String>,
+        totalNotOnVpn: MutableSet<String>,
     ) {
         val webBrowserPackageNames: MutableSet<String> = HashSet()
         val resolveInfoList = pm.queryIntentActivities(newBrowserIntent(), 0)
@@ -182,22 +182,22 @@ data class AppList(
             // We need to always keep ourselves using the VPN, otherwise our
             // watchdog does not work.
             if (applicationInfo.packageName == BuildConfig.APPLICATION_ID) {
-                totalAllowlist.add(applicationInfo.packageName)
-            } else if (allowlist.contains(applicationInfo.packageName)) {
-                totalAllowlist.add(applicationInfo.packageName)
-            } else if (denylist.contains(applicationInfo.packageName)) {
-                totalDenylist.add(applicationInfo.packageName)
+                totalOnVpn.add(applicationInfo.packageName)
+            } else if (onVpn.contains(applicationInfo.packageName)) {
+                totalOnVpn.add(applicationInfo.packageName)
+            } else if (notOnVpn.contains(applicationInfo.packageName)) {
+                totalNotOnVpn.add(applicationInfo.packageName)
             } else if (defaultMode == AllowListMode.ON_VPN) {
-                totalDenylist.add(applicationInfo.packageName)
+                totalOnVpn.add(applicationInfo.packageName)
             } else if (defaultMode == AllowListMode.NOT_ON_VPN) {
-                totalDenylist.add(applicationInfo.packageName)
+                totalNotOnVpn.add(applicationInfo.packageName)
             } else if (defaultMode == AllowListMode.AUTO) {
                 if (webBrowserPackageNames.contains(applicationInfo.packageName)) {
-                    totalAllowlist.add(applicationInfo.packageName)
+                    totalOnVpn.add(applicationInfo.packageName)
                 } else if (applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM != 0) {
-                    totalDenylist.add(applicationInfo.packageName)
+                    totalNotOnVpn.add(applicationInfo.packageName)
                 } else {
-                    totalAllowlist.add(applicationInfo.packageName)
+                    totalOnVpn.add(applicationInfo.packageName)
                 }
             }
         }
@@ -211,12 +211,8 @@ data class AppList(
         Intent(Intent.ACTION_VIEW).setData(Uri.parse("https://isabrowser.dns66.jak-linux.org/"))
 }
 
+// DO NOT change the order of these states. They correspond to UI functionality.
 enum class AllowListMode {
-    /**
-     * System apps (excluding browsers) do not use the VPN.
-     */
-    AUTO,
-
     /**
      * All apps use the VPN.
      */
@@ -225,7 +221,12 @@ enum class AllowListMode {
     /**
      * No apps use the VPN.
      */
-    NOT_ON_VPN;
+    NOT_ON_VPN,
+
+    /**
+     * System apps (excluding browsers) do not use the VPN.
+     */
+    AUTO;
 
     companion object {
         fun Int.toAllowListMode(): AllowListMode =
