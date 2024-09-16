@@ -13,11 +13,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Android
 import androidx.compose.material.icons.filled.Dns
-import androidx.compose.material.icons.filled.GridOn
-import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
+import androidx.compose.material.icons.filled.VpnKey
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -77,9 +77,9 @@ enum class HomeDestination(
     val icon: ImageVector,
     @StringRes val labelResId: Int,
 ) {
-    Start("start", Icons.Default.Home, R.string.start_tab),
+    Start("start", Icons.Default.VpnKey, R.string.start_tab),
     Hosts("hosts", Icons.AutoMirrored.Filled.DriveFileMove, R.string.hosts_tab),
-    Apps("apps", Icons.Default.GridOn, R.string.allowlist_tab),
+    Apps("apps", Icons.Default.Android, R.string.allowlist_tab),
     DNS("dns", Icons.Default.Dns, R.string.dns_tab),
 }
 
