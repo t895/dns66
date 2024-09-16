@@ -4,27 +4,33 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.calculateEndPadding
+import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.window.core.layout.WindowWidthSizeClass
 import org.jak_linux.dns66.R
 import org.jak_linux.dns66.ui.theme.Dns66Theme
 import org.jak_linux.dns66.ui.theme.FabPadding
-import org.jak_linux.dns66.ui.theme.ListPadding
-import org.jak_linux.dns66.ui.theme.VpnFabSize
 import org.jak_linux.dns66.vpn.VpnStatus
 
 @Composable
 fun StartScreen(
     modifier: Modifier = Modifier,
+    contentPadding: PaddingValues = PaddingValues(),
     resumeOnStartup: Boolean,
     onResumeOnStartupClick: () -> Unit,
     watchConnection: Boolean,
@@ -34,16 +40,15 @@ fun StartScreen(
     status: VpnStatus,
     onChangeVpnStatusClick: () -> Unit,
 ) {
-    Box(
-        modifier = modifier
-            .fillMaxSize()
-    ) {
+    Box(modifier = modifier.fillMaxSize()) {
+        val layoutDirection = LocalLayoutDirection.current
         Column(
             modifier = Modifier
-                .verticalScroll(rememberScrollState())
-                .padding(bottom = VpnFabSize + FabPadding)
-                .padding(ListPadding)
+                .padding(start = contentPadding.calculateStartPadding(layoutDirection))
+                .padding(end = contentPadding.calculateEndPadding(layoutDirection))
+                .verticalScroll(rememberScrollState()),
         ) {
+            Spacer(Modifier.padding(top = contentPadding.calculateTopPadding()))
             ListSettingsContainer {
                 SwitchListItem(
                     title = stringResource(id = R.string.switch_onboot),
@@ -70,14 +75,20 @@ fun StartScreen(
                     onClick = onIpv6SupportClick,
                 )
             }
+            Spacer(Modifier.padding(bottom = contentPadding.calculateBottomPadding()))
         }
 
+        val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
         Box(
             modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.BottomCenter,
+            contentAlignment = if (windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT) {
+                Alignment.BottomCenter
+            } else {
+                Alignment.BottomEnd
+            },
         ) {
             VpnFab(
-                modifier = Modifier.padding(bottom = FabPadding),
+                modifier = Modifier.padding(FabPadding),
                 status = status,
                 onClick = onChangeVpnStatusClick,
             )

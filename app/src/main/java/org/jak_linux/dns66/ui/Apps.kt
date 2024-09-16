@@ -28,7 +28,6 @@ import org.jak_linux.dns66.AllowListMode
 import org.jak_linux.dns66.AllowListMode.Companion.toAllowListMode
 import org.jak_linux.dns66.R
 import org.jak_linux.dns66.ui.theme.Dns66Theme
-import org.jak_linux.dns66.ui.theme.ListPadding
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -46,7 +45,7 @@ fun AppsScreen(
 ) {
     val pm = LocalContext.current.packageManager
     PullToRefreshBox(
-        modifier = modifier.padding(ListPadding),
+        modifier = modifier,
         isRefreshing = isRefreshing,
         onRefresh = onRefresh,
     ) {

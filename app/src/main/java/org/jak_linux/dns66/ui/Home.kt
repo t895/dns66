@@ -9,6 +9,7 @@ import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DriveFileMove
@@ -33,6 +34,9 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
+import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -54,6 +58,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
+import androidx.window.core.layout.WindowWidthSizeClass
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
@@ -61,14 +66,18 @@ import org.jak_linux.dns66.DnsServer
 import org.jak_linux.dns66.FileHelper
 import org.jak_linux.dns66.Host
 import org.jak_linux.dns66.R
+import org.jak_linux.dns66.ui.theme.DefaultFabSize
 import org.jak_linux.dns66.ui.theme.EmphasizedAccelerateEasing
 import org.jak_linux.dns66.ui.theme.EmphasizedDecelerateEasing
+import org.jak_linux.dns66.ui.theme.FabPadding
 import org.jak_linux.dns66.ui.theme.HomeEnterTransition
 import org.jak_linux.dns66.ui.theme.HomeExitTransition
+import org.jak_linux.dns66.ui.theme.ListPadding
 import org.jak_linux.dns66.ui.theme.TopLevelEnter
 import org.jak_linux.dns66.ui.theme.TopLevelExit
 import org.jak_linux.dns66.ui.theme.TopLevelPopEnter
 import org.jak_linux.dns66.ui.theme.TopLevelPopExit
+import org.jak_linux.dns66.ui.theme.VpnFabSize
 import org.jak_linux.dns66.viewmodel.HomeViewModel
 import org.jak_linux.dns66.vpn.AdVpnService
 
@@ -352,244 +361,250 @@ fun HomeScreen(
         }
     }
 
+    val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    Scaffold(
-        modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-        topBar = {
-            TopAppBar(
-                title = {
-                    Text(text = stringResource(R.string.app_name))
-                },
-                actions = {
-                    IconButton(onClick = onRefresh) {
-                        Icon(Icons.Default.Refresh, null)
-                    }
-
-                    Box {
-                        var expanded by rememberSaveable { mutableStateOf(false) }
-                        IconButton(
-                            onClick = { expanded = true },
-                        ) {
-                            Icon(Icons.Default.MoreVert, null)
-                        }
-
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
-                        ) {
-                            val item = @Composable { text: String, onClick: () -> Unit ->
-                                MenuItem(
-                                    text = text,
-                                    onClick = {
-                                        expanded = false
-                                        onClick()
-                                    }
-                                )
-                            }
-
-                            item(stringResource(R.string.load_defaults), onLoadDefaults)
-                            item(stringResource(R.string.action_import), onImport)
-                            item(stringResource(R.string.action_export), onExport)
-                            item(stringResource(R.string.action_logcat), onShareLogcat)
-                            item(stringResource(R.string.action_about)) {
-                                topLevelNavController.navigate(TopLevelDestination.About.route)
-                            }
-                        }
-                    }
-                },
-                scrollBehavior = scrollBehavior,
-            )
-        },
-        bottomBar = {
-            NavigationBar {
-                val item = @Composable { homeDestination: HomeDestination ->
-                    NavigationBarItem(
-                        selected = homeDestination.route == selectedRoute,
-                        onClick = { setDestination(homeDestination) },
-                        icon = {
-                            Icon(homeDestination.icon, null)
-                        },
-                        label = {
-                            Text(text = stringResource(homeDestination.labelResId))
-                        },
-                    )
-                }
-                item(HomeDestination.Start)
-                item(HomeDestination.Hosts)
-                item(HomeDestination.Apps)
-                item(HomeDestination.DNS)
+    NavigationSuiteScaffold(
+        navigationSuiteItems = {
+            HomeDestination.entries.forEach {
+                item(
+                    selected = it.route == selectedRoute,
+                    onClick = { setDestination(it) },
+                    icon = {
+                        Icon(it.icon, null)
+                    },
+                    label = {
+                        Text(text = stringResource(it.labelResId))
+                    },
+                )
             }
         },
-        floatingActionButton = {
-            AnimatedVisibility(
-                visible = selectedRoute == HomeDestination.Hosts.route ||
-                        selectedRoute == HomeDestination.DNS.route,
-                enter = scaleIn(animationSpec = tween(easing = EmphasizedDecelerateEasing)),
-                exit = scaleOut(animationSpec = tween(easing = EmphasizedAccelerateEasing)),
-            ) {
-                FloatingActionButton(
-                    onClick = {
-                        if (selectedRoute == HomeDestination.Hosts.route) {
-                            topLevelNavController.navigate(Host())
-                        } else if (selectedRoute == HomeDestination.DNS.route) {
-                            topLevelNavController.navigate(DnsServer())
+        layoutType = if (windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT) {
+            NavigationSuiteType.NavigationBar
+        } else {
+            NavigationSuiteType.NavigationRail
+        },
+    ) {
+        Scaffold(
+            modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+            topBar = {
+                TopAppBar(
+                    title = {
+                        Text(text = stringResource(R.string.app_name))
+                    },
+                    actions = {
+                        IconButton(onClick = onRefresh) {
+                            Icon(Icons.Default.Refresh, null)
+                        }
+
+                        Box {
+                            var expanded by rememberSaveable { mutableStateOf(false) }
+                            IconButton(
+                                onClick = { expanded = true },
+                            ) {
+                                Icon(Icons.Default.MoreVert, null)
+                            }
+
+                            DropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false },
+                            ) {
+                                val item = @Composable { text: String, onClick: () -> Unit ->
+                                    MenuItem(
+                                        text = text,
+                                        onClick = {
+                                            expanded = false
+                                            onClick()
+                                        }
+                                    )
+                                }
+
+                                item(stringResource(R.string.load_defaults), onLoadDefaults)
+                                item(stringResource(R.string.action_import), onImport)
+                                item(stringResource(R.string.action_export), onExport)
+                                item(stringResource(R.string.action_logcat), onShareLogcat)
+                                item(stringResource(R.string.action_about)) {
+                                    topLevelNavController.navigate(TopLevelDestination.About.route)
+                                }
+                            }
                         }
                     },
+                    scrollBehavior = scrollBehavior,
+                )
+            },
+            floatingActionButton = {
+                AnimatedVisibility(
+                    visible = selectedRoute == HomeDestination.Hosts.route ||
+                            selectedRoute == HomeDestination.DNS.route,
+                    enter = scaleIn(animationSpec = tween(easing = EmphasizedDecelerateEasing)),
+                    exit = scaleOut(animationSpec = tween(easing = EmphasizedAccelerateEasing)),
                 ) {
-                    Icon(Icons.Default.Add, null)
-                }
-            }
-        },
-        floatingActionButtonPosition = FabPosition.End,
-    ) { contentPadding ->
-        NavHost(
-            navController = navController,
-            startDestination = HomeDestination.Start.route,
-            enterTransition = { HomeEnterTransition },
-            exitTransition = { HomeExitTransition },
-            popEnterTransition = { HomeEnterTransition },
-            popExitTransition = { HomeExitTransition },
-        ) {
-            composable(HomeDestination.Start.route) {
-                var resumeOnStartup by remember { mutableStateOf(vm.config.autoStart) }
-                var watchConnection by remember { mutableStateOf(vm.config.watchDog) }
-                var ipv6Support by remember { mutableStateOf(vm.config.ipV6Support) }
-                val status by AdVpnService.status.collectAsState()
-
-                val showWatchdogWarningDialog by vm.showWatchdogWarningDialog.collectAsState()
-                val dismiss = {
-                    vm.config.watchDog = !vm.config.watchDog
-                    watchConnection = vm.config.watchDog
-                    FileHelper.writeSettings(vm.config)
-                    vm.onDismissWatchdogWarning()
-                }
-                if (showWatchdogWarningDialog) {
-                    AlertDialog(
-                        onDismissRequest = dismiss,
-                        confirmButton = {
-                            TextButton(onClick = { vm.onDismissWatchdogWarning() }) {
-                                Text(text = stringResource(R.string.button_continue))
+                    FloatingActionButton(
+                        onClick = {
+                            if (selectedRoute == HomeDestination.Hosts.route) {
+                                topLevelNavController.navigate(Host())
+                            } else if (selectedRoute == HomeDestination.DNS.route) {
+                                topLevelNavController.navigate(DnsServer())
                             }
                         },
-                        dismissButton = {
-                            TextButton(onClick = dismiss) {
-                                Text(text = stringResource(R.string.button_cancel))
-                            }
-                        },
-                        title = {
-                            Text(text = stringResource(R.string.unstable_feature))
-                        },
-                        text = {
-                            Text(text = stringResource(R.string.unstable_watchdog_message))
-                        },
-                    )
+                    ) {
+                        Icon(Icons.Default.Add, null)
+                    }
                 }
+            },
+            floatingActionButtonPosition = FabPosition.End,
+        ) { contentPadding ->
+            NavHost(
+                navController = navController,
+                startDestination = HomeDestination.Start.route,
+                enterTransition = { HomeEnterTransition },
+                exitTransition = { HomeExitTransition },
+                popEnterTransition = { HomeEnterTransition },
+                popExitTransition = { HomeExitTransition },
+            ) {
+                composable(HomeDestination.Start.route) {
+                    var resumeOnStartup by remember { mutableStateOf(vm.config.autoStart) }
+                    var watchConnection by remember { mutableStateOf(vm.config.watchDog) }
+                    var ipv6Support by remember { mutableStateOf(vm.config.ipV6Support) }
+                    val status by AdVpnService.status.collectAsState()
 
-                StartScreen(
-                    modifier = Modifier.padding(contentPadding),
-                    resumeOnStartup = resumeOnStartup,
-                    onResumeOnStartupClick = {
-                        vm.config.autoStart = !vm.config.autoStart
-                        resumeOnStartup = vm.config.autoStart
-                        FileHelper.writeSettings(vm.config)
-                    },
-                    watchConnection = watchConnection,
-                    onWatchConnectionClick = {
+                    val showWatchdogWarningDialog by vm.showWatchdogWarningDialog.collectAsState()
+                    val dismiss = {
                         vm.config.watchDog = !vm.config.watchDog
                         watchConnection = vm.config.watchDog
                         FileHelper.writeSettings(vm.config)
+                        vm.onDismissWatchdogWarning()
+                    }
+                    if (showWatchdogWarningDialog) {
+                        AlertDialog(
+                            onDismissRequest = dismiss,
+                            confirmButton = {
+                                TextButton(onClick = { vm.onDismissWatchdogWarning() }) {
+                                    Text(text = stringResource(R.string.button_continue))
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = dismiss) {
+                                    Text(text = stringResource(R.string.button_cancel))
+                                }
+                            },
+                            title = {
+                                Text(text = stringResource(R.string.unstable_feature))
+                            },
+                            text = {
+                                Text(text = stringResource(R.string.unstable_watchdog_message))
+                            },
+                        )
+                    }
 
-                        if (watchConnection) {
-                            vm.onEnableWatchdog()
-                        }
-                    },
-                    ipv6Support = ipv6Support,
-                    onIpv6SupportClick = {
-                        vm.config.ipV6Support = !vm.config.ipV6Support
-                        ipv6Support = vm.config.ipV6Support
-                        FileHelper.writeSettings(vm.config)
-                    },
-                    status = status,
-                    onChangeVpnStatusClick = onTryToggleService,
-                )
-            }
-            composable(HomeDestination.Hosts.route) {
-                var filterHosts by remember { mutableStateOf(vm.config.hosts.enabled) }
-                var refreshDaily by remember { mutableStateOf(vm.config.hosts.automaticRefresh) }
-                val hosts by vm.hosts.collectAsState()
-                HostsScreen(
-                    contentPadding = contentPadding,
-                    filterHosts = filterHosts,
-                    onFilterHostsClick = {
-                        vm.config.hosts.enabled = !vm.config.hosts.enabled
-                        filterHosts = vm.config.hosts.enabled
-                        FileHelper.writeSettings(vm.config)
-                    },
-                    refreshDaily = refreshDaily,
-                    onRefreshDailyClick = {
-                        vm.config.hosts.automaticRefresh = !vm.config.hosts.automaticRefresh
-                        refreshDaily = vm.config.hosts.automaticRefresh
-                        FileHelper.writeSettings(vm.config)
-                        onUpdateRefreshWork()
-                    },
-                    hosts = hosts,
-                    onHostClick = { host ->
-                        topLevelNavController.navigate(host)
-                    },
-                    onHostStateChanged = { host ->
-                        vm.cycleHost(host)
-                    },
-                )
-            }
+                    StartScreen(
+                        contentPadding = contentPadding + PaddingValues(ListPadding) +
+                                PaddingValues(bottom = VpnFabSize + FabPadding),
+                        resumeOnStartup = resumeOnStartup,
+                        onResumeOnStartupClick = {
+                            vm.config.autoStart = !vm.config.autoStart
+                            resumeOnStartup = vm.config.autoStart
+                            FileHelper.writeSettings(vm.config)
+                        },
+                        watchConnection = watchConnection,
+                        onWatchConnectionClick = {
+                            vm.config.watchDog = !vm.config.watchDog
+                            watchConnection = vm.config.watchDog
+                            FileHelper.writeSettings(vm.config)
 
-            composable(HomeDestination.Apps.route) {
-                val apps by vm.appList.collectAsState()
-                val isRefreshing by vm.appListRefreshing.collectAsState()
-                var showSystemApps by remember { mutableStateOf(vm.config.appList.showSystemApps) }
-                var allowlistDefault by remember { mutableStateOf(vm.config.appList.defaultMode) }
-                AppsScreen(
-                    contentPadding = contentPadding,
-                    isRefreshing = isRefreshing,
-                    onRefresh = { vm.populateAppList() },
-                    showSystemApps = showSystemApps,
-                    onShowSystemAppsClick = {
-                        vm.config.appList.showSystemApps = !vm.config.appList.showSystemApps
-                        showSystemApps = vm.config.appList.showSystemApps
-                        FileHelper.writeSettings(vm.config)
-                        vm.populateAppList()
-                    },
-                    bypassSelection = allowlistDefault,
-                    onBypassSelection = { selection ->
-                        vm.config.appList.defaultMode = selection
-                        allowlistDefault = selection
-                        FileHelper.writeSettings(vm.config)
-                        vm.populateAppList()
-                    },
-                    apps = apps,
-                    onAppClick = { app ->
-                        vm.onToggleApp(app)
-                    },
-                )
-            }
-            composable(HomeDestination.DNS.route) {
-                var customDnsServers by remember { mutableStateOf(vm.config.dnsServers.enabled) }
-                val servers by vm.dnsServers.collectAsState()
-                DnsScreen(
-                    contentPadding = contentPadding,
-                    servers = servers,
-                    customDnsServers = customDnsServers,
-                    onCustomDnsServersClick = {
-                        vm.config.dnsServers.enabled = !vm.config.dnsServers.enabled
-                        customDnsServers = vm.config.dnsServers.enabled
-                        FileHelper.writeSettings(vm.config)
-                    },
-                    onItemClick = { item ->
-                        topLevelNavController.navigate(item)
-                    },
-                    onItemCheckClicked = { item ->
-                        vm.toggleDnsServer(item)
-                    },
-                )
+                            if (watchConnection) {
+                                vm.onEnableWatchdog()
+                            }
+                        },
+                        ipv6Support = ipv6Support,
+                        onIpv6SupportClick = {
+                            vm.config.ipV6Support = !vm.config.ipV6Support
+                            ipv6Support = vm.config.ipV6Support
+                            FileHelper.writeSettings(vm.config)
+                        },
+                        status = status,
+                        onChangeVpnStatusClick = onTryToggleService,
+                    )
+                }
+                composable(HomeDestination.Hosts.route) {
+                    var filterHosts by remember { mutableStateOf(vm.config.hosts.enabled) }
+                    var refreshDaily by remember { mutableStateOf(vm.config.hosts.automaticRefresh) }
+                    val hosts by vm.hosts.collectAsState()
+                    HostsScreen(
+                        contentPadding = contentPadding + PaddingValues(ListPadding) +
+                                PaddingValues(bottom = DefaultFabSize + FabPadding),
+                        filterHosts = filterHosts,
+                        onFilterHostsClick = {
+                            vm.config.hosts.enabled = !vm.config.hosts.enabled
+                            filterHosts = vm.config.hosts.enabled
+                            FileHelper.writeSettings(vm.config)
+                        },
+                        refreshDaily = refreshDaily,
+                        onRefreshDailyClick = {
+                            vm.config.hosts.automaticRefresh = !vm.config.hosts.automaticRefresh
+                            refreshDaily = vm.config.hosts.automaticRefresh
+                            FileHelper.writeSettings(vm.config)
+                            onUpdateRefreshWork()
+                        },
+                        hosts = hosts,
+                        onHostClick = { host ->
+                            topLevelNavController.navigate(host)
+                        },
+                        onHostStateChanged = { host ->
+                            vm.cycleHost(host)
+                        },
+                    )
+                }
+
+                composable(HomeDestination.Apps.route) {
+                    val apps by vm.appList.collectAsState()
+                    val isRefreshing by vm.appListRefreshing.collectAsState()
+                    var showSystemApps by remember { mutableStateOf(vm.config.appList.showSystemApps) }
+                    var allowlistDefault by remember { mutableStateOf(vm.config.appList.defaultMode) }
+                    AppsScreen(
+                        contentPadding = contentPadding + PaddingValues(ListPadding),
+                        isRefreshing = isRefreshing,
+                        onRefresh = { vm.populateAppList() },
+                        showSystemApps = showSystemApps,
+                        onShowSystemAppsClick = {
+                            vm.config.appList.showSystemApps = !vm.config.appList.showSystemApps
+                            showSystemApps = vm.config.appList.showSystemApps
+                            FileHelper.writeSettings(vm.config)
+                            vm.populateAppList()
+                        },
+                        bypassSelection = allowlistDefault,
+                        onBypassSelection = { selection ->
+                            vm.config.appList.defaultMode = selection
+                            allowlistDefault = selection
+                            FileHelper.writeSettings(vm.config)
+                            vm.populateAppList()
+                        },
+                        apps = apps,
+                        onAppClick = { app ->
+                            vm.onToggleApp(app)
+                        },
+                    )
+                }
+                composable(HomeDestination.DNS.route) {
+                    var customDnsServers by remember { mutableStateOf(vm.config.dnsServers.enabled) }
+                    val servers by vm.dnsServers.collectAsState()
+                    DnsScreen(
+                        contentPadding = contentPadding + PaddingValues(ListPadding) +
+                                PaddingValues(bottom = DefaultFabSize + FabPadding),
+                        servers = servers,
+                        customDnsServers = customDnsServers,
+                        onCustomDnsServersClick = {
+                            vm.config.dnsServers.enabled = !vm.config.dnsServers.enabled
+                            customDnsServers = vm.config.dnsServers.enabled
+                            FileHelper.writeSettings(vm.config)
+                        },
+                        onItemClick = { item ->
+                            topLevelNavController.navigate(item)
+                        },
+                        onItemCheckClicked = { item ->
+                            vm.toggleDnsServer(item)
+                        },
+                    )
+                }
             }
         }
     }

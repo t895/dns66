@@ -8,6 +8,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -31,6 +32,7 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.jak_linux.dns66.ui.theme.Dns66Theme
+import org.jak_linux.dns66.ui.theme.FabPadding
 import org.jak_linux.dns66.ui.theme.VpnFabSize
 import org.jak_linux.dns66.vpn.VpnStatus
 
@@ -61,6 +63,7 @@ fun VpnFab(
 
     Box(
         modifier = modifier
+            .navigationBarsPadding()
             .shadow(
                 elevation = elevation,
                 shape = shape,

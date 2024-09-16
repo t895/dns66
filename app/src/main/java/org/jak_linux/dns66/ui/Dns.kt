@@ -36,10 +36,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import org.jak_linux.dns66.DnsServer
 import org.jak_linux.dns66.R
-import org.jak_linux.dns66.ui.theme.DefaultFabSize
 import org.jak_linux.dns66.ui.theme.Dns66Theme
-import org.jak_linux.dns66.ui.theme.FabPadding
-import org.jak_linux.dns66.ui.theme.ListPadding
 
 @Composable
 fun DnsScreen(
@@ -52,9 +49,7 @@ fun DnsScreen(
     onItemCheckClicked: (DnsServer) -> Unit,
 ) {
     LazyColumn(
-        modifier = modifier
-            .padding(ListPadding)
-            .padding(bottom = DefaultFabSize + FabPadding),
+        modifier = modifier,
         contentPadding = contentPadding,
     ) {
         item {

@@ -58,6 +58,7 @@ dependencies {
     debugImplementation("androidx.compose.ui:ui-tooling")
     implementation("androidx.compose.material:material-icons-core")
     implementation("androidx.compose.material:material-icons-extended")
+    implementation("androidx.compose.material3:material3-adaptive-navigation-suite")
 
     val accompanistVersion = "0.36.0"
     implementation("com.google.accompanist:accompanist-drawablepainter:$accompanistVersion")
