@@ -30,7 +30,6 @@
     <string name="notification_reconnecting">Conectando de novo</string>
     <string name="notification_reconnecting_error">Falha de conexão</string>
     <string name="notification_stopped">Parou</string>
-    <string name="notification_title">DNS66</string>
     <string-array name="item_states">
         <item>Negar</item>
         <item>Permitir</item>
@@ -49,10 +48,8 @@
     <string name="dns_description">Habilitar seus servidores DNS preferidos</string>
     <string name="host_description">Regras vermelhas bloqueiam, regras verdes permitem</string>
     <string name="disable_notification_title">Desativar notificação</string>
-    <string name="disable_notification_message">Ao desativar a notificação o Dns66 pode ser interrompido sob pressão de memória.\n\nDesativar a notificação mesmo assim?</string>
     <string name="disable_notification_ack">Desativar notificação</string>
     <string name="disable_notification_nak">Cancelar</string>
-    <string name="allowlist_description">Permitir que o Dns66 libere os Apps selecionados</string>
     <string name="switch_show_system_apps">Mostrar Apps do sistema</string>
     <string name="location_dns">Endereço IP do servidor DNS (IPv4 or IPv6)</string>
     <string name="state_dns_enabled">Ativo</string>
@@ -87,10 +84,8 @@
     <string name="legend_host_deny">Negar o acesso ao host nesta entrada</string>
     <string name="do_not_use_dns_server">Desligado</string>
     <string name="use_dns_server">Ligado</string>
-    <string name="switch_onboot_description">Iniciar o Dns66 automaticamente quando o Android for reiniciado (se o App estava ativo quando o dispositivo foi desligado).</string>
     <string name="activity_edit_dns_server">Editar o servidor DNS</string>
     <string name="activity_edit_filter">Editar o filtro</string>
-    <string name="notification_paused_title">Dns66 pausado</string>
     <string name="notification_paused_text">Toque para retomar.</string>
     <string name="notification_action_pause">Pausar</string>
     <string name="allowlist_on_vpn">Não há Apps</string>

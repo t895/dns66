@@ -28,7 +28,6 @@
     <string name="notification_reconnecting">Ponowne łączenie</string>
     <string name="notification_reconnecting_error">Błąd ponownego łączenia</string>
     <string name="notification_stopped">Zatrzymany</string>
-    <string name="notification_title">DNS66</string>
     <string-array name="item_states">
         <item>Odmów</item>
         <item>Pozwól</item>
@@ -46,10 +45,8 @@
     <string name="dns_description">Włącz preferowane serwery DNS</string>
     <string name="host_description">Czerwone reguły blokują, zielone reguły pozwalają</string>
     <string name="disable_notification_title">Wyłączanie powiadomień</string>
-    <string name="disable_notification_message">Wyłączenie powiadomienia może spowodować, że DNS66 zostanie zatrzymany pod presją pamięci systemu.\n\nCzy na pewno chcesz wyłączyć powiadomienie?</string>
     <string name="disable_notification_ack">Wyłącz powiadomienie</string>
     <string name="disable_notification_nak">Przerwji</string>
-    <string name="allowlist_description">Wyłącz DNS66 dla wybranych aplikacji</string>
     <string name="switch_show_system_apps">Pokaż aplikacje systemowe</string>
     <string name="location_dns">Adres IP serwera DNS (IPv4 oder IPv6)</string>
     <string name="state_dns_enabled">Włączone</string>
@@ -84,10 +81,8 @@
     <string name="legend_host_deny">Odmawia dostępu do hosts w tym wpisie</string>
     <string name="do_not_use_dns_server">Wyłączone</string>
     <string name="use_dns_server">Włączone</string>
-    <string name="switch_onboot_description">Uruchamia DNS66 przy starcie systemu.</string>
     <string name="activity_edit_dns_server">Edytuj serwer DNS</string>
     <string name="activity_edit_filter">Edytuj filtr</string>
-    <string name="notification_paused_title">DNS66 wstrzymany</string>
     <string name="notification_paused_text">Dotknij, aby wznowić.</string>
     <string name="notification_action_pause">Pauza</string>
     <string name="allowlist_on_vpn">Brak aplikacji</string>

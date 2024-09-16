@@ -1,7 +1,7 @@
-# Contributing to dns66
+# Contributing to DNSNet
 
-If you want to contribute code to DNS66, you are more than welcome to do so.
-DNS66 uses GitHub pull requests for code contributions.
+If you want to contribute code to DNSNet, you are more than welcome to do so.
+DNSNet uses GitHub pull requests for code contributions.
 
 ## Pull requests
 A pull request should consist of a series of logical commits leading from a

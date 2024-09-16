@@ -29,7 +29,6 @@
     <string name="notification_reconnecting">Riconnessione</string>
     <string name="notification_reconnecting_error">Errore di riconnessione</string>
     <string name="notification_stopped">Arrestato</string>
-    <string name="notification_title">DNS66</string>
     <string-array name="item_states">
         <item>Nega</item>
         <item>Permetti</item>
@@ -47,10 +46,8 @@
     <string name="dns_description">Abilita i tuoi server DNS preferiti</string>
     <string name="host_description">Regola rossa: blocca; Regola verde: permette</string>
     <string name="disable_notification_title">Disabilitazione della notifica</string>
-    <string name="disable_notification_message">La disabilitazione dell\'icona di notifica può causare la chiusura di DNS66, in caso di carenza di memoria.\n\nVuoi disabilitare comunque la notifica?</string>
     <string name="disable_notification_ack">Disabilita notifica</string>
     <string name="disable_notification_nak">Annulla</string>
-    <string name="allowlist_description">Applicazioni che ignorano DNS66</string>
     <string name="switch_show_system_apps">Mostra app di sistema</string>
     <string name="location_dns">Indirizzo IP del server DNS (IPv4 o IPv6)</string>
     <string name="state_dns_enabled">Abilitato</string>
@@ -85,10 +82,8 @@
     <string name="legend_host_deny">Nega accesso agli host in questo elemento</string>
     <string name="do_not_use_dns_server">Disattivato</string>
     <string name="use_dns_server">Attivato</string>
-    <string name="switch_onboot_description">Avvia DNS66 quando il dispositivo viene acceso, se era attivo prima di essere spento.</string>
     <string name="activity_edit_dns_server">Modifica server DNS</string>
     <string name="activity_edit_filter">Modifica filtro</string>
-    <string name="notification_paused_title">DNS66 in pausa</string>
     <string name="notification_paused_text">Tocca per riattivare.</string>
     <string name="notification_action_pause">Pause</string>
     <string name="allowlist_on_vpn">Nessuna app</string>

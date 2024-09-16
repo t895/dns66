@@ -9,11 +9,11 @@ plugins {
 }
 
 android {
-    namespace = "org.jak_linux.dns66"
+    namespace = "com.t895.dnsnet"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "org.jak_linux.dns66"
+        applicationId = "com.t895.dnsnet"
         minSdk = 24
         targetSdk = 35
         versionCode = 29

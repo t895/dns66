@@ -33,7 +33,6 @@
     <string name="notification_starting">Am Starten</string>
     <string name="notification_stopped">Inaktiv</string>
     <string name="notification_stopping">Am Stoppen</string>
-    <string name="notification_title">DNS66</string>
     <string name="notification_waiting_for_net">Warte auf Netzwerk</string>
     <string name="translator_credits">Deutsche Übersetzung: Julian Andres Klode</string>
     <string name="app_version_info">Version: %s</string>
@@ -45,10 +44,8 @@
     <string name="show_notification">Benachrichtigung anzeigen</string>
     <string name="dns_description">Aktiviere deine bevorzugten DNS-Server</string>
     <string name="host_description">Rote Regeln blockieren, Grüne erlauben</string>
-    <string name="disable_notification_message">Deaktivieren der Benachrichtigung kann dazu führen, dass DNS66 beendet wird.\n\nSoll die Benachrichtigung deaktiviert werden?</string>
     <string name="disable_notification_ack">Benachrichtigung deaktivieren</string>
     <string name="disable_notification_nak">Abbrechen</string>
-    <string name="allowlist_description">Umgehe DNS66 für gewählte Apps</string>
     <string name="switch_show_system_apps">System-Anwendungen anzeigen</string>
     <string name="location_dns">IP-Adresse des DNS-Servers (IPv4 oder IPv6)</string>
     <string name="state_dns_enabled">Diesen DNS-Server verwenden</string>
@@ -83,11 +80,9 @@
     <string name="legend_host_allow">Erlaube Zugriff auf Hosts in diesem Eintrag</string>
     <string name="use_dns_server">An</string>
     <string name="do_not_use_dns_server">Aus</string>
-    <string name="switch_onboot_description">Starte DNS66 beim Einschalten des Gerätes, falls es beim Ausschalten aktiv war.</string>
     <string name="activity_edit_dns_server">DNS Server bearbeiten</string>
     <string name="activity_edit_filter">Filter bearbeiten</string>
     <string name="notification_paused_text">Zum Fortsetzen tippen.</string>
-    <string name="notification_paused_title">DNS66 unterbrochen</string>
     <string name="notification_action_pause">Unterbrechen</string>
     <string name="allowlist_on_vpn">Keine Apps</string>
     <string name="allowlist_not_on_vpn">Alle Apps</string>

@@ -30,7 +30,6 @@
     <string name="notification_reconnecting">再接続中</string>
     <string name="notification_reconnecting_error">再接続エラー</string>
     <string name="notification_stopped">停止しました</string>
-    <string name="notification_title">DNS66</string>
     <string-array name="item_states">
         <item>拒否</item>
         <item>許可</item>
@@ -49,10 +48,8 @@
     <string name="dns_description">優先の DNS サーバーを有効にする</string>
     <string name="host_description">赤のルールはブロック、緑のルールは許可</string>
     <string name="disable_notification_title">通知を無効にしています</string>
-    <string name="disable_notification_message">通知を無効にすると、DNS66 がメモリ不足の状態で停止することがあります。\n\n通知を無効にしてもよろしいですか?</string>
     <string name="disable_notification_ack">通知を無効にする</string>
     <string name="disable_notification_nak">中断</string>
-    <string name="allowlist_description">マークしたアプリで DNS66 をバイパスします</string>
     <string name="switch_show_system_apps">システムアプリを表示</string>
     <string name="location_dns">DNS サーバーの IP アドレス (IPv4 または IPv6)</string>
     <string name="state_dns_enabled">有効</string>
@@ -87,10 +84,8 @@
     <string name="legend_host_deny">このエントリのホストにアクセスを拒否する</string>
     <string name="do_not_use_dns_server">オフ</string>
     <string name="use_dns_server">オン</string>
-    <string name="switch_onboot_description">デバイスをオフにしたときに DNS66 が有効になっていた場合は、デバイスをオンにしたときに DNS66 を開始します。</string>
     <string name="activity_edit_dns_server">DNS サーバーを編集</string>
     <string name="activity_edit_filter">フィルターを編集</string>
-    <string name="notification_paused_title">DNS66 が一時停止しました</string>
     <string name="notification_paused_text">タップすると再開します。</string>
     <string name="notification_action_pause">一時停止</string>
     <string name="allowlist_on_vpn">アプリなし</string>

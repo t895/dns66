@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name" translatable="false">DNS66</string>
+    <string name="app_name" translatable="false">DNSNet</string>
     <string name="app_shortdesc">Host blocking and custom DNS servers</string>
     <string name="custom_dns">Custom DNS servers</string>
     <string name="enable_hosts">Filter hosts</string>
@@ -12,7 +12,7 @@
     <string name="load_defaults">Load default settings</string>
     <string name="action_about">About</string>
     <string name="info_app_license">This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.</string>
-    <string name="info_app_copyright" translatable="false">© 2016-2019 Julian Andres Klode</string>
+    <string name="info_app_copyright" translatable="false">©2024 Charles Lombardo</string>
     <string name="switch_onboot">Resume on system start-up</string>
     <string name="activity_edit">Edit Item</string>
     <string name="title">Title</string>
@@ -30,7 +30,6 @@
     <string name="notification_reconnecting">Reconnecting</string>
     <string name="notification_reconnecting_error">Reconnecting error</string>
     <string name="notification_stopped">Stopped</string>
-    <string name="notification_title">DNS66</string>
     <string-array name="item_states">
         <item>Deny</item>
         <item>Allow</item>
@@ -43,16 +42,16 @@
     <string name="missing_hosts_files_title">Missing hosts file</string>
     <string name="button_no">No</string>
     <string name="button_yes">Yes</string>
-    <string name="website" translatable="false">https://github.com/t895/dns66</string>
+    <string name="website" translatable="false">https://github.com/t895/DNSNet</string>
     <string name="allowlist_tab">Apps</string>
     <string name="show_notification">Show Notification</string>
     <string name="dns_description">Enable your preferred DNS servers</string>
     <string name="host_description">Red rules block, green rules allow</string>
     <string name="disable_notification_title">Disabling Notification</string>
-    <string name="disable_notification_message">Disabling the notification may cause DNS66 to be stopped under memory pressure.\n\nDo you want to disable the notification?</string>
+    <string name="disable_notification_message">Disabling the notification may cause DNSNet to be stopped under memory pressure.\n\nDo you want to disable the notification?</string>
     <string name="disable_notification_ack">Disable Notification</string>
     <string name="disable_notification_nak">Abort</string>
-    <string name="allowlist_description">Bypass DNS66 for marked apps</string>
+    <string name="allowlist_description">Bypass DNSNet for marked apps</string>
     <string name="switch_show_system_apps">Show system apps</string>
     <string name="location_dns">IP address of DNS server (IPv4 or IPv6)</string>
     <string name="state_dns_enabled">Enabled</string>
@@ -87,10 +86,10 @@
     <string name="legend_host_deny">Deny access to hosts in this entry</string>
     <string name="do_not_use_dns_server">Off</string>
     <string name="use_dns_server">On</string>
-    <string name="switch_onboot_description">Start DNS66 when the device is turned on if it was active when the device was turned off.</string>
+    <string name="switch_onboot_description">Start DNSNet when the device is turned on if it was active when the device was turned off.</string>
     <string name="activity_edit_dns_server">Edit DNS server</string>
     <string name="activity_edit_filter">Edit Filter</string>
-    <string name="notification_paused_title">DNS66 paused</string>
+    <string name="notification_paused_title">DNSNet paused</string>
     <string name="notification_paused_text">Tap to resume.</string>
     <string name="notification_action_pause">Pause</string>
     <string name="allowlist_on_vpn">No apps</string>
@@ -122,5 +121,5 @@
     <string name="notification_permission">Notification permission needed</string>
     <string name="notification_permission_description">We need the notification permission to show the status of the host blocker and updates for it.</string>
     <string name="could_not_start_vpn">Could not start VPN</string>
-    <string name="could_not_start_vpn_description">You need to accept the request to start a VPN for DNS66 to work. If this still fails, you may need to disable an existing always-on VPN service.</string>
+    <string name="could_not_start_vpn_description">You need to accept the request to start a VPN for DNSNet to work. If this still fails, you may need to disable an existing always-on VPN service.</string>
 </resources>

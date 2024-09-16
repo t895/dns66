@@ -1,28 +1,15 @@
 DNS-Based Host Blocking for Android
 ===================================
+Based on DNS66, this projects aims to continue the goals of the original
+app with modern Android development practices.
+
 This is a DNS-based host blocker for Android. In the default configuration,
 several widely-respected host files are used to block ads, malware, and other
 weird stuff.
 
-[![codecov](https://codecov.io/gh/julian-klode/dns66/branch/master/graph/badge.svg)](https://codecov.io/gh/julian-klode/dns66)
-[![Build Status](https://travis-ci.com/julian-klode/dns66.svg?branch=master)](https://travis-ci.com/julian-klode/dns66)
-
 Installing
 ----------
-[<img src="https://f-droid.org/badge/get-it-on.png"
-      alt="Get it on F-Droid"
-      height="80">](https://f-droid.org/app/org.jak_linux.dns66)
-
-You can either install it via F-Droid, using the official F-Droid repository, or you can use my personal repository at https://jak-linux.org/fdroid/repo which gets updates ASAP.
-
-You can also download apk files in GitHub's download section. Currently, these are the same files as in my personal F-Droid repository, but that might change in the future.
-
-XDA: Discussions and preview builds
------------------------------------
-There is a thread at XDA, where DNS66 can be discussed and I occasionaly post
-preview builts of the git repository:
-
-https://forum.xda-developers.com/android/apps-games/app-dns66-source-host-ad-blocker-root-t3487497
+The app is currently unavailable on GitHub or app stores.
 
 Using it
 ---------
@@ -30,15 +17,10 @@ On the first start, you must manually update the hosts files (using the
 refresh button) before the service can work correctly (issue #1); and you
 must also update the hosts files yourself regularly for now (issue #2).
 
-Items in the hosts and DNS servers lists can be moved around and removed)
+Items in the hosts and DNS servers lists can be moved around and removed
 of the list using standard RecyclerView interactions (long press makes the
 entry movable, swipe to either side removes it). For hosts, a later entry
 overrides a previous entry; for DNS servers, the first server is preferred.
-
-Currently, there are some minor usability issues:
-
-* If you change a setting, you must manually restart the vpn service (issue #3)
-* IPv6 servers are not supported (issue #4)
 
 There's also no validation of input, so DNS servers that are not valid IPv4
 addresses are not rejected, neither are URLs for DNS server entries (we intend
@@ -55,7 +37,6 @@ Custom upstream DNS can be configured. If the feature is turned off, the
 current connection's DNS servers are used. The app ships are pre-defined
 list of well known (mostly German) non-logging servers courtesy of the
 Chaos Computer Club.
-
 
 Privacy Guarantee
 -----------------
@@ -111,6 +92,8 @@ Conduct. By participating in this project you agree to abide by its terms.
 
 Authors
 -------
-Julian Andres Klode <jak@jak-linux.org>
+Charles Lombardo <clombardo169@gmail.com>
+
+The app is based on the UI and services created by Julian Andres Klode <jak@jak-linux.org>
 
 Parts are derived from https://github.com/dbrodie/AdBuster by Daniel Brodie.

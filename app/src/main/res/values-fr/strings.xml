@@ -29,7 +29,6 @@
     <string name="notification_reconnecting">Reconnexion</string>
     <string name="notification_reconnecting_error">Erreur de reconnexion</string>
     <string name="notification_stopped">Arrêtée</string>
-    <string name="notification_title">DNS66</string>
     <string-array name="item_states">
         <item>Refuser</item>
         <item>Accepter</item>
@@ -51,12 +50,8 @@
     <string name="dns_description">Active vos serveurs DNS préférés</string>
     <string name="host_description">Règle rouge pour bloquer, règle verte pour permettre</string>
     <string name="disable_notification_title">Désactivation de la notification</string>
-    <string name="disable_notification_message">Désactiver la notification peut faire s\'arrêter DNS66 en cas d\'usage mémoire important.\n
-     \n
-  Souhaitez-vous désactiver la notification ?</string>
     <string name="disable_notification_ack">Désactiver la notification</string>
     <string name="disable_notification_nak">Annuler</string>
-    <string name="allowlist_description">Les apps marquées ne passent pas par DNS66</string>
     <string name="switch_show_system_apps">Montrer les applications système</string>
     <string name="location_dns">Adresse IP du serveur DNS (IPv4 ou IPv6)</string>
     <string name="state_dns_enabled">Activé</string>
@@ -91,10 +86,8 @@
     <string name="legend_host_deny">Refuser l\'accès aux hôtes de cette entrée</string>
     <string name="do_not_use_dns_server">Désactivé</string>
     <string name="use_dns_server">Activé</string>
-    <string name="switch_onboot_description">Démarrer DNS66 lorsque l\'appareil est allumé s\'il était actif quand l\'appareil a été éteint.</string>
     <string name="activity_edit_dns_server">Modifier le serveur DNS</string>
     <string name="activity_edit_filter">Modifier le filtre</string>
-    <string name="notification_paused_title">DNS66 est en pause</string>
     <string name="notification_paused_text">Appuie simple pour reprendre</string>
     <string name="notification_action_pause">Pause</string>
     <string name="allowlist_on_vpn">Aucune app</string>

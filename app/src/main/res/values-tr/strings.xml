@@ -38,7 +38,6 @@
     <string name="notification_reconnecting">Yeniden bağlanıyor</string>
     <string name="notification_reconnecting_error">Yeniden bağlanırken sorun oluştu</string>
     <string name="notification_stopped">Durduruldu</string>
-    <string name="notification_title">DNS66</string>
     <string-array name="item_states">
         <item>Reddet</item>
         <item>İzin Ver</item>
@@ -55,10 +54,8 @@
     <string name="dns_description">Tercih edilen DNS sunucularını aktif et</string>
     <string name="host_description">Kırmızı kurallar engeller, Yeşil kurallar izin verir</string>
     <string name="disable_notification_title">Bildirimi Devredışı Bırakma</string>
-    <string name="disable_notification_message">Bildirimin devre dışı bırakılması, uygulamanın bellek baskısı altında durdurulmasına neden olabilir.\n\nBildirimi devre dışı bırakmak istiyor musunuz?</string>
     <string name="disable_notification_ack">Bildirimi Kapat</string>
     <string name="disable_notification_nak">İptal</string>
-    <string name="allowlist_description">İşaretli uygulamalar için DNS66 uygulamasını atla</string>
     <string name="switch_show_system_apps">Sistem uygulamalarını göster</string>
     <string name="location_dns">DNS sunucusunun IP adresi (IPv4 veya IPv6)</string>
     <string name="state_dns_enabled">Aktif Edildi</string>
@@ -85,10 +82,8 @@
     <string name="legend_host_ignore">Bu maddeyi yoksay</string>
     <string name="legend_host_allow">Bu maddedeki adreslere erişim izni ver</string>
     <string name="legend_host_deny">Bu maddedeki adreslere erişimi engelle</string>
-    <string name="switch_onboot_description">Cihaz kapalıyken DNS66 etkinse, cihaz açıldığında da başlat.</string>
     <string name="activity_edit_dns_server">DNS sunucusunu düzenle</string>
     <string name="activity_edit_filter">Filtreyi Düzenle</string>
-    <string name="notification_paused_title">DNS66 duraklatıldı</string>
     <string name="notification_paused_text">Devam etmek için dokunun.</string>
     <string name="notification_action_pause">Duraklat</string>
     <string name="allowlist_on_vpn">Uygulama yok</string>

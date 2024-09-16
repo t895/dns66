@@ -26,7 +26,6 @@
     <string name="notification_starting">正在启动</string>
     <string name="notification_stopped">已停止</string>
     <string name="notification_stopping">正在停止</string>
-    <string name="notification_title">DNS66</string>
     <string name="notification_waiting_for_net">等待网络</string>
     <string name="action_refresh">更新Hosts文件</string>
     <string name="load_defaults">载入初始化设置</string>
@@ -47,7 +46,6 @@
     <string name="button_yes">是</string>
     <string name="could_not_update_all_hosts">无法更新所有host文件</string>
     <string name="disable_notification_ack">禁用通知</string>
-    <string name="disable_notification_message">禁用通知会导致 DNS66 在后台内存不足时被停止. 你确实希望禁用通知吗?</string>
     <string name="disable_notification_nak">放弃</string>
     <string name="disable_notification_title">关于禁用通知</string>
     <string name="dns_description">启用你的自定义DNS服务器</string>
@@ -67,14 +65,12 @@
     <string name="night_mode">暗色主题</string>
     <string name="notification_action_pause">暂停</string>
     <string name="notification_paused_text">点击以继续</string>
-    <string name="notification_paused_title">DNS66 已暂停</string>
     <string name="permission_denied">拒绝访问</string>
     <string name="persistable_uri_permission_failed">无法使用所选择的文件: 该文件拒绝被长时间访问</string>
     <string name="requested_timed_out">请求超时</string>
     <string name="show_notification">显示通知</string>
     <string name="state_dns_enabled">启用</string>
     <string name="switch_onboot">系统启动时继续</string>
-    <string name="switch_onboot_description">如果 DNS66 在机器关闭时处于活动状态则会随系统启动</string>
     <string name="switch_show_system_apps">显示系统软件</string>
     <string name="unknown_error_s">未知错误r: %1$s</string>
     <string name="update_incomplete">更新未完成</string>
@@ -84,7 +80,6 @@
     <string name="use_dns_server">开启</string>
     <string name="watchdog">监视连接</string>
     <string name="watchdog_description">使用较长的间隔检查连接并在其停止工作时重连</string>
-    <string name="allowlist_description">选中程序忽略 DNS66</string>
     <string name="allowlist_intelligent">除浏览器外的系统程序</string>
     <string name="allowlist_not_on_vpn">所有程序</string>
     <string name="allowlist_on_vpn">无程序</string>

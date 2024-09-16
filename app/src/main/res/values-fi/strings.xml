@@ -29,7 +29,6 @@
     <string name="notification_reconnecting">Yhdistetään uudelleen</string>
     <string name="notification_reconnecting_error">Ongelma uudelleen yhdistämisessä</string>
     <string name="notification_stopped">Pysäytetty</string>
-    <string name="notification_title">DNS66</string>
     <string-array name="item_states">
         <item>Kiellä</item>
         <item>Salli</item>
@@ -47,10 +46,8 @@
     <string name="dns_description">Aktivoi haluamasi DNS-palvelimet</string>
     <string name="host_description">Punaiset säännöt estävät, vihreät säännöt sallivat</string>
     <string name="disable_notification_title">Poistetaan ilmoitus käytöstä</string>
-    <string name="disable_notification_message">Ilmoituksen poistaminen saattaa aiheuttaa DNS66:n pysähtymisen muistin käydessä vähiin.\n\nHaluatko poistaa ilmoituksen käytöstä?</string>
     <string name="disable_notification_ack">Poista ilmoitus käytöstä</string>
     <string name="disable_notification_nak">Keskeytä</string>
-    <string name="allowlist_description">Ohita DNS66 valituille sovelluksille</string>
     <string name="switch_show_system_apps">Näytä järjestelmä-sovellukset</string>
     <string name="location_dns">DNS-palvelimen IP-osoite (IPv4 tai IPv6)</string>
     <string name="state_dns_enabled">Käytössä</string>
@@ -85,10 +82,8 @@
     <string name="legend_host_deny">Evää pääsy tämän kohdan verkkotunnuksiin</string>
     <string name="do_not_use_dns_server">Pois</string>
     <string name="use_dns_server">Päällä</string>
-    <string name="switch_onboot_description">Aja DNS66 laitteen käynnistyessä, mikäli se oli käytössä kun laite suljettiin.</string>
     <string name="activity_edit_dns_server">Muokkaa DNS-palvelinta</string>
     <string name="activity_edit_filter">Muokkaa suodatinta</string>
-    <string name="notification_paused_title">DNS66 tauolla</string>
     <string name="notification_paused_text">Näpäytä jatkaaksesi.</string>
     <string name="notification_action_pause">Tauota</string>
     <string name="allowlist_on_vpn">Ei sovelluksia</string>

@@ -28,7 +28,6 @@
     <string name="notification_reconnecting">Taasühendun</string>
     <string name="notification_reconnecting_error">Taasühendamise viga</string>
     <string name="notification_stopped">Peatatud</string>
-    <string name="notification_title">DNS66</string>
     <string-array name="item_states">
         <item>Keela</item>
         <item>Luba</item>
@@ -46,10 +45,8 @@
     <string name="dns_description">Luba oma eelistatud DNS-serverid</string>
     <string name="host_description">Punased reeglid keelavad, rohelised lubavad</string>
     <string name="disable_notification_title">Teate keelamine</string>
-    <string name="disable_notification_message">Teate keelamine võib põhjustada DNS66 peatumise mälusurve tagajärjel.\n\nKas soovid teate keelata?</string>
     <string name="disable_notification_ack">Keela teade</string>
     <string name="disable_notification_nak">Tühista</string>
-    <string name="allowlist_description">Ignoreeri DNS66-te märgitud rakenduste puhul</string>
     <string name="switch_show_system_apps">Kuva süsteemirakendused</string>
     <string name="location_dns">DNS-serveri IP-aadress (IPv4 või IPv6)</string>
     <string name="state_dns_enabled">Lubatud</string>
@@ -84,10 +81,8 @@
     <string name="legend_host_deny">Keela sellel üksusel hostidele ligipääs</string>
     <string name="do_not_use_dns_server">Väljas</string>
     <string name="use_dns_server">Sees</string>
-    <string name="switch_onboot_description">Käivita DNS66 seadme sisselülitusel, kui see oli aktiivne seadme väljalülituse ajal.</string>
     <string name="activity_edit_dns_server">Muuda DNS-serverit</string>
     <string name="activity_edit_filter">Muuda filtrit</string>
-    <string name="notification_paused_title">DNS66 pausil</string>
     <string name="notification_paused_text">Koputa jätkamiseks.</string>
     <string name="notification_action_pause">Paus</string>
     <string name="allowlist_on_vpn">Mitte ühtegi rakendust</string>

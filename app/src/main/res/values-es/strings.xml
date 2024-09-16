@@ -28,7 +28,6 @@
     <string name="notification_reconnecting">Reconectando</string>
     <string name="notification_reconnecting_error">Error reconectando</string>
     <string name="notification_stopped">Parado</string>
-    <string name="notification_title">DNS66</string>
     <string-array name="item_states">
         <item>Denegar</item>
         <item>Permitir</item>
@@ -46,10 +45,8 @@
     <string name="dns_description">Habilitar los servidores DNS preferidos</string>
     <string name="host_description">Reglas rojas bloquean, las reglas verdes permiten</string>
     <string name="disable_notification_title"> Desactivar notificación</string>
-    <string name="disable_notification_message">La desactivación de la notificación puede hacer que DNS66 se detenga bajo presión de memoria. \n\n¿Desea desactivar la notificación? </string>
     <string name="disable_notification_ack"> Desactivar Notificación </string>
     <string name="disable_notification_nak">Cancelar</string>
-    <string name="allowlist_description">Bypass DNS66 para aplicaciones seleccionadas</string>
     <string name="switch_show_system_apps">Mostrar aplicaciones del sistema</string>
     <string name="location_dns">Dirección IP del servidor DNS (IPv4 o IPv6)</string>
     <string name="state_dns_enabled">Activo</string>
@@ -84,10 +81,8 @@
     <string name="legend_host_deny">Denegar el acceso a los archivos host en esta entrada</string>
     <string name="do_not_use_dns_server">Apagado</string>
     <string name="use_dns_server">Encendido</string>
-    <string name="switch_onboot_description">Iniciar DNS66, cuando se inicie el dispositivo, si estaba activo cuando apagó el dispositivo.</string>
     <string name="activity_edit_dns_server">Editar servidor DNS</string>
     <string name="activity_edit_filter">Editar Filtro</string>
-    <string name="notification_paused_title">DNS66 pausado</string>
     <string name="notification_paused_text">Toca para continuar.</string>
     <string name="notification_action_pause">Pausar</string>
     <string name="allowlist_on_vpn">Sin aplicaciones</string>
