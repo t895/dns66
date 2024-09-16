@@ -32,6 +32,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.painterResource
@@ -64,7 +65,11 @@ fun About(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        Image(painter = painterResource(id = R.mipmap.app_icon_large), contentDescription = null)
+        Image(
+            painter = painterResource(id = R.drawable.icon_full),
+            contentDescription = null,
+            colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
+        )
         AboutText(text = stringResource(id = R.string.app_shortdesc))
         AboutText(text = stringResource(id = R.string.app_version_info, com.t895.dnsnet.BuildConfig.VERSION_NAME))
         AboutText(text = stringResource(id = R.string.info_app_copyright))
