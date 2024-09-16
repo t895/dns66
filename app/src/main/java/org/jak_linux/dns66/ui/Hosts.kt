@@ -191,6 +191,7 @@ private fun HostsScreenPreview() {
 
     Dns66Theme {
         HostsScreen(
+            modifier = Modifier.background(MaterialTheme.colorScheme.surface),
             filterHosts = false,
             onFilterHostsClick = {},
             refreshDaily = false,
