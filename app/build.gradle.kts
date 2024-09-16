@@ -20,8 +20,23 @@ android {
         versionName = "0.1.0"
     }
 
+    val storeFilePath = System.getenv("STORE_FILE_PATH")
+    if (storeFilePath != null) {
+        signingConfigs {
+            create("release") {
+                keyAlias = System.getenv("KEY_ALIAS")
+                keyPassword = System.getenv("KEY_PASSWORD")
+                storeFile = file(storeFilePath)
+                storePassword = System.getenv("STORE_PASSWORD")
+            }
+        }
+    }
+
     buildTypes {
         release {
+            if (storeFilePath != null) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             isMinifyEnabled = true
             proguardFiles(
                 getDefaultProguardFile("proguard-android.txt"),

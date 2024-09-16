@@ -20,4 +20,11 @@ jobs:
      - name: Give execution permissions to the gradle wrapper
        run: chmod +x ./gradlew
      - name: Build
-       run: ./gradlew :app:assembleRelease
+       env:
+         KEY_ALIAS: ${{secrets.KEY_ALIAS}}
+         KEY_PASSWORD: ${{secrets.KEY_PASSWORD}}
+         STORE_PASSWORD: ${{secrets.KEY_PASSWORD}}
+       run: |
+          echo "${{secrets.STORE_FILE}}" | base64 --decode > ${HOME}/keyfile.jks
+          export STORE_FILE_PATH=${HOME}/keyfile.jks
+          ./gradlew :app:assembleRelease
