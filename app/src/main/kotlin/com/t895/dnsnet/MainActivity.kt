@@ -19,9 +19,11 @@ import android.os.Build
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -48,8 +50,6 @@ import java.util.concurrent.TimeUnit
 class MainActivity : AppCompatActivity() {
     companion object {
         const val TAG = "MainActivity"
-
-        const val REQUEST_START_VPN = 1
     }
 
     private val vm: HomeViewModel by viewModels()
@@ -97,6 +97,16 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
 
+                val vpnLauncher =
+                    rememberLauncherForActivityResult(ActivityResultContracts.StartActivityForResult()) {
+                        if (it.resultCode == Activity.RESULT_CANCELED) {
+                            vm.onVpnConfigurationFailure()
+                        } else if (it.resultCode == Activity.RESULT_OK) {
+                            Log.d("MainActivity", "onActivityResult: Starting service")
+                            createService()
+                        }
+                    }
+
                 App(
                     vm = vm,
                     onRefresh = ::refresh,
@@ -109,8 +119,8 @@ class MainActivity : AppCompatActivity() {
                     onImport = { importLauncher.launch(arrayOf("*/*")) },
                     onExport = { exportLauncher.launch("dnsnet.json") },
                     onShareLogcat = ::sendLogcat,
-                    onTryToggleService = ::tryToggleService,
-                    onStartWithoutChecks = ::startService,
+                    onTryToggleService = { tryToggleService(vpnLauncher) },
+                    onStartWithoutChecks = { startService(vpnLauncher) },
                     onUpdateRefreshWork = ::updateRefreshWork,
                 )
             }
@@ -170,38 +180,25 @@ class MainActivity : AppCompatActivity() {
         WorkManager.getInstance(this).enqueue(workRequest)
     }
 
-    @Deprecated("Deprecated in Java")
-    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
-        Log.d(TAG, "onActivityResult: Received result=$resultCode for request=$requestCode")
-        super.onActivityResult(requestCode, resultCode, data)
-
-        if (requestCode == REQUEST_START_VPN && resultCode == Activity.RESULT_CANCELED) {
-            vm.onVpnConfigurationFailure()
-        }
-
-        if (requestCode == REQUEST_START_VPN && resultCode == Activity.RESULT_OK) {
-            Log.d("MainActivity", "onActivityResult: Starting service")
-            createService()
-        }
-    }
-
-    private fun tryToggleService() {
+    private fun tryToggleService(launcher: ManagedActivityResultLauncher<Intent, ActivityResult>) {
         if (AdVpnService.status.value != VpnStatus.STOPPED) {
             Log.i(TAG, "Attempting to disconnect")
             val intent = Intent(this, AdVpnService::class.java)
                 .putExtra("COMMAND", Command.STOP.ordinal)
             startService(intent)
         } else {
-            checkHostsFilesAndStartService()
+            checkHostsFilesAndStartService(launcher)
         }
     }
 
-    private fun checkHostsFilesAndStartService() {
+    private fun checkHostsFilesAndStartService(
+        launcher: ManagedActivityResultLauncher<Intent, ActivityResult>
+    ) {
         if (!areHostsFilesExistent()) {
             vm.onHostsFilesNotFound()
             return
         }
-        startService()
+        startService(launcher)
     }
 
     /**
@@ -232,17 +229,12 @@ class MainActivity : AppCompatActivity() {
      * VPN to run before, it will show a dialog and then call
      * onActivityResult with either [Activity.RESULT_CANCELED]
      * or [Activity.RESULT_OK] for deny/allow respectively.
-     *
-     * This is currently the only way of requesting permission
-     * to start a VPN service. There are no activity result
-     * contracts that can replace this deprecated functionality.
      */
-    @Suppress("DEPRECATION")
-    private fun startService() {
+    private fun startService(launcher: ManagedActivityResultLauncher<Intent, ActivityResult>) {
         Log.i(TAG, "Attempting to connect")
         val intent = prepare(DnsNetApplication.applicationContext)
         if (intent != null) {
-            startActivityForResult(intent, REQUEST_START_VPN)
+            launcher.launch(intent)
         } else {
             createService()
         }
