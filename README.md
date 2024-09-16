@@ -9,15 +9,11 @@ weird stuff.
 
 Installing
 ----------
-The app is currently unavailable on GitHub or app stores.
+Download the APK here
+https://github.com/t895/DNSNet/releases
 
 Using it
 ---------
-Items in the hosts and DNS servers lists can be moved around and removed
-of the list using standard RecyclerView interactions (long press makes the
-entry movable, swipe to either side removes it). For hosts, a later entry
-overrides a previous entry; for DNS servers, the first server is preferred.
-
 There's also no validation of input, so DNS servers that are not valid IPv4
 addresses are not rejected, neither are URLs for DNS server entries (we intend
 to support URLs in the future, so you can point the app to a remote list of
