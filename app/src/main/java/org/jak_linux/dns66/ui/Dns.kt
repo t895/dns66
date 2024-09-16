@@ -1,11 +1,11 @@
 package org.jak_linux.dns66.ui
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -26,6 +26,7 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -62,6 +63,7 @@ fun DnsScreen(
                     title = stringResource(R.string.custom_dns),
                     details = stringResource(R.string.dns_description),
                     checked = customDnsServers,
+                    sharedInteractionSource = remember { MutableInteractionSource() },
                     onCheckedChange = { onCustomDnsServersClick() },
                     onClick = onCustomDnsServersClick,
                 )
@@ -85,11 +87,12 @@ fun DnsScreen(
 @Preview
 @Composable
 private fun DnsScreenPreview() {
-    val item = DnsServer()
-    item.title = "Title"
-    item.location = "213.73.91.35"
     Dns66Theme {
+        val item = DnsServer()
+        item.title = "Title"
+        item.location = "213.73.91.35"
         DnsScreen(
+            modifier = Modifier.background(MaterialTheme.colorScheme.surface),
             servers = listOf(item, item, item),
             onItemClick = {},
             customDnsServers = false,
@@ -147,6 +150,7 @@ fun EditDns(
         SwitchListItem(
             title = stringResource(id = R.string.state_dns_enabled),
             checked = enabled,
+            sharedInteractionSource = remember { MutableInteractionSource() },
             onCheckedChange = { onEnable() },
             onClick = onEnable,
         )
@@ -259,10 +263,12 @@ fun EditDnsScreen(
 @Preview
 @Composable
 fun EditDnsScreenPreview(modifier: Modifier = Modifier) {
-    EditDnsScreen(
-        server = DnsServer("Title", "Location", true),
-        onNavigateUp = {},
-        onSave = {},
-        onDelete = {},
-    )
+    Dns66Theme {
+        EditDnsScreen(
+            server = DnsServer("Title", "Location", true),
+            onNavigateUp = {},
+            onSave = {},
+            onDelete = {},
+        )
+    }
 }

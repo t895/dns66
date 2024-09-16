@@ -4,6 +4,7 @@ import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -99,6 +100,7 @@ fun HostsScreen(
                 SwitchListItem(
                     title = stringResource(id = R.string.enable_hosts),
                     checked = filterHosts,
+                    sharedInteractionSource = remember { MutableInteractionSource() },
                     onCheckedChange = { onFilterHostsClick() },
                     onClick = onFilterHostsClick,
                 )
@@ -132,6 +134,7 @@ fun HostsScreen(
                     title = stringResource(id = R.string.automatic_refresh),
                     details = stringResource(id = R.string.automatic_refresh_description),
                     checked = refreshDaily,
+                    sharedInteractionSource = remember { MutableInteractionSource() },
                     onCheckedChange = { onRefreshDailyClick() },
                     onClick = onRefreshDailyClick,
                 )

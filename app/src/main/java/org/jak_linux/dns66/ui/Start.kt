@@ -1,5 +1,6 @@
 package org.jak_linux.dns66.ui
 
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
@@ -7,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
@@ -44,6 +46,7 @@ fun StartScreen(
                     title = stringResource(id = R.string.switch_onboot),
                     details = stringResource(id = R.string.switch_onboot_description),
                     checked = resumeOnStartup,
+                    sharedInteractionSource = remember { MutableInteractionSource() },
                     onCheckedChange = { onResumeOnStartupClick() },
                     onClick = onResumeOnStartupClick,
                 )
@@ -51,6 +54,7 @@ fun StartScreen(
                     title = stringResource(id = R.string.watchdog),
                     details = stringResource(id = R.string.watchdog_description),
                     checked = watchConnection,
+                    sharedInteractionSource = remember { MutableInteractionSource() },
                     onCheckedChange = { onWatchConnectionClick() },
                     onClick = onWatchConnectionClick,
                 )
@@ -58,6 +62,7 @@ fun StartScreen(
                     title = stringResource(id = R.string.ipv6_support),
                     details = stringResource(id = R.string.ipv6_support_description),
                     checked = ipv6Support,
+                    sharedInteractionSource = remember { MutableInteractionSource() },
                     onCheckedChange = { onIpv6SupportClick() },
                     onClick = onIpv6SupportClick,
                 )

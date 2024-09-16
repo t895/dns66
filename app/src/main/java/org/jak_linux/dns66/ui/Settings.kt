@@ -82,7 +82,7 @@ private fun ContentSetting(
     title: String = "",
     details: String = "",
     onBodyClick: () -> Unit,
-    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+    interactionSource: MutableInteractionSource? = remember { MutableInteractionSource() },
     startContent: @Composable (BoxScope.() -> Unit)? = null,
     endContent: @Composable (BoxScope.() -> Unit)? = null,
 ) {
@@ -129,23 +129,23 @@ fun CheckboxListItem(
     checked: Boolean = false,
     title: String = "",
     details: String = "",
+    sharedInteractionSource: MutableInteractionSource? = null,
     onCheckedChange: (Boolean) -> Unit,
     onClick: () -> Unit,
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
     ContentSetting(
         modifier = modifier,
         enabled = enabled,
         title = title,
         details = details,
         onBodyClick = onClick,
-        interactionSource = interactionSource,
+        interactionSource = sharedInteractionSource,
         endContent = {
             Checkbox(
                 enabled = enabled,
                 checked = checked,
                 onCheckedChange = onCheckedChange,
-                interactionSource = interactionSource,
+                interactionSource = sharedInteractionSource,
             )
         },
     )
@@ -174,23 +174,23 @@ fun SwitchListItem(
     checked: Boolean = false,
     title: String = "",
     details: String = "",
+    sharedInteractionSource: MutableInteractionSource? = null,
     onCheckedChange: (Boolean) -> Unit,
     onClick: () -> Unit,
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
     ContentSetting(
         modifier = modifier,
         enabled = enabled,
         title = title,
         details = details,
         onBodyClick = onClick,
-        interactionSource = interactionSource,
+        interactionSource = sharedInteractionSource,
         endContent = {
             Switch(
                 enabled = enabled,
                 checked = checked,
                 onCheckedChange = onCheckedChange,
-                interactionSource = interactionSource,
+                interactionSource = sharedInteractionSource,
             )
         },
     )
@@ -219,18 +219,18 @@ fun IconSwitchListItem(
     checked: Boolean = false,
     title: String = "",
     details: String = "",
+    sharedInteractionSource: MutableInteractionSource? = null,
     onCheckedChange: (Boolean) -> Unit,
     onClick: () -> Unit,
     iconContent: @Composable BoxScope.() -> Unit,
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
     ContentSetting(
         modifier = modifier,
         enabled = enabled,
         title = title,
         details = details,
         onBodyClick = onClick,
-        interactionSource = interactionSource,
+        interactionSource = sharedInteractionSource,
         startContent = {
             Box(
                 modifier = Modifier
@@ -244,7 +244,7 @@ fun IconSwitchListItem(
                 enabled = enabled,
                 checked = checked,
                 onCheckedChange = onCheckedChange,
-                interactionSource = interactionSource,
+                interactionSource = sharedInteractionSource,
             )
         },
     )
@@ -273,7 +273,7 @@ fun IconListItem(
     title: String = "",
     details: String = "",
     onClick: () -> Unit,
-    interactionSource: MutableInteractionSource = remember { MutableInteractionSource() },
+    interactionSource: MutableInteractionSource? = remember { MutableInteractionSource() },
     iconContent: @Composable BoxScope.() -> Unit,
 ) {
     ContentSetting(
@@ -311,20 +311,20 @@ fun ExpandableOptionsItem(
     expanded: Boolean = false,
     title: String = "",
     details: String = "",
+    sharedInteractionSource: MutableInteractionSource? = null,
     onExpandClick: () -> Unit,
     options: @Composable ColumnScope.() -> Unit,
 ) {
     Column(modifier = modifier) {
-        val interactionSource = remember { MutableInteractionSource() }
         IconListItem(
             title = title,
             details = details,
             onClick = onExpandClick,
-            interactionSource = interactionSource,
+            interactionSource = sharedInteractionSource,
         ) {
             IconButton(
                 onClick = onExpandClick,
-                interactionSource = interactionSource,
+                interactionSource = sharedInteractionSource,
             ) {
                 val iconRotation by animateFloatAsState(
                     targetValue = if (expanded) 0f else 90f,
@@ -382,22 +382,22 @@ fun RadioListItem(
     enabled: Boolean = true,
     title: String = "",
     details: String = "",
+    sharedInteractionSource: MutableInteractionSource? = null,
     onClick: () -> Unit,
     onButtonClick: () -> Unit,
 ) {
-    val interactionSource = remember { MutableInteractionSource() }
     ContentSetting(
         modifier = modifier,
         enabled = enabled,
         title = title,
         details = details,
         onBodyClick = onClick,
-        interactionSource = interactionSource,
+        interactionSource = sharedInteractionSource,
         endContent = {
             RadioButton(
                 selected = selected,
                 onClick = onButtonClick,
-                interactionSource = interactionSource,
+                interactionSource = sharedInteractionSource,
             )
         },
     )

@@ -2,6 +2,7 @@ package org.jak_linux.dns66.ui
 
 import android.content.pm.ApplicationInfo
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -13,6 +14,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -56,6 +58,7 @@ fun AppsScreen(
                     SwitchListItem(
                         title = stringResource(R.string.switch_show_system_apps),
                         checked = showSystemApps,
+                        sharedInteractionSource = remember { MutableInteractionSource() },
                         onCheckedChange = { onShowSystemAppsClick() },
                         onClick = onShowSystemAppsClick,
                     )
@@ -66,6 +69,7 @@ fun AppsScreen(
                         expanded = expanded,
                         title = stringResource(R.string.allowlist_defaults_title),
                         details = bypassOptions[bypassSelection.ordinal],
+                        sharedInteractionSource = remember { MutableInteractionSource() },
                         onExpandClick = { expanded = !expanded },
                     ) {
                         bypassOptions.forEachIndexed { i, option ->
@@ -88,6 +92,7 @@ fun AppsScreen(
                     title = it.label,
                     details = it.info.packageName,
                     checked = it.enabled,
+                    sharedInteractionSource = remember { MutableInteractionSource() },
                     onCheckedChange = { _ -> onAppClick(it) },
                     onClick = { onAppClick(it) },
                     iconContent = {
