@@ -34,7 +34,6 @@ import org.jak_linux.dns66.FileHelper
 import org.jak_linux.dns66.MainActivity
 import org.jak_linux.dns66.NotificationChannels
 import org.jak_linux.dns66.R
-import org.jak_linux.dns66.getParcel
 import org.jak_linux.dns66.vpn.VpnStatus.Companion.toVpnStatus
 
 enum class VpnStatus {
@@ -152,6 +151,18 @@ class AdVpnService : VpnService(), Handler.Callback {
         super.onCreate()
         NotificationChannels.onCreate(this)
 
+        val mainActivityIntent = Intent(applicationContext, MainActivity::class.java)
+            .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
+        val pendingMainActivityIntent =
+            PendingIntent.getActivity(
+                applicationContext,
+                0,
+                mainActivityIntent,
+                PendingIntent.FLAG_IMMUTABLE
+            )
+        notificationBuilder
+            .setContentIntent(pendingMainActivityIntent)
+
         val intent = Intent(this, AdVpnService::class.java)
             .putExtra("COMMAND", Command.PAUSE.ordinal)
         val pendingIntent =
@@ -179,9 +190,7 @@ class AdVpnService : VpnService(), Handler.Callback {
             getSharedPreferences("state", MODE_PRIVATE).edit()
                 .putBoolean("isActive", true)
                 .apply()
-
-            val notificationIntent = intent?.getParcel<PendingIntent>("NOTIFICATION_INTENT")
-            startVpn(notificationIntent)
+            startVpn()
         }
 
         when (command) {
@@ -238,11 +247,8 @@ class AdVpnService : VpnService(), Handler.Callback {
         _status.value = newStatus
     }
 
-    private fun startVpn(notificationIntent: PendingIntent?) {
+    private fun startVpn() {
         notificationBuilder.setContentTitle(getString(R.string.notification_title))
-        if (notificationIntent != null) {
-            notificationBuilder.setContentIntent(notificationIntent)
-        }
         updateVpnStatus(VpnStatus.STARTING)
 
         restartVpnThread()
