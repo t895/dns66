@@ -61,10 +61,10 @@ dependencies {
     // Proxy stuff
     implementation("org.pcap4j:pcap4j-core:1.8.2")
     implementation("org.pcap4j:pcap4j-packetfactory-static:1.8.2")
-    implementation("dnsjava:dnsjava:3.0.0")
+    implementation("dnsjava:dnsjava:3.6.1")
 
     // Compose
-    val composeBom = platform("androidx.compose:compose-bom:2024.09.00")
+    val composeBom = platform("androidx.compose:compose-bom:2024.09.01")
     implementation(composeBom)
     debugImplementation(composeBom)
     androidTestImplementation(composeBom)
