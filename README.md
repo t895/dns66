@@ -13,10 +13,6 @@ The app is currently unavailable on GitHub or app stores.
 
 Using it
 ---------
-On the first start, you must manually update the hosts files (using the
-refresh button) before the service can work correctly (issue #1); and you
-must also update the hosts files yourself regularly for now (issue #2).
-
 Items in the hosts and DNS servers lists can be moved around and removed
 of the list using standard RecyclerView interactions (long press makes the
 entry movable, swipe to either side removes it). For hosts, a later entry
