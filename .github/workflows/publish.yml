@@ -1,7 +1,9 @@
 name: DNSNet Publish
 
-on:
-  workflow_dispatch:
+on: 
+  push:
+    tags:
+    - '*'
 
 jobs:
   publish:
@@ -28,3 +30,6 @@ jobs:
           echo "${{secrets.STORE_FILE}}" | base64 --decode > ${HOME}/keyfile.jks
           export STORE_FILE_PATH=${HOME}/keyfile.jks
           ./gradlew :app:assembleRelease
+     - uses: ncipollo/release-action@v1
+       with:
+         artifacts: "*.apk,*.aab"
