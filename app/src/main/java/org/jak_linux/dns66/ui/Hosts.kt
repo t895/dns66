@@ -78,6 +78,7 @@ private fun IconText(
 fun HostsScreen(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
+    enabled: Boolean,
     filterHosts: Boolean,
     onFilterHostsClick: () -> Unit,
     refreshDaily: Boolean,
@@ -95,6 +96,7 @@ fun HostsScreen(
                 SwitchListItem(
                     title = stringResource(id = R.string.enable_hosts),
                     checked = filterHosts,
+                    enabled = enabled,
                     sharedInteractionSource = remember { MutableInteractionSource() },
                     onCheckedChange = { onFilterHostsClick() },
                     onClick = onFilterHostsClick,
@@ -129,6 +131,7 @@ fun HostsScreen(
                     title = stringResource(id = R.string.automatic_refresh),
                     details = stringResource(id = R.string.automatic_refresh_description),
                     checked = refreshDaily,
+                    enabled = enabled,
                     sharedInteractionSource = remember { MutableInteractionSource() },
                     onCheckedChange = { onRefreshDailyClick() },
                     onClick = onRefreshDailyClick,
@@ -146,13 +149,17 @@ fun HostsScreen(
 
             IconListItem(
                 modifier = Modifier.animateItem(),
+                enabled = enabled,
                 onClick = {
                     onHostClick(it)
                 },
                 title = it.title,
                 details = it.location,
                 iconContent = {
-                    IconButton(onClick = { onHostStateChanged(it) }) {
+                    IconButton(
+                        enabled = enabled,
+                        onClick = { onHostStateChanged(it) },
+                    ) {
                         Icon(painterResource(iconResource), null)
                     }
                 },
@@ -187,6 +194,7 @@ private fun HostsScreenPreview() {
     Dns66Theme {
         HostsScreen(
             modifier = Modifier.background(MaterialTheme.colorScheme.surface),
+            enabled = true,
             filterHosts = false,
             onFilterHostsClick = {},
             refreshDaily = false,

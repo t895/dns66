@@ -34,6 +34,7 @@ import org.jak_linux.dns66.ui.theme.Dns66Theme
 fun AppsScreen(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
+    enabled: Boolean,
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
     showSystemApps: Boolean,
@@ -57,6 +58,7 @@ fun AppsScreen(
                     SwitchListItem(
                         title = stringResource(R.string.switch_show_system_apps),
                         checked = showSystemApps,
+                        enabled = enabled,
                         sharedInteractionSource = remember { MutableInteractionSource() },
                         onCheckedChange = { onShowSystemAppsClick() },
                         onClick = onShowSystemAppsClick,
@@ -66,6 +68,7 @@ fun AppsScreen(
                     val bypassOptions = stringArrayResource(R.array.allowlist_defaults)
                     ExpandableOptionsItem(
                         expanded = expanded,
+                        enabled = enabled,
                         title = stringResource(R.string.allowlist_defaults_title),
                         details = bypassOptions[bypassSelection.ordinal],
                         sharedInteractionSource = remember { MutableInteractionSource() },
@@ -91,6 +94,7 @@ fun AppsScreen(
                     title = it.label,
                     details = it.info.packageName,
                     checked = it.enabled,
+                    enabled = enabled,
                     sharedInteractionSource = remember { MutableInteractionSource() },
                     onCheckedChange = { _ -> onAppClick(it) },
                     onClick = { onAppClick(it) },
@@ -114,6 +118,7 @@ private fun AppsScreenPreview() {
     Dns66Theme {
         AppsScreen(
             isRefreshing = false,
+            enabled = true,
             onRefresh = {},
             apps = listOf(App(ApplicationInfo(), "Label", true)),
             onAppClick = {},

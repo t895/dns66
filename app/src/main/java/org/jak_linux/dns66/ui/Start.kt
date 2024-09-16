@@ -31,6 +31,7 @@ import org.jak_linux.dns66.vpn.VpnStatus
 fun StartScreen(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
+    enabled: Boolean,
     resumeOnStartup: Boolean,
     onResumeOnStartupClick: () -> Unit,
     watchConnection: Boolean,
@@ -54,6 +55,7 @@ fun StartScreen(
                     title = stringResource(id = R.string.switch_onboot),
                     details = stringResource(id = R.string.switch_onboot_description),
                     checked = resumeOnStartup,
+                    enabled = enabled,
                     sharedInteractionSource = remember { MutableInteractionSource() },
                     onCheckedChange = { onResumeOnStartupClick() },
                     onClick = onResumeOnStartupClick,
@@ -62,6 +64,7 @@ fun StartScreen(
                     title = stringResource(id = R.string.watchdog),
                     details = stringResource(id = R.string.watchdog_description),
                     checked = watchConnection,
+                    enabled = enabled,
                     sharedInteractionSource = remember { MutableInteractionSource() },
                     onCheckedChange = { onWatchConnectionClick() },
                     onClick = onWatchConnectionClick,
@@ -70,6 +73,7 @@ fun StartScreen(
                     title = stringResource(id = R.string.ipv6_support),
                     details = stringResource(id = R.string.ipv6_support_description),
                     checked = ipv6Support,
+                    enabled = enabled,
                     sharedInteractionSource = remember { MutableInteractionSource() },
                     onCheckedChange = { onIpv6SupportClick() },
                     onClick = onIpv6SupportClick,
@@ -102,6 +106,7 @@ private fun StartScreenPreview() {
     Dns66Theme {
         StartScreen(
             modifier = Modifier.background(MaterialTheme.colorScheme.surface),
+            enabled = true,
             resumeOnStartup = false,
             onResumeOnStartupClick = {},
             watchConnection = false,

@@ -23,6 +23,7 @@ fun MenuItem(
     modifier: Modifier = Modifier,
     text: String,
     painter: Painter? = null,
+    enabled: Boolean = true,
     onClick: () -> Unit,
 ) {
     DropdownMenuItem(
@@ -47,6 +48,7 @@ fun MenuItem(
                 )
             }
         },
+        enabled = enabled,
         onClick = onClick,
         contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
     )

@@ -309,6 +309,7 @@ private fun IconListItemPreview() {
 fun ExpandableOptionsItem(
     modifier: Modifier = Modifier,
     expanded: Boolean = false,
+    enabled: Boolean = true,
     title: String = "",
     details: String = "",
     sharedInteractionSource: MutableInteractionSource? = null,
@@ -319,10 +320,12 @@ fun ExpandableOptionsItem(
         IconListItem(
             title = title,
             details = details,
+            enabled = enabled,
             onClick = onExpandClick,
             interactionSource = sharedInteractionSource,
         ) {
             IconButton(
+                enabled = enabled,
                 onClick = onExpandClick,
                 interactionSource = sharedInteractionSource,
             ) {

@@ -80,6 +80,7 @@ import org.jak_linux.dns66.ui.theme.TopLevelPopExit
 import org.jak_linux.dns66.ui.theme.VpnFabSize
 import org.jak_linux.dns66.viewmodel.HomeViewModel
 import org.jak_linux.dns66.vpn.AdVpnService
+import org.jak_linux.dns66.vpn.VpnStatus
 
 enum class HomeDestination(
     val route: String,
@@ -384,6 +385,10 @@ fun HomeScreen(
             NavigationSuiteType.NavigationRail
         },
     ) {
+        val status by AdVpnService.status.collectAsState()
+        val canEditSettings by remember {
+            derivedStateOf { status == VpnStatus.STOPPED }
+        }
         Scaffold(
             modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             topBar = {
@@ -408,21 +413,23 @@ fun HomeScreen(
                                 expanded = expanded,
                                 onDismissRequest = { expanded = false },
                             ) {
-                                val item = @Composable { text: String, onClick: () -> Unit ->
-                                    MenuItem(
-                                        text = text,
-                                        onClick = {
-                                            expanded = false
-                                            onClick()
-                                        }
-                                    )
-                                }
+                                val item =
+                                    @Composable { text: String, enabled: Boolean, onClick: () -> Unit ->
+                                        MenuItem(
+                                            text = text,
+                                            enabled = enabled,
+                                            onClick = {
+                                                expanded = false
+                                                onClick()
+                                            }
+                                        )
+                                    }
 
-                                item(stringResource(R.string.load_defaults), onLoadDefaults)
-                                item(stringResource(R.string.action_import), onImport)
-                                item(stringResource(R.string.action_export), onExport)
-                                item(stringResource(R.string.action_logcat), onShareLogcat)
-                                item(stringResource(R.string.action_about)) {
+                                item(stringResource(R.string.load_defaults), canEditSettings, onLoadDefaults)
+                                item(stringResource(R.string.action_import), canEditSettings, onImport)
+                                item(stringResource(R.string.action_export), true, onExport)
+                                item(stringResource(R.string.action_logcat), true, onShareLogcat)
+                                item(stringResource(R.string.action_about), true) {
                                     topLevelNavController.navigate(TopLevelDestination.About.route)
                                 }
                             }
@@ -433,8 +440,8 @@ fun HomeScreen(
             },
             floatingActionButton = {
                 AnimatedVisibility(
-                    visible = selectedRoute == HomeDestination.Hosts.route ||
-                            selectedRoute == HomeDestination.DNS.route,
+                    visible = (selectedRoute == HomeDestination.Hosts.route ||
+                            selectedRoute == HomeDestination.DNS.route) && canEditSettings,
                     enter = scaleIn(animationSpec = tween(easing = EmphasizedDecelerateEasing)),
                     exit = scaleOut(animationSpec = tween(easing = EmphasizedAccelerateEasing)),
                 ) {
@@ -465,7 +472,6 @@ fun HomeScreen(
                     var resumeOnStartup by remember { mutableStateOf(vm.config.autoStart) }
                     var watchConnection by remember { mutableStateOf(vm.config.watchDog) }
                     var ipv6Support by remember { mutableStateOf(vm.config.ipV6Support) }
-                    val status by AdVpnService.status.collectAsState()
 
                     val showWatchdogWarningDialog by vm.showWatchdogWarningDialog.collectAsState()
                     val dismiss = {
@@ -499,6 +505,7 @@ fun HomeScreen(
                     StartScreen(
                         contentPadding = contentPadding + PaddingValues(ListPadding) +
                                 PaddingValues(bottom = VpnFabSize + FabPadding),
+                        enabled = canEditSettings,
                         resumeOnStartup = resumeOnStartup,
                         onResumeOnStartupClick = {
                             vm.config.autoStart = !vm.config.autoStart
@@ -532,6 +539,7 @@ fun HomeScreen(
                     HostsScreen(
                         contentPadding = contentPadding + PaddingValues(ListPadding) +
                                 PaddingValues(bottom = DefaultFabSize + FabPadding),
+                        enabled = canEditSettings,
                         filterHosts = filterHosts,
                         onFilterHostsClick = {
                             vm.config.hosts.enabled = !vm.config.hosts.enabled
@@ -562,6 +570,7 @@ fun HomeScreen(
                     var allowlistDefault by remember { mutableStateOf(vm.config.appList.defaultMode) }
                     AppsScreen(
                         contentPadding = contentPadding + PaddingValues(ListPadding),
+                        enabled = canEditSettings,
                         isRefreshing = isRefreshing,
                         onRefresh = { vm.populateAppList() },
                         showSystemApps = showSystemApps,
@@ -590,6 +599,7 @@ fun HomeScreen(
                     DnsScreen(
                         contentPadding = contentPadding + PaddingValues(ListPadding) +
                                 PaddingValues(bottom = DefaultFabSize + FabPadding),
+                        enabled = canEditSettings,
                         servers = servers,
                         customDnsServers = customDnsServers,
                         onCustomDnsServersClick = {

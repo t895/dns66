@@ -42,6 +42,7 @@ import org.jak_linux.dns66.ui.theme.Dns66Theme
 fun DnsScreen(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
+    enabled: Boolean,
     servers: List<DnsServer> = emptyList(),
     customDnsServers: Boolean,
     onCustomDnsServersClick: () -> Unit,
@@ -58,6 +59,7 @@ fun DnsScreen(
                     title = stringResource(R.string.custom_dns),
                     details = stringResource(R.string.dns_description),
                     checked = customDnsServers,
+                    enabled = enabled,
                     sharedInteractionSource = remember { MutableInteractionSource() },
                     onCheckedChange = { onCustomDnsServersClick() },
                     onClick = onCustomDnsServersClick,
@@ -72,6 +74,7 @@ fun DnsScreen(
                 title = it.title,
                 details = it.location,
                 checked = it.enabled,
+                enabled = enabled,
                 onCheckedChange = { _ -> onItemCheckClicked(it) },
                 onClick = { onItemClick(it) },
             )
@@ -88,6 +91,7 @@ private fun DnsScreenPreview() {
         item.location = "213.73.91.35"
         DnsScreen(
             modifier = Modifier.background(MaterialTheme.colorScheme.surface),
+            enabled = true,
             servers = listOf(item, item, item),
             onItemClick = {},
             customDnsServers = false,
