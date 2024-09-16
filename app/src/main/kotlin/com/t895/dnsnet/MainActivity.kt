@@ -116,6 +116,10 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+        if (!areHostsFilesExistent() && savedInstanceState == null) {
+            refresh()
+        }
+
         updateRefreshWork()
     }
 
@@ -211,7 +215,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         for (item in vm.config.hosts.items) {
-            if (item.state != com.t895.dnsnet.HostState.IGNORE) {
+            if (item.state != HostState.IGNORE) {
                 try {
                     val reader = FileHelper.openItemFile(item) ?: return false
                     reader.close()
