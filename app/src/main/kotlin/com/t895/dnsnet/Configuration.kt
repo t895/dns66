@@ -290,12 +290,12 @@ data class Hosts(
             Host(
                 title = "Adaway hosts file",
                 location = "https://adaway.org/hosts.txt",
-                state = HostState.ALLOW,
+                state = HostState.IGNORE,
             ),
             Host(
                 title = "Dan Pollock's hosts file",
                 location = "https://someonewhocares.org/hosts/hosts",
-                state = HostState.ALLOW,
+                state = HostState.IGNORE,
             ),
         )
     }
