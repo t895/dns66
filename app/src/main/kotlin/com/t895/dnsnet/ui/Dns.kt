@@ -17,7 +17,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Check
@@ -50,6 +52,7 @@ import com.t895.dnsnet.ui.theme.DnsNetTheme
 fun DnsScreen(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
+    listState: LazyListState = rememberLazyListState(),
     enabled: Boolean,
     servers: List<DnsServer> = emptyList(),
     customDnsServers: Boolean,
@@ -60,6 +63,7 @@ fun DnsScreen(
     LazyColumn(
         modifier = modifier,
         contentPadding = contentPadding,
+        state = listState,
     ) {
         item {
             ListSettingsContainer {

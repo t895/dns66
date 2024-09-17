@@ -21,7 +21,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AttachFile
@@ -86,6 +88,7 @@ private fun IconText(
 fun HostsScreen(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
+    listState: LazyListState = rememberLazyListState(),
     enabled: Boolean,
     filterHosts: Boolean,
     onFilterHostsClick: () -> Unit,
@@ -98,6 +101,7 @@ fun HostsScreen(
     LazyColumn(
         modifier = modifier,
         contentPadding = contentPadding,
+        state = listState,
     ) {
         item {
             ListSettingsContainer {

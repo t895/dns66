@@ -18,6 +18,8 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Add
@@ -465,6 +467,11 @@ fun HomeScreen(
             },
             floatingActionButtonPosition = FabPosition.End,
         ) { contentPadding ->
+            // List state must be hoisted outside of the NavHost or it will be lost on recomposition
+            val startListState = rememberScrollState()
+            val hostsListState = rememberLazyListState()
+            val appListState = rememberLazyListState()
+            val dnsListState = rememberLazyListState()
             NavHost(
                 navController = navController,
                 startDestination = HomeDestination.Start.route,
@@ -510,6 +517,7 @@ fun HomeScreen(
                     StartScreen(
                         contentPadding = contentPadding + PaddingValues(ListPadding) +
                                 PaddingValues(bottom = VpnFabSize + FabPadding),
+                        listState = startListState,
                         enabled = canEditSettings,
                         resumeOnStartup = resumeOnStartup,
                         onResumeOnStartupClick = {
@@ -544,6 +552,7 @@ fun HomeScreen(
                     HostsScreen(
                         contentPadding = contentPadding + PaddingValues(ListPadding) +
                                 PaddingValues(bottom = DefaultFabSize + FabPadding),
+                        listState = hostsListState,
                         enabled = canEditSettings,
                         filterHosts = filterHosts,
                         onFilterHostsClick = {
@@ -575,6 +584,7 @@ fun HomeScreen(
                     var allowlistDefault by remember { mutableStateOf(vm.config.appList.defaultMode) }
                     AppsScreen(
                         contentPadding = contentPadding + PaddingValues(ListPadding),
+                        listState = appListState,
                         enabled = canEditSettings,
                         isRefreshing = isRefreshing,
                         onRefresh = { vm.populateAppList() },
@@ -604,6 +614,7 @@ fun HomeScreen(
                     DnsScreen(
                         contentPadding = contentPadding + PaddingValues(ListPadding) +
                                 PaddingValues(bottom = DefaultFabSize + FabPadding),
+                        listState = dnsListState,
                         enabled = canEditSettings,
                         servers = servers,
                         customDnsServers = customDnsServers,

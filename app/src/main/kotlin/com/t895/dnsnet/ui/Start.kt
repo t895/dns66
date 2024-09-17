@@ -8,6 +8,7 @@
 
 package com.t895.dnsnet.ui
 
+import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Box
@@ -39,6 +40,7 @@ import com.t895.dnsnet.vpn.VpnStatus
 fun StartScreen(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
+    listState: ScrollState = rememberScrollState(),
     enabled: Boolean,
     resumeOnStartup: Boolean,
     onResumeOnStartupClick: () -> Unit,
@@ -55,7 +57,7 @@ fun StartScreen(
             modifier = Modifier
                 .padding(start = contentPadding.calculateStartPadding(layoutDirection))
                 .padding(end = contentPadding.calculateEndPadding(layoutDirection))
-                .verticalScroll(rememberScrollState()),
+                .verticalScroll(listState),
         ) {
             Spacer(Modifier.padding(top = contentPadding.calculateTopPadding()))
             ListSettingsContainer {

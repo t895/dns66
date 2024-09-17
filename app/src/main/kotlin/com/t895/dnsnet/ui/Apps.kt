@@ -16,7 +16,9 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.runtime.Composable
@@ -32,6 +34,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import com.t895.dnsnet.AllowListMode
 import com.t895.dnsnet.AllowListMode.Companion.toAllowListMode
 import com.t895.dnsnet.R
 import com.t895.dnsnet.ui.theme.DnsNetTheme
@@ -41,13 +44,14 @@ import com.t895.dnsnet.ui.theme.DnsNetTheme
 fun AppsScreen(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
+    listState: LazyListState = rememberLazyListState(),
     enabled: Boolean,
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
     showSystemApps: Boolean,
     onShowSystemAppsClick: () -> Unit,
-    bypassSelection: com.t895.dnsnet.AllowListMode,
-    onBypassSelection: (com.t895.dnsnet.AllowListMode) -> Unit,
+    bypassSelection: AllowListMode,
+    onBypassSelection: (AllowListMode) -> Unit,
     apps: List<App> = emptyList(),
     onAppClick: (App) -> Unit,
 ) {
@@ -57,7 +61,10 @@ fun AppsScreen(
         isRefreshing = isRefreshing,
         onRefresh = onRefresh,
     ) {
-        LazyColumn(contentPadding = contentPadding) {
+        LazyColumn(
+            contentPadding = contentPadding,
+            state = listState,
+        ) {
             item {
                 ListSettingsContainer(
                     title = stringResource(R.string.allowlist_description),
@@ -131,7 +138,7 @@ private fun AppsScreenPreview() {
             onAppClick = {},
             showSystemApps = false,
             onShowSystemAppsClick = {},
-            bypassSelection = com.t895.dnsnet.AllowListMode.ON_VPN,
+            bypassSelection = AllowListMode.ON_VPN,
             onBypassSelection = {},
         )
     }
