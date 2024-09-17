@@ -50,6 +50,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -102,6 +103,7 @@ private fun ContentSetting(
                 onClick = onBodyClick,
                 interactionSource = interactionSource,
                 indication = ripple(),
+                role = Role.Button,
             )
             .padding(8.dp),
         verticalAlignment = Alignment.CenterVertically
