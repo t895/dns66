@@ -32,7 +32,8 @@ jobs:
           echo "${{secrets.STORE_FILE}}" | base64 --decode > ${HOME}/keyfile.jks
           export STORE_FILE_PATH=${HOME}/keyfile.jks
           ./gradlew :app:assembleRelease
+          ./gradlew :app:buildApksRelease
      - name: Release
        uses: ncipollo/release-action@v1
        with:
-         artifacts: "./**/*.apk,./**/*.aab"
+         artifacts: "./**/*.apk,./**/*.apks"

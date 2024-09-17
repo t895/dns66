@@ -13,4 +13,6 @@ plugins {
     id("com.android.test") version "8.6.0" apply false
 
     id("androidx.baselineprofile") version "1.3.0" apply false
+
+    id("app.accrescent.tools.bundletool") version "0.2.4" apply false
 }

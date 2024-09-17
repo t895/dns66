@@ -6,6 +6,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
     id("org.jetbrains.kotlinx.atomicfu")
     id("androidx.baselineprofile")
+    id("app.accrescent.tools.bundletool")
 }
 
 android {
@@ -22,12 +23,25 @@ android {
 
     val storeFilePath = System.getenv("STORE_FILE_PATH")
     if (storeFilePath != null) {
+        val keyAlias = System.getenv("KEY_ALIAS")
+        val keyPassword = System.getenv("KEY_PASSWORD")
+        val storeFile = file(storeFilePath)
+        val storePassword = System.getenv("STORE_PASSWORD")
         signingConfigs {
             create("release") {
-                keyAlias = System.getenv("KEY_ALIAS")
-                keyPassword = System.getenv("KEY_PASSWORD")
-                storeFile = file(storeFilePath)
-                storePassword = System.getenv("STORE_PASSWORD")
+                this.keyAlias = keyAlias
+                this.keyPassword = keyPassword
+                this.storeFile = storeFile
+                this.storePassword = storePassword
+            }
+        }
+
+        bundletool {
+            signingConfig {
+                this.keyAlias = keyAlias
+                this.keyPassword = keyPassword
+                this.storeFile = storeFile
+                this.storePassword = storePassword
             }
         }
     }
