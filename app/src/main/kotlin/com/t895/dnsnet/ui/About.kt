@@ -20,10 +20,13 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Code
 import androidx.compose.material.icons.rounded.Public
+import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.IconButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -42,6 +45,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.t895.dnsnet.R
 import com.t895.dnsnet.ui.theme.DnsNetTheme
+import com.t895.dnsnet.ui.theme.ListPadding
 
 @Composable
 fun AboutText(text: String = "") {
@@ -63,22 +67,32 @@ fun About(
             .verticalScroll(scrollState)
             .padding(columnPadding),
         horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         Image(
             painter = painterResource(id = R.drawable.icon_full),
             contentDescription = null,
             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
         )
-        AboutText(text = stringResource(id = R.string.app_shortdesc))
-        AboutText(text = stringResource(id = R.string.app_version_info, com.t895.dnsnet.BuildConfig.VERSION_NAME))
-        AboutText(text = stringResource(id = R.string.info_app_copyright))
-        AboutText(text = stringResource(id = R.string.info_app_license))
+        Card {
+            Column(
+                modifier = Modifier.padding(ListPadding),
+                horizontalAlignment = Alignment.CenterHorizontally,
+                verticalArrangement = Arrangement.spacedBy(16.dp),
+            ) {
+                AboutText(text = stringResource(id = R.string.app_shortdesc))
+                AboutText(text = stringResource(id = R.string.app_version_info, com.t895.dnsnet.BuildConfig.VERSION_NAME))
+                AboutText(text = stringResource(id = R.string.info_app_copyright))
+                AboutText(text = stringResource(id = R.string.info_app_license))
 
-        val uriHandler = LocalUriHandler.current
-        val websiteUri = Uri.parse(stringResource(id = R.string.website))
-        IconButton(onClick = { uriHandler.openUri(websiteUri.toString()) }) {
-            Icon(imageVector = Icons.Rounded.Public, contentDescription = null)
+                val uriHandler = LocalUriHandler.current
+                val websiteUri = Uri.parse(stringResource(id = R.string.website))
+                IconButton(
+                    colors = IconButtonDefaults.filledIconButtonColors(),
+                    onClick = { uriHandler.openUri(websiteUri.toString()) },
+                ) {
+                    Icon(imageVector = Icons.Default.Code, contentDescription = null)
+                }
+            }
         }
     }
 }
