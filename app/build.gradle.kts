@@ -33,6 +33,7 @@ android {
                 this.keyPassword = keyPassword
                 this.storeFile = storeFile
                 this.storePassword = storePassword
+                enableV4Signing = true
             }
         }
 
