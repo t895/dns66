@@ -21,7 +21,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Code
-import androidx.compose.material.icons.rounded.Public
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -43,6 +42,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.t895.dnsnet.BuildConfig
 import com.t895.dnsnet.R
 import com.t895.dnsnet.ui.theme.DnsNetTheme
 import com.t895.dnsnet.ui.theme.ListPadding
@@ -80,8 +80,9 @@ fun About(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 AboutText(text = stringResource(id = R.string.app_shortdesc))
-                AboutText(text = stringResource(id = R.string.app_version_info, com.t895.dnsnet.BuildConfig.VERSION_NAME))
+                AboutText(text = stringResource(id = R.string.app_version_info, BuildConfig.VERSION_NAME))
                 AboutText(text = stringResource(id = R.string.info_app_copyright))
+                AboutText(text = stringResource(id = R.string.dns66_credit))
                 AboutText(text = stringResource(id = R.string.info_app_license))
 
                 val uriHandler = LocalUriHandler.current

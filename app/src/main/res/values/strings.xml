@@ -38,6 +38,7 @@
     <!-- Translate with something like <Language> Translation: Your Name -->
     <string name="translator_credits"/>
     <string name="app_version_info">Version: %s</string>
+    <string name="dns66_credit">Based on DNS66 created by Julian Andres Klode</string>
     <string name="missing_hosts_files_message">Some of your configured (non-ignored) hosts files are missing.\n\nUse the ‘Refresh’ action to download hosts files.\n\nDo you still want to continue?</string>
     <string name="missing_hosts_files_title">Missing hosts file</string>
     <string name="button_no">No</string>
