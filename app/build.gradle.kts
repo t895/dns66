@@ -116,4 +116,6 @@ dependencies {
     implementation("androidx.preference:preference-ktx:1.2.1")
 
     implementation("androidx.core:core-splashscreen:1.0.1")
+
+    implementation("io.github.t895:materialswitch:0.1.2")
 }

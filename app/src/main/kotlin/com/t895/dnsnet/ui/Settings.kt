@@ -37,7 +37,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
@@ -55,6 +54,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.t895.dnsnet.ui.theme.DnsNetTheme
+import com.t895.materialswitch.MaterialSwitch
 
 @Composable
 fun SettingInfo(
@@ -196,7 +196,7 @@ fun SwitchListItem(
         onBodyClick = onClick,
         interactionSource = sharedInteractionSource,
         endContent = {
-            Switch(
+            MaterialSwitch(
                 enabled = enabled,
                 checked = checked,
                 onCheckedChange = onCheckedChange,
@@ -250,7 +250,7 @@ fun IconSwitchListItem(
             )
         },
         endContent = {
-            Switch(
+            MaterialSwitch(
                 enabled = enabled,
                 checked = checked,
                 onCheckedChange = onCheckedChange,
