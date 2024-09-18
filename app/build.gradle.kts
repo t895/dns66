@@ -94,9 +94,9 @@ dependencies {
     implementation("com.google.accompanist:accompanist-drawablepainter:$accompanistVersion")
     implementation("com.google.accompanist:accompanist-permissions:$accompanistVersion")
 
-    implementation("androidx.navigation:navigation-compose:2.8.0")
+    implementation("androidx.navigation:navigation-compose:2.8.1")
 
-    val lifecycleVersion = "2.8.5"
+    val lifecycleVersion = "2.8.6"
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycleVersion")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:$lifecycleVersion")
@@ -108,7 +108,7 @@ dependencies {
     implementation("org.jetbrains.kotlinx:atomicfu:0.25.0")
 
     // Baseline profiles
-    implementation("androidx.profileinstaller:profileinstaller:1.3.1")
+    implementation("androidx.profileinstaller:profileinstaller:1.4.0")
     "baselineProfile"(project(":baselineprofile"))
 
     implementation("androidx.work:work-runtime-ktx:2.9.1")
