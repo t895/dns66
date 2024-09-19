@@ -4,6 +4,9 @@ import androidx.benchmark.macro.junit4.BaselineProfileRule
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import androidx.test.filters.LargeTest
 import androidx.test.platform.app.InstrumentationRegistry
+import androidx.test.uiautomator.By
+import androidx.test.uiautomator.Direction
+import androidx.test.uiautomator.Until
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -48,21 +51,31 @@ class BaselineProfileGenerator {
             // See: https://d.android.com/topic/performance/baselineprofiles/dex-layout-optimizations
             includeInStartupProfile = true
         ) {
-            // This block defines the app's critical user journey. Here we are interested in
-            // optimizing for app startup. But you can also navigate and scroll through your most important UI.
-
-            // Start default activity for your app
             pressHome()
             startActivityAndWait()
 
-            // TODO Write more interactions to optimize advanced journeys of your app.
-            // For example:
-            // 1. Wait until the content is asynchronously loaded
-            // 2. Scroll the feed content
-            // 3. Navigate to detail screen
+            device.wait(Until.hasObject(By.res("notificationPermissionDialog")), 5_000)
+            device.findObject(By.res("notificationPermissionDialog:cancel"))?.click()
 
-            // Check UiAutomator documentation for more information how to interact with the app.
-            // https://d.android.com/training/testing/other-components/ui-automator
+            val hosts = By.res("homeNavigation:hosts")
+            device.wait(Until.hasObject(hosts), 5_000)
+            device.findObject(hosts).click()
+
+            val apps = By.res("homeNavigation:apps")
+            device.findObject(apps).click()
+
+            val showSystemApps = By.res("apps:showSystemApps")
+            device.wait(Until.hasObject(showSystemApps), 5_000)
+            device.findObject(showSystemApps).click()
+
+            val listItem = By.res("apps:listItem")
+            device.wait(Until.hasObject(listItem), 5_000)
+
+            val appList = device.findObject(By.scrollable(true))
+            appList?.fling(Direction.DOWN)
+
+            val dns = By.res("homeNavigation:dns")
+            device.findObject(dns).click()
         }
     }
 }

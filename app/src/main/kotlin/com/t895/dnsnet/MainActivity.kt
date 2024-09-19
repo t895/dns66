@@ -27,6 +27,12 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.Surface
+import androidx.compose.ui.ExperimentalComposeUiApi
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -54,6 +60,7 @@ class MainActivity : AppCompatActivity() {
 
     private val vm: HomeViewModel by viewModels()
 
+    @OptIn(ExperimentalComposeUiApi::class)
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
@@ -107,22 +114,28 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
 
-                App(
-                    vm = vm,
-                    onRefresh = ::refresh,
-                    onLoadDefaults = {
-                        vm.config = FileHelper.loadDefaultSettings()
-                        FileHelper.writeSettings(vm.config)
-                        vm.onReloadSettings()
-                        recreate()
-                    },
-                    onImport = { importLauncher.launch(arrayOf("*/*")) },
-                    onExport = { exportLauncher.launch("dnsnet.json") },
-                    onShareLogcat = ::sendLogcat,
-                    onTryToggleService = { tryToggleService(vpnLauncher) },
-                    onStartWithoutChecks = { startService(vpnLauncher) },
-                    onUpdateRefreshWork = ::updateRefreshWork,
-                )
+                Surface(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .semantics { testTagsAsResourceId = true },
+                ) {
+                    App(
+                        vm = vm,
+                        onRefresh = ::refresh,
+                        onLoadDefaults = {
+                            vm.config = FileHelper.loadDefaultSettings()
+                            FileHelper.writeSettings(vm.config)
+                            vm.onReloadSettings()
+                            recreate()
+                        },
+                        onImport = { importLauncher.launch(arrayOf("*/*")) },
+                        onExport = { exportLauncher.launch("dnsnet.json") },
+                        onShareLogcat = ::sendLogcat,
+                        onTryToggleService = { tryToggleService(vpnLauncher) },
+                        onStartWithoutChecks = { startService(vpnLauncher) },
+                        onUpdateRefreshWork = ::updateRefreshWork,
+                    )
+                }
             }
         }
 

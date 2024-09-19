@@ -29,6 +29,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -62,6 +63,7 @@ fun AppsScreen(
         onRefresh = onRefresh,
     ) {
         LazyColumn(
+            modifier = Modifier.testTag("apps:list"),
             contentPadding = contentPadding,
             state = listState,
         ) {
@@ -70,6 +72,7 @@ fun AppsScreen(
                     title = stringResource(R.string.allowlist_description),
                 ) {
                     SwitchListItem(
+                        modifier = Modifier.testTag("apps:showSystemApps"),
                         title = stringResource(R.string.switch_show_system_apps),
                         checked = showSystemApps,
                         enabled = enabled,
@@ -105,6 +108,7 @@ fun AppsScreen(
 
             items(apps) {
                 IconSwitchListItem(
+                    modifier = Modifier.testTag("apps:listItem"),
                     title = it.label,
                     details = it.info.packageName,
                     checked = it.enabled,

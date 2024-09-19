@@ -53,10 +53,14 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
@@ -105,7 +109,7 @@ enum class TopLevelDestination(val route: String) {
     Home("home");
 }
 
-@OptIn(ExperimentalPermissionsApi::class)
+@OptIn(ExperimentalPermissionsApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun App(
     vm: HomeViewModel = viewModel(),
@@ -132,6 +136,9 @@ fun App(
         val showNotificationPermissionDialog by vm.showNotificationPermissionDialog.collectAsState()
         if (showNotificationPermissionDialog) {
             AlertDialog(
+                modifier = Modifier
+                    .semantics { testTagsAsResourceId = true }
+                    .testTag("notificationPermissionDialog"),
                 onDismissRequest = {},
                 confirmButton = {
                     TextButton(
@@ -144,7 +151,12 @@ fun App(
                     }
                 },
                 dismissButton = {
-                    TextButton(onClick = { vm.onNotificationPermissionDenied() }) {
+                    TextButton(
+                        modifier = Modifier.testTag("notificationPermissionDialog:cancel"),
+                        onClick = {
+                            vm.onNotificationPermissionDenied()
+                        }
+                    ) {
                         Text(text = stringResource(android.R.string.cancel))
                     }
                 },
@@ -378,10 +390,18 @@ fun HomeScreen(
                     selected = it.route == selectedRoute,
                     onClick = { setDestination(it) },
                     icon = {
-                        Icon(it.icon, null)
+                        Icon(
+                            imageVector = it.icon,
+                            contentDescription = null,
+                        )
                     },
                     label = {
-                        Text(text = stringResource(it.labelResId))
+                        // For whatever reason, UIAutomator cannot find tags on navigation
+                        // items unless one is set in this label scope.
+                        Text(
+                            modifier = Modifier.testTag("homeNavigation:${it.route}"),
+                            text = stringResource(it.labelResId),
+                        )
                     },
                 )
             }
@@ -432,8 +452,16 @@ fun HomeScreen(
                                         )
                                     }
 
-                                item(stringResource(R.string.load_defaults), canEditSettings, onLoadDefaults)
-                                item(stringResource(R.string.action_import), canEditSettings, onImport)
+                                item(
+                                    stringResource(R.string.load_defaults),
+                                    canEditSettings,
+                                    onLoadDefaults
+                                )
+                                item(
+                                    stringResource(R.string.action_import),
+                                    canEditSettings,
+                                    onImport
+                                )
                                 item(stringResource(R.string.action_export), true, onExport)
                                 item(stringResource(R.string.action_logcat), true, onShareLogcat)
                                 item(stringResource(R.string.action_about), true) {
