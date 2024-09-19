@@ -29,6 +29,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
@@ -75,7 +76,10 @@ private fun IconText(
         verticalAlignment = Alignment.CenterVertically,
         horizontalArrangement = Arrangement.Start,
     ) {
-        Icon(painter = icon, contentDescription = null)
+        Icon(
+            painter = icon,
+            contentDescription = text,
+        )
         Spacer(modifier = Modifier.padding(horizontal = 2.dp))
         Text(
             text = text,
@@ -98,6 +102,14 @@ fun HostsScreen(
     onHostClick: (Host) -> Unit,
     onHostStateChanged: (Host) -> Unit,
 ) {
+    val itemStateStrings = stringArrayResource(R.array.item_states)
+    val getStateString = { state: HostState ->
+        when (state) {
+            HostState.IGNORE -> itemStateStrings[2]
+            HostState.DENY -> itemStateStrings[0]
+            HostState.ALLOW -> itemStateStrings[1]
+        }
+    }
     LazyColumn(
         modifier = modifier,
         contentPadding = contentPadding,
@@ -109,9 +121,7 @@ fun HostsScreen(
                     title = stringResource(id = R.string.enable_hosts),
                     checked = filterHosts,
                     enabled = enabled,
-                    sharedInteractionSource = remember { MutableInteractionSource() },
                     onCheckedChange = { onFilterHostsClick() },
-                    onClick = onFilterHostsClick,
                 )
 
                 Column(
@@ -143,9 +153,7 @@ fun HostsScreen(
                     title = stringResource(id = R.string.automatic_refresh),
                     details = stringResource(id = R.string.automatic_refresh_description),
                     checked = refreshDaily,
-                    sharedInteractionSource = remember { MutableInteractionSource() },
                     onCheckedChange = { onRefreshDailyClick() },
-                    onClick = onRefreshDailyClick,
                 )
             }
             Spacer(modifier = Modifier.padding(vertical = 4.dp))
@@ -158,20 +166,23 @@ fun HostsScreen(
                 else -> R.drawable.ic_state_ignore
             }
 
-            IconListItem(
+            SplitContentSetting(
                 modifier = Modifier.animateItem(),
                 enabled = enabled,
-                onClick = {
+                onBodyClick = {
                     onHostClick(it)
                 },
                 title = it.title,
                 details = it.location,
-                iconContent = {
+                endContent = {
                     IconButton(
                         enabled = enabled,
                         onClick = { onHostStateChanged(it) },
                     ) {
-                        Icon(painterResource(iconResource), null)
+                        Icon(
+                            painter = painterResource(iconResource),
+                            contentDescription = getStateString(it.state),
+                        )
                     }
                 },
             )
@@ -259,7 +270,10 @@ fun EditHost(
             onValueChange = onLocationTextChanged,
             trailingIcon = {
                 IconButton(onClick = onOpenHostsDirectoryClick) {
-                    Icon(imageVector = Icons.Default.AttachFile, contentDescription = null)
+                    Icon(
+                        imageVector = Icons.Default.AttachFile,
+                        contentDescription = stringResource(R.string.action_use_file),
+                    )
                 }
             },
             isError = locationTextError,
@@ -393,7 +407,7 @@ fun EditHostScreen(
                     IconButton(onClick = onNavigateUp) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null,
+                            contentDescription = stringResource(R.string.navigate_up),
                         )
                     }
                 },
@@ -402,7 +416,7 @@ fun EditHostScreen(
                         IconButton(onClick = onDelete) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
-                                contentDescription = null,
+                                contentDescription = stringResource(R.string.action_delete),
                             )
                         }
                     }
@@ -419,8 +433,8 @@ fun EditHostScreen(
                         }
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = null,
+                            imageVector = Icons.Default.Save,
+                            contentDescription = stringResource(R.string.save),
                         )
                     }
                 },

@@ -46,7 +46,7 @@ fun MenuItem(
                 if (painter != null) {
                     Icon(
                         painter = painter,
-                        contentDescription = null,
+                        contentDescription = text,
                     )
                     Spacer(modifier = Modifier.padding(horizontal = 8.dp))
                 }

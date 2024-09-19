@@ -8,7 +8,6 @@
     <string name="dns_tab">DNS</string>
     <string name="action_export">Esporta impostazioni</string>
     <string name="action_import">Importa impostazioni</string>
-    <string name="action_save">Fatto</string>
     <string name="load_defaults">Carica impostazioni predefinite</string>
     <string name="action_about">Informazioni su...</string>
     <string name="info_app_license">Questo programma è un software libero: lo puoi redistribuire e/o modificare nei termini della GNU General Public License, come pubblicato dalla Free Software Foundation, nella versione 3 oppure (a discrezione) in ogni versione successiva.</string>

@@ -65,27 +65,21 @@ fun StartScreen(
                     title = stringResource(id = R.string.switch_onboot),
                     details = stringResource(id = R.string.switch_onboot_description),
                     checked = resumeOnStartup,
-                    sharedInteractionSource = remember { MutableInteractionSource() },
                     onCheckedChange = { onResumeOnStartupClick() },
-                    onClick = onResumeOnStartupClick,
                 )
                 SwitchListItem(
                     title = stringResource(id = R.string.watchdog),
                     details = stringResource(id = R.string.watchdog_description),
                     checked = watchConnection,
                     enabled = enabled,
-                    sharedInteractionSource = remember { MutableInteractionSource() },
                     onCheckedChange = { onWatchConnectionClick() },
-                    onClick = onWatchConnectionClick,
                 )
                 SwitchListItem(
                     title = stringResource(id = R.string.ipv6_support),
                     details = stringResource(id = R.string.ipv6_support_description),
                     checked = ipv6Support,
                     enabled = enabled,
-                    sharedInteractionSource = remember { MutableInteractionSource() },
                     onCheckedChange = { onIpv6SupportClick() },
-                    onClick = onIpv6SupportClick,
                 )
             }
             Spacer(Modifier.padding(bottom = contentPadding.calculateBottomPadding()))

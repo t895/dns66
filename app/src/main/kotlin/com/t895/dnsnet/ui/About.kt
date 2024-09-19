@@ -70,7 +70,7 @@ fun About(
     ) {
         Image(
             painter = painterResource(id = R.drawable.icon_full),
-            contentDescription = null,
+            contentDescription = stringResource(R.string.app_name),
             colorFilter = ColorFilter.tint(MaterialTheme.colorScheme.primary),
         )
         Card {
@@ -91,7 +91,10 @@ fun About(
                     colors = IconButtonDefaults.filledIconButtonColors(),
                     onClick = { uriHandler.openUri(websiteUri.toString()) },
                 ) {
-                    Icon(imageVector = Icons.Default.Code, contentDescription = null)
+                    Icon(
+                        imageVector = Icons.Default.Code,
+                        contentDescription = stringResource(R.string.view_source_code),
+                    )
                 }
             }
         }
@@ -124,7 +127,7 @@ fun AboutScreen(
                     IconButton(onClick = onNavigateUp) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null,
+                            contentDescription = stringResource(R.string.navigate_up),
                         )
                     }
                 },

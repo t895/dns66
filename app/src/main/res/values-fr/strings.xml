@@ -8,7 +8,6 @@
     <string name="dns_tab">DNS</string>
     <string name="action_export">Exporter les paramètres</string>
     <string name="action_import">Importer les paramètres</string>
-    <string name="action_save">Enregistrer</string>
     <string name="load_defaults">Charger les paramètres par défaut</string>
     <string name="action_about">À propos</string>
     <string name="info_app_license">Ce programme est un logiciel libre : vous pouvez le redistribuer et le modifier suivant les termes de la Licence Public Générale GNU telle que publiée par la Free Software Foundation, soit la version 3 de la licence, soit (à votre gré) toute version ultérieure.</string>

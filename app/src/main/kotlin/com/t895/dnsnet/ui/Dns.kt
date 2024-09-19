@@ -9,7 +9,6 @@
 package com.t895.dnsnet.ui
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -22,8 +21,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
+import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -36,7 +35,6 @@ import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -72,23 +70,21 @@ fun DnsScreen(
                     details = stringResource(R.string.dns_description),
                     checked = customDnsServers,
                     enabled = enabled,
-                    sharedInteractionSource = remember { MutableInteractionSource() },
                     onCheckedChange = { onCustomDnsServersClick() },
-                    onClick = onCustomDnsServersClick,
                 )
             }
             Spacer(modifier = Modifier.padding(vertical = 4.dp))
         }
 
         items(servers) {
-            CheckboxListItem(
+            SplitCheckboxListItem(
                 modifier = Modifier.animateItem(),
                 title = it.title,
                 details = it.location,
                 checked = it.enabled,
-                enabled = enabled,
+                checkboxEnabled = enabled,
+                onBodyClick = { onItemClick(it) },
                 onCheckedChange = { _ -> onItemCheckClicked(it) },
-                onClick = { onItemClick(it) },
             )
         }
     }
@@ -161,9 +157,7 @@ fun EditDns(
         SwitchListItem(
             title = stringResource(id = R.string.state_dns_enabled),
             checked = enabled,
-            sharedInteractionSource = remember { MutableInteractionSource() },
             onCheckedChange = { onEnable() },
-            onClick = onEnable,
         )
     }
 }
@@ -220,7 +214,7 @@ fun EditDnsScreen(
                     IconButton(onClick = onNavigateUp) {
                         Icon(
                             imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = null,
+                            contentDescription = stringResource(R.string.navigate_up),
                         )
                     }
                 },
@@ -229,7 +223,7 @@ fun EditDnsScreen(
                         IconButton(onClick = onDelete) {
                             Icon(
                                 imageVector = Icons.Default.Delete,
-                                contentDescription = null,
+                                contentDescription = stringResource(R.string.action_delete),
                             )
                         }
                     }
@@ -252,8 +246,8 @@ fun EditDnsScreen(
                         }
                     ) {
                         Icon(
-                            imageVector = Icons.Default.Check,
-                            contentDescription = null,
+                            imageVector = Icons.Default.Save,
+                            contentDescription = stringResource(R.string.save),
                         )
                     }
                 },

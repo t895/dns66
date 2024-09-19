@@ -392,7 +392,7 @@ fun HomeScreen(
                     icon = {
                         Icon(
                             imageVector = it.icon,
-                            contentDescription = null,
+                            contentDescription = stringResource(it.labelResId),
                         )
                     },
                     label = {
@@ -425,7 +425,10 @@ fun HomeScreen(
                     },
                     actions = {
                         IconButton(onClick = onRefresh) {
-                            Icon(Icons.Default.Refresh, null)
+                            Icon(
+                                imageVector = Icons.Default.Refresh,
+                                contentDescription = stringResource(R.string.action_refresh),
+                            )
                         }
 
                         Box {
@@ -433,7 +436,10 @@ fun HomeScreen(
                             IconButton(
                                 onClick = { expanded = true },
                             ) {
-                                Icon(Icons.Default.MoreVert, null)
+                                Icon(
+                                    imageVector = Icons.Default.MoreVert,
+                                    contentDescription = stringResource(R.string.more_options),
+                                )
                             }
 
                             DropdownMenu(
@@ -489,7 +495,10 @@ fun HomeScreen(
                             }
                         },
                     ) {
-                        Icon(Icons.Default.Add, null)
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = stringResource(R.string.add),
+                        )
                     }
                 }
             },

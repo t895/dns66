@@ -8,7 +8,6 @@
     <string name="dns_tab">DNS サーバー</string>
     <string name="action_export">設定をエクスポート</string>
     <string name="action_import">設定をインポート</string>
-    <string name="action_save">保存</string>
     <string name="load_defaults">デフォルトの設定を読み込み</string>
     <string name="action_about">アプリについて</string>
     <string name="info_app_license">このプログラムはフリーソフトウェアです: フリーソフトウェア財団が発行した GNU 一般公衆利用許諾契約書、バージョン 3 のライセンス、または（オプションで）それ以降のバージョンのいずれかの条件で、再配布および/または変更することができます。</string>

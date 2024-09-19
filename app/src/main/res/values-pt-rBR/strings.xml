@@ -1,5 +1,4 @@
 <resources>
-    <string name="app_name" translatable="false">DNS66</string>
     <string name="app_shortdesc">Bloqueio de hosts e servidores personalizados de DNS</string>
     <string name="custom_dns">Servidores personalizados de DNS</string>
     <string name="enable_hosts">Filtrar hosts</string>
@@ -8,11 +7,9 @@
     <string name="dns_tab">DNS</string>
     <string name="action_export">Exportar as configurações</string>
     <string name="action_import">Importar as configurações</string>
-    <string name="action_save">Feito!</string>
     <string name="load_defaults">Carregar as configurações padrão</string>
     <string name="action_about">Sobre</string>
     <string name="info_app_license">Este App é de software livre: você pode redistribuí-lo e/ou modificá-lo sob os termos do GNU General Public License conforme publicada pelo Free Software Foundation, seja a versão 3 da Licença, ou (a seu critério) qualquer versão posterior.</string>
-    <string name="info_app_copyright" translatable="false">© 2016-2019 Julian Andres Klode</string>
     <string name="switch_onboot">Ativar ao iniciar o Android</string>
     <string name="activity_edit">Editar item</string>
     <string name="title">Título</string>

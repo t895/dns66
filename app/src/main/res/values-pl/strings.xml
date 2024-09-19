@@ -7,7 +7,6 @@
     <string name="dns_tab">Serwery DNS</string>
     <string name="action_export">Eksportuj ustawienia</string>
     <string name="action_import">Importuj ustawienia</string>
-    <string name="action_save">Zapisz</string>
     <string name="load_defaults">Załaduj domyślne ustawienia</string>
     <string name="action_about">O nas</string>
     <string name="info_app_license">Ten program jest wolnym oprogramowaniem: możesz go redystrybuować i / lub modyfikować na zasadach licencji GNU General Public License publikowanej przez Free Software Foundation, w trzeciej wersji licencji, lub (dowolnie) dowolnej późniejszej wersji.</string>

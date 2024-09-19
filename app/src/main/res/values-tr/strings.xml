@@ -17,7 +17,6 @@
     <string name="dns_tab">DNS</string>
     <string name="action_export">Ayarları Kaydet</string>
     <string name="action_import">Ayarları Yükle</string>
-    <string name="action_save">Tamamlandı</string>
     <string name="load_defaults">Varsayılan ayarları yükle</string>
     <string name="action_about">Hakkında</string>
     <string name="info_app_license">Bu program ücretsizdir: GNU Genel Kamu Lisansının, Lisansın sürüm 3 veya (isteğe bağlı olarak) herhangi bir sonraki sürümünde yayınlanan Free Software Foundationın şartlarına göre yeniden dağıtabilir ve/veya değiştirebilirsiniz.</string>

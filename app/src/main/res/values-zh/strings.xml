@@ -3,7 +3,6 @@
     <string name="action_export">导出</string>
     <string name="action_about">关于</string>
     <string name="action_import">导入</string>
-    <string name="action_save">保存</string>
     <string name="app_shortdesc">Host广告屏蔽和自定义DNS服务器</string>
     <string name="custom_dns">自定义DNS服务器</string>
     <string name="dns_tab">DNS</string>

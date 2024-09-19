@@ -36,9 +36,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.t895.dnsnet.R
 import com.t895.dnsnet.ui.theme.DnsNetTheme
 import com.t895.dnsnet.ui.theme.VpnFabSize
 import com.t895.dnsnet.vpn.VpnStatus
@@ -101,14 +103,14 @@ fun VpnFab(
             Icon(
                 modifier = Modifier.size(contentSize),
                 imageVector = Icons.Default.Stop,
-                contentDescription = null,
+                contentDescription = stringResource(R.string.action_stop),
                 tint = contentColor,
             )
         } else if (status == VpnStatus.STOPPED) {
             Icon(
                 modifier = Modifier.size(contentSize),
                 imageVector = Icons.Default.PlayArrow,
-                contentDescription = null,
+                contentDescription = stringResource(R.string.action_start),
                 tint = contentColor,
             )
         } else {

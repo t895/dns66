@@ -7,7 +7,6 @@
     <string name="dns_tab">DNS</string>
     <string name="action_export">Instellingen exporteren</string>
     <string name="action_import">Instellingen importeren</string>
-    <string name="action_save">Gereed</string>
     <string name="load_defaults">Standaardinstellingen laden</string>
     <string name="action_about">Over</string>
     <string name="info_app_license">Dit programma is gratis software: je mag het aanpassen en distribueren onder de voorwaarden van de GNU General Public License zoals gepubliceerd bij de Free Software Foundation, ofwel versie 3 van de licentie, of (naar keuze) iedere latere versie.</string>

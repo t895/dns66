@@ -7,7 +7,6 @@
     <string name="dns_tab">DNS</string>
     <string name="action_export">Ekspordi seaded</string>
     <string name="action_import">Impordi seaded</string>
-    <string name="action_save">Valmis</string>
     <string name="load_defaults">Laadi vaikimisi seaded</string>
     <string name="action_about">Teave</string>
     <string name="info_app_license">See programm on vaba tarkvara: sa võid seda edasi levitada ja/või muuta litsensi GNU General Public License tingimuste alusel, nagu on postitanud Free Software Foundation, kas litsensi 3. versioon või (omal valikul) mõni hilisem versioon.</string>

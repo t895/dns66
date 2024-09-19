@@ -20,24 +20,34 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentHeight
+import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxColors
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.RadioButtonColors
+import androidx.compose.material3.RadioButtonDefaults
+import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import androidx.compose.material3.VerticalDivider
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.material3.ripple
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -49,18 +59,84 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.t895.dnsnet.R
 import com.t895.dnsnet.ui.theme.DnsNetTheme
 import com.t895.materialswitch.MaterialSwitch
+import com.t895.materialswitch.MaterialSwitchColors
+
+@Composable
+fun AccessibleCheckbox(
+    checked: Boolean,
+    onCheckedChange: ((Boolean) -> Unit)?,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    colors: CheckboxColors = CheckboxDefaults.colors(),
+    interactionSource: MutableInteractionSource? = null
+) {
+    Checkbox(
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        modifier = modifier.minimumInteractiveComponentSize(),
+        enabled = enabled,
+        colors = colors,
+        interactionSource = interactionSource,
+    )
+}
+
+@Composable
+fun AccessibleSwitch(
+    checked: Boolean,
+    onCheckedChange: ((Boolean) -> Unit)?,
+    modifier: Modifier = Modifier,
+    thumbContent: (@Composable BoxScope.() -> Unit)? = null,
+    enabled: Boolean = true,
+    colors: MaterialSwitchColors = MaterialSwitchColors(
+        MaterialTheme.colorScheme,
+        SwitchDefaults.colors()
+    ),
+    interactionSource: MutableInteractionSource? = null,
+) {
+    MaterialSwitch(
+        checked = checked,
+        onCheckedChange = onCheckedChange,
+        modifier = modifier.minimumInteractiveComponentSize(),
+        thumbContent = thumbContent,
+        enabled = enabled,
+        colors = colors,
+        interactionSource = interactionSource,
+    )
+}
+
+@Composable
+fun AccessibleRadioButton(
+    selected: Boolean,
+    onClick: (() -> Unit)?,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    colors: RadioButtonColors = RadioButtonDefaults.colors(),
+    interactionSource: MutableInteractionSource? = null
+) {
+    RadioButton(
+        selected = selected,
+        onClick = onClick,
+        modifier = modifier.minimumInteractiveComponentSize(),
+        enabled = enabled,
+        colors = colors,
+        interactionSource = interactionSource,
+    )
+}
 
 @Composable
 fun SettingInfo(
     modifier: Modifier = Modifier,
     title: String,
     details: String = "",
+    maxDetailLines: Int = Int.MAX_VALUE,
 ) {
     Column(
         modifier = modifier,
@@ -79,40 +155,37 @@ fun SettingInfo(
             Text(
                 text = details,
                 style = MaterialTheme.typography.bodySmall,
+                maxLines = maxDetailLines,
+                overflow = TextOverflow.Ellipsis,
             )
         }
     }
 }
 
 @Composable
+private fun StartContentContainer(startContent: @Composable BoxScope.() -> Unit) {
+    Box(
+        modifier = Modifier
+            .size(56.dp),
+        contentAlignment = Alignment.Center,
+        content = startContent,
+    )
+}
+
+@Composable
 private fun ContentSetting(
     modifier: Modifier = Modifier,
-    enabled: Boolean = true,
     title: String = "",
     details: String = "",
-    onBodyClick: () -> Unit,
-    interactionSource: MutableInteractionSource? = remember { MutableInteractionSource() },
     startContent: @Composable (BoxScope.() -> Unit)? = null,
     endContent: @Composable (BoxScope.() -> Unit)? = null,
 ) {
     Row(
-        modifier = modifier
-            .clip(CardDefaults.shape)
-            .clickable(
-                enabled = enabled,
-                onClick = onBodyClick,
-                interactionSource = interactionSource,
-                indication = ripple(),
-                role = Role.Button,
-            )
-            .padding(8.dp),
+        modifier = modifier,
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (startContent != null) {
-            Box(
-                contentAlignment = Alignment.Center,
-                content = startContent,
-            )
+            StartContentContainer(startContent)
             Spacer(modifier = Modifier.padding(horizontal = 4.dp))
         }
 
@@ -133,32 +206,152 @@ private fun ContentSetting(
 }
 
 @Composable
-fun CheckboxListItem(
+fun SplitContentSetting(
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    checked: Boolean = false,
     title: String = "",
+    details: String = "",
+    onBodyClick: () -> Unit,
+    interactionSource: MutableInteractionSource? = remember { MutableInteractionSource() },
+    startContent: @Composable (BoxScope.() -> Unit)? = null,
+    endContent: @Composable BoxScope.() -> Unit,
+) {
+    Row(
+        modifier = modifier
+            .height(IntrinsicSize.Min),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Row(
+            modifier = Modifier
+                .clip(CardDefaults.shape)
+                .clickable(
+                    enabled = enabled,
+                    onClick = onBodyClick,
+                    interactionSource = interactionSource,
+                    indication = ripple(),
+                    role = Role.Button,
+                )
+                .padding(8.dp)
+                .weight(1f),
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+            if (startContent != null) {
+                StartContentContainer(startContent)
+                Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+            }
+
+            SettingInfo(
+                modifier = Modifier.weight(1f),
+                title = title,
+                details = details,
+                maxDetailLines = 1,
+            )
+        }
+        VerticalDivider(
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(8.dp),
+            color = MaterialTheme.colorScheme.outlineVariant,
+        )
+        Box(
+            contentAlignment = Alignment.Center,
+            content = endContent,
+        )
+        Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+    }
+}
+
+@Composable
+private fun ClickableSetting(
+    title: String,
+    role: Role,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    details: String = "",
+    sharedInteractionSource: MutableInteractionSource? = null,
+    onClick: () -> Unit,
+    startContent: @Composable (BoxScope.() -> Unit)? = null,
+    endContent: @Composable BoxScope.() -> Unit,
+) {
+    ContentSetting(
+        modifier = modifier
+            .clip(CardDefaults.shape)
+            .clickable(
+                enabled = enabled,
+                onClick = onClick,
+                interactionSource = sharedInteractionSource,
+                indication = ripple(),
+                role = role,
+            )
+            .padding(8.dp),
+        title = title,
+        details = details,
+        startContent = startContent,
+        endContent = endContent,
+    )
+}
+
+@Composable
+private fun ToggleableSetting(
+    title: String,
+    role: Role,
+    checked: Boolean,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     details: String = "",
     sharedInteractionSource: MutableInteractionSource? = null,
     onCheckedChange: (Boolean) -> Unit,
-    onClick: () -> Unit,
+    startContent: @Composable (BoxScope.() -> Unit)? = null,
+    toggleableContent: @Composable BoxScope.() -> Unit,
 ) {
     ContentSetting(
-        modifier = modifier,
-        enabled = enabled,
+        modifier = modifier
+            .clip(CardDefaults.shape)
+            .toggleable(
+                value = checked,
+                enabled = enabled,
+                onValueChange = onCheckedChange,
+                interactionSource = sharedInteractionSource,
+                indication = ripple(),
+                role = role,
+            )
+            .padding(8.dp),
         title = title,
         details = details,
-        onBodyClick = onClick,
-        interactionSource = sharedInteractionSource,
-        endContent = {
-            Checkbox(
-                enabled = enabled,
-                checked = checked,
-                onCheckedChange = onCheckedChange,
-                interactionSource = sharedInteractionSource,
-            )
-        },
+        startContent = startContent,
+        endContent = toggleableContent,
     )
+}
+
+@Composable
+fun CheckboxListItem(
+    title: String,
+    checked: Boolean,
+    modifier: Modifier = Modifier,
+    enabled: Boolean = true,
+    details: String = "",
+    onCheckedChange: (Boolean) -> Unit,
+    startContent: @Composable (BoxScope.() -> Unit)? = null,
+) {
+    val sharedInteractionSource = remember { MutableInteractionSource() }
+    ToggleableSetting(
+        title = title,
+        role = Role.Checkbox,
+        checked = checked,
+        modifier = modifier,
+        enabled = enabled,
+        details = details,
+        sharedInteractionSource = sharedInteractionSource,
+        onCheckedChange = onCheckedChange,
+        startContent = startContent,
+    ) {
+        AccessibleCheckbox(
+            enabled = enabled,
+            checked = checked,
+            onCheckedChange = null,
+            interactionSource = sharedInteractionSource,
+        )
+    }
 }
 
 @Preview
@@ -172,34 +365,80 @@ private fun CheckboxListItemPreview() {
             title = "Chaos Computer Club",
             details = "213.73.91.35",
             onCheckedChange = { checked = !checked },
-            onClick = {},
+        )
+    }
+}
+
+@Composable
+fun SplitCheckboxListItem(
+    checked: Boolean,
+    title: String,
+    modifier: Modifier = Modifier,
+    bodyEnabled: Boolean = true,
+    checkboxEnabled: Boolean = true,
+    details: String = "",
+    onBodyClick: () -> Unit,
+    onCheckedChange: (Boolean) -> Unit,
+    startContent: @Composable (BoxScope.() -> Unit)? = null,
+) {
+    SplitContentSetting(
+        modifier = modifier,
+        title = title,
+        details = details,
+        onBodyClick = onBodyClick,
+        enabled = bodyEnabled,
+        startContent = startContent,
+        endContent = {
+            AccessibleCheckbox(
+                enabled = checkboxEnabled,
+                checked = checked,
+                onCheckedChange = onCheckedChange,
+            )
+        },
+    )
+}
+
+@Preview
+@Composable
+private fun SplitCheckboxListItemPreview() {
+    DnsNetTheme {
+        SplitCheckboxListItem(
+            modifier = Modifier.background(MaterialTheme.colorScheme.surface),
+            checked = true,
+            title = "Title",
+            details = "Details",
+            onBodyClick = {},
+            onCheckedChange = {},
         )
     }
 }
 
 @Composable
 fun SwitchListItem(
+    checked: Boolean,
+    title: String,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    checked: Boolean = false,
-    title: String = "",
     details: String = "",
-    sharedInteractionSource: MutableInteractionSource? = null,
     onCheckedChange: (Boolean) -> Unit,
-    onClick: () -> Unit,
+    startContent: @Composable (BoxScope.() -> Unit)? = null
 ) {
-    ContentSetting(
+    val sharedInteractionSource = remember { MutableInteractionSource() }
+    ToggleableSetting(
         modifier = modifier,
+        checked = checked,
         enabled = enabled,
         title = title,
+        role = Role.Switch,
         details = details,
-        onBodyClick = onClick,
-        interactionSource = sharedInteractionSource,
-        endContent = {
-            MaterialSwitch(
+        onCheckedChange = onCheckedChange,
+        sharedInteractionSource = sharedInteractionSource,
+        startContent = startContent,
+        toggleableContent = {
+            AccessibleSwitch(
                 enabled = enabled,
                 checked = checked,
-                onCheckedChange = onCheckedChange,
+                onCheckedChange = null,
                 interactionSource = sharedInteractionSource,
             )
         },
@@ -217,44 +456,34 @@ private fun SwitchListItemPreview() {
             title = "Chaos Computer Club",
             details = "213.73.91.35",
             onCheckedChange = { checked = !checked },
-            onClick = {},
         )
     }
 }
 
 @Composable
-fun IconSwitchListItem(
+fun SplitSwitchListItem(
+    checked: Boolean,
+    title: String,
     modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    checked: Boolean = false,
-    title: String = "",
+    bodyEnabled: Boolean = true,
+    switchEnabled: Boolean = true,
     details: String = "",
-    sharedInteractionSource: MutableInteractionSource? = null,
+    onBodyClick: () -> Unit,
     onCheckedChange: (Boolean) -> Unit,
-    onClick: () -> Unit,
-    iconContent: @Composable BoxScope.() -> Unit,
+    startContent: @Composable (BoxScope.() -> Unit)? = null
 ) {
-    ContentSetting(
+    SplitContentSetting(
         modifier = modifier,
-        enabled = enabled,
         title = title,
         details = details,
-        onBodyClick = onClick,
-        interactionSource = sharedInteractionSource,
-        startContent = {
-            Box(
-                modifier = Modifier
-                    .size(56.dp),
-                contentAlignment = Alignment.Center,
-                content = iconContent,
-            )
-        },
+        onBodyClick = onBodyClick,
+        enabled = bodyEnabled,
+        startContent = startContent,
         endContent = {
-            MaterialSwitch(
-                enabled = enabled,
+            AccessibleSwitch(
+                enabled = switchEnabled,
                 checked = checked,
                 onCheckedChange = onCheckedChange,
-                interactionSource = sharedInteractionSource,
             )
         },
     )
@@ -262,37 +491,37 @@ fun IconSwitchListItem(
 
 @Preview
 @Composable
-private fun IconSwitchListItemPreview() {
+private fun SplitSwitchListItemPreview() {
     DnsNetTheme {
-        var checked by remember { mutableStateOf(false) }
-        IconSwitchListItem(
+        SplitSwitchListItem(
             modifier = Modifier.background(MaterialTheme.colorScheme.surface),
-            title = "Chaos Computer Club",
-            details = "213.73.91.35",
-            onCheckedChange = { checked = !checked },
-            onClick = {},
-            iconContent = { Icon(Icons.Default.Check, "") }
+            checked = true,
+            title = "Title",
+            details = "Details",
+            onBodyClick = {},
+            onCheckedChange = {},
         )
     }
 }
 
 @Composable
 fun IconListItem(
+    title: String,
+    onClick: () -> Unit,
     modifier: Modifier = Modifier,
     enabled: Boolean = true,
-    title: String = "",
     details: String = "",
-    onClick: () -> Unit,
     interactionSource: MutableInteractionSource? = remember { MutableInteractionSource() },
     iconContent: @Composable BoxScope.() -> Unit,
 ) {
-    ContentSetting(
+    ClickableSetting(
+        title = title,
+        role = Role.Button,
         modifier = modifier,
         enabled = enabled,
-        title = title,
         details = details,
-        onBodyClick = onClick,
-        interactionSource = interactionSource,
+        sharedInteractionSource = interactionSource,
+        onClick = onClick,
         endContent = iconContent,
     )
 }
@@ -327,12 +556,13 @@ fun ExpandableOptionsItem(
     options: @Composable ColumnScope.() -> Unit,
 ) {
     Column(modifier = modifier) {
-        IconListItem(
+        ClickableSetting(
             title = title,
+            role = Role.DropdownList,
             details = details,
             enabled = enabled,
             onClick = onExpandClick,
-            interactionSource = sharedInteractionSource,
+            sharedInteractionSource = sharedInteractionSource,
         ) {
             IconButton(
                 enabled = enabled,
@@ -346,7 +576,11 @@ fun ExpandableOptionsItem(
                 Icon(
                     modifier = Modifier.rotate(iconRotation),
                     painter = rememberVectorPainter(Icons.Default.KeyboardArrowDown),
-                    contentDescription = null,
+                    contentDescription = if (expanded) {
+                        stringResource(R.string.collapse)
+                    } else {
+                        stringResource(R.string.expand)
+                    },
                 )
             }
         }
@@ -391,25 +625,26 @@ private fun ExpandableOptionsItemPreview() {
 @Composable
 fun RadioListItem(
     modifier: Modifier = Modifier,
-    selected: Boolean,
+    checked: Boolean,
     enabled: Boolean = true,
     title: String = "",
     details: String = "",
     sharedInteractionSource: MutableInteractionSource? = null,
-    onClick: () -> Unit,
-    onButtonClick: () -> Unit,
+    onCheckedChange: (Boolean) -> Unit,
 ) {
-    ContentSetting(
+    ToggleableSetting(
         modifier = modifier,
+        checked = checked,
+        role = Role.RadioButton,
         enabled = enabled,
         title = title,
         details = details,
-        onBodyClick = onClick,
-        interactionSource = sharedInteractionSource,
-        endContent = {
-            RadioButton(
-                selected = selected,
-                onClick = onButtonClick,
+        onCheckedChange = onCheckedChange,
+        sharedInteractionSource = sharedInteractionSource,
+        toggleableContent = {
+            AccessibleRadioButton(
+                selected = checked,
+                onClick = null,
                 interactionSource = sharedInteractionSource,
             )
         },
@@ -425,9 +660,8 @@ private fun RadioListItemPreview() {
             RadioListItem(
                 title = "Title",
                 details = "Details",
-                selected = selected,
-                onClick = { selected = !selected },
-                onButtonClick = { selected = !selected },
+                checked = selected,
+                onCheckedChange = { selected = !selected },
             )
         }
     }
@@ -479,7 +713,6 @@ private fun ListSettingsContainerPreview() {
                 title = "Chaos Computer Club",
                 details = "213.73.91.35",
                 onCheckedChange = { checked = !checked },
-                onClick = {},
             )
             var checked2 by remember { mutableStateOf(false) }
             CheckboxListItem(
@@ -487,7 +720,6 @@ private fun ListSettingsContainerPreview() {
                 title = "Chaos Computer Club",
                 details = "213.73.91.35",
                 onCheckedChange = { checked2 = !checked2 },
-                onClick = {},
             )
             IconListItem(
                 title = "Chaos Computer Club",
@@ -508,22 +740,19 @@ private fun ListSettingsContainerPreview() {
                 onExpandClick = { expanded = !expanded },
             ) {
                 RadioListItem(
-                    selected = false,
+                    checked = false,
                     title = "Option1",
-                    onClick = {},
-                    onButtonClick = {}
+                    onCheckedChange = {},
                 )
                 RadioListItem(
-                    selected = false,
+                    checked = false,
                     title = "Option2",
-                    onClick = {},
-                    onButtonClick = {}
+                    onCheckedChange = {},
                 )
                 RadioListItem(
-                    selected = false,
+                    checked = false,
                     title = "Option3",
-                    onClick = {},
-                    onButtonClick = {}
+                    onCheckedChange = {},
                 )
             }
         }

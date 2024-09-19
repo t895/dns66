@@ -7,7 +7,6 @@
     <string name="dns_tab">DNS</string>
     <string name="action_export">Exportar ajustes</string>
     <string name="action_import">Importar ajustes</string>
-    <string name="action_save">Hecho</string>
     <string name="load_defaults">Cargar ajustes por defecto</string>
     <string name="action_about">Acerca de</string>
     <string name="info_app_license">Este programa es software libre: puede redistribuirlo y/o modificarlo bajo los términos de la Licencia GNU General Public License publicada por la Free Software Foundation, ya sea la versión 3 de la Licencia, o (a su elección) cualquier versión posterior.</string>

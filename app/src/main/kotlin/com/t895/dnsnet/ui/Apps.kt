@@ -75,9 +75,7 @@ fun AppsScreen(
                         modifier = Modifier.testTag("apps:showSystemApps"),
                         title = stringResource(R.string.switch_show_system_apps),
                         checked = showSystemApps,
-                        sharedInteractionSource = remember { MutableInteractionSource() },
                         onCheckedChange = { onShowSystemAppsClick() },
-                        onClick = onShowSystemAppsClick,
                     )
 
                     var expanded by rememberSaveable { mutableStateOf(false) }
@@ -93,10 +91,9 @@ fun AppsScreen(
                         bypassOptions.forEachIndexed { i, option ->
                             val thisMode = i.toAllowListMode()
                             RadioListItem(
-                                selected = thisMode == bypassSelection,
+                                checked = thisMode == bypassSelection,
                                 title = option,
-                                onClick = { onBypassSelection(thisMode) },
-                                onButtonClick = { onBypassSelection(thisMode) },
+                                onCheckedChange = { onBypassSelection(thisMode) },
                             )
                         }
                     }
@@ -106,21 +103,19 @@ fun AppsScreen(
             }
 
             items(apps) {
-                IconSwitchListItem(
+                SwitchListItem(
                     modifier = Modifier.testTag("apps:listItem"),
                     title = it.label,
                     details = it.info.packageName,
                     checked = it.enabled,
                     enabled = enabled,
-                    sharedInteractionSource = remember { MutableInteractionSource() },
                     onCheckedChange = { _ -> onAppClick(it) },
-                    onClick = { onAppClick(it) },
-                    iconContent = {
+                    startContent = {
                         it.loadIcon(pm)
                         Image(
                             modifier = Modifier.fillMaxSize(),
                             painter = rememberDrawablePainter(it.getIcon()),
-                            contentDescription = null,
+                            contentDescription = it.label,
                         )
                     }
                 )

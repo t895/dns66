@@ -8,7 +8,6 @@
     <string name="dns_tab">DNS</string>
     <string name="action_export">Vie asetukset</string>
     <string name="action_import">Tuo asetukset</string>
-    <string name="action_save">Valmis</string>
     <string name="load_defaults">Käytä oletusasetuksia</string>
     <string name="action_about">Tietoja</string>
     <string name="info_app_license">Tämä sovellus on vapaa ohjelmisto: voit jakaa ja/tai muokata sitä GNU General Public License -lisenssin ehtojen mukaisesti, niin kuin se on julkaistu Free Software Foundationin toimesta, käyttäen 3. versiota, tai halutessasi mitä vain myöhempää versiota.</string>
