@@ -143,7 +143,6 @@ fun HostsScreen(
                     title = stringResource(id = R.string.automatic_refresh),
                     details = stringResource(id = R.string.automatic_refresh_description),
                     checked = refreshDaily,
-                    enabled = enabled,
                     sharedInteractionSource = remember { MutableInteractionSource() },
                     onCheckedChange = { onRefreshDailyClick() },
                     onClick = onRefreshDailyClick,

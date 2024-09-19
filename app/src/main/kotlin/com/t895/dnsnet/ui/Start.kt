@@ -65,7 +65,6 @@ fun StartScreen(
                     title = stringResource(id = R.string.switch_onboot),
                     details = stringResource(id = R.string.switch_onboot_description),
                     checked = resumeOnStartup,
-                    enabled = enabled,
                     sharedInteractionSource = remember { MutableInteractionSource() },
                     onCheckedChange = { onResumeOnStartupClick() },
                     onClick = onResumeOnStartupClick,

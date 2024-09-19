@@ -75,7 +75,6 @@ fun AppsScreen(
                         modifier = Modifier.testTag("apps:showSystemApps"),
                         title = stringResource(R.string.switch_show_system_apps),
                         checked = showSystemApps,
-                        enabled = enabled,
                         sharedInteractionSource = remember { MutableInteractionSource() },
                         onCheckedChange = { onShowSystemAppsClick() },
                         onClick = onShowSystemAppsClick,
