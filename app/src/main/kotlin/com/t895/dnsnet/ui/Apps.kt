@@ -21,12 +21,15 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.pulltorefresh.PullToRefreshBox
+import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
+import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
@@ -57,10 +60,20 @@ fun AppsScreen(
     onAppClick: (App) -> Unit,
 ) {
     val pm = LocalContext.current.packageManager
+    val pullToRefreshState = rememberPullToRefreshState()
     PullToRefreshBox(
         modifier = modifier,
         isRefreshing = isRefreshing,
         onRefresh = onRefresh,
+        state = pullToRefreshState,
+        indicator = {
+            PullToRefreshDefaults.Indicator(
+                state = pullToRefreshState,
+                isRefreshing = isRefreshing,
+                modifier = Modifier.align(Alignment.TopCenter),
+                threshold = PullToRefreshDefaults.PositionalThreshold + contentPadding.calculateTopPadding(),
+            )
+        },
     ) {
         LazyColumn(
             modifier = Modifier.testTag("apps:list"),
