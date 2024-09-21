@@ -13,8 +13,13 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import androidx.preference.PreferenceManager
+import com.t895.dnsnet.BuildConfig
+import com.t895.dnsnet.Configuration
 import com.t895.dnsnet.DnsNetApplication.Companion.applicationContext
+import com.t895.dnsnet.DnsServer
 import com.t895.dnsnet.FileHelper
+import com.t895.dnsnet.Host
+import com.t895.dnsnet.HostState
 import com.t895.dnsnet.ui.App
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.Dispatchers
@@ -37,7 +42,7 @@ class HomeViewModel : ViewModel() {
     private val _appList = MutableStateFlow<List<App>>(emptyList())
     val appList = _appList.asStateFlow()
 
-    var config: com.t895.dnsnet.Configuration = FileHelper.loadCurrentSettings()
+    var config: Configuration = FileHelper.loadCurrentSettings()
 
     private val _hosts = MutableStateFlow(config.hosts.items.toList())
     val hosts = _hosts.asStateFlow()
@@ -59,6 +64,9 @@ class HomeViewModel : ViewModel() {
 
     private val _showVpnConfigurationFailureDialog = MutableStateFlow(false)
     val showVpnConfigurationFailureDialog = _showVpnConfigurationFailureDialog.asStateFlow()
+
+    private val _showDisablePrivateDnsDialog = MutableStateFlow(false)
+    val showDisablePrivateDnsDialog = _showDisablePrivateDnsDialog.asStateFlow()
 
     init {
         populateAppList()
@@ -91,7 +99,7 @@ class HomeViewModel : ViewModel() {
             val notOnVpn = HashSet<String>()
             config.appList.resolve(pm, HashSet(), notOnVpn)
             apps.forEach {
-                if (it.packageName != com.t895.dnsnet.BuildConfig.APPLICATION_ID &&
+                if (it.packageName != BuildConfig.APPLICATION_ID &&
                     (config.appList.showSystemApps ||
                             (it.flags and ApplicationInfo.FLAG_SYSTEM) == 0)
                 ) {
@@ -127,13 +135,13 @@ class HomeViewModel : ViewModel() {
         _showWatchdogWarningDialog.value = false
     }
 
-    fun addHost(host: com.t895.dnsnet.Host) {
+    fun addHost(host: Host) {
         config.hosts.items.add(host)
         _hosts.value = config.hosts.items.toList()
         FileHelper.writeSettings(config)
     }
 
-    fun removeHost(host: com.t895.dnsnet.Host) {
+    fun removeHost(host: Host) {
         if (!config.hosts.items.contains(host)) {
             Log.w(TAG, "Tried to remove host that does not exist in config! - $host")
             return
@@ -143,7 +151,7 @@ class HomeViewModel : ViewModel() {
         FileHelper.writeSettings(config)
     }
 
-    fun replaceHost(oldHost: com.t895.dnsnet.Host, newHost: com.t895.dnsnet.Host) {
+    fun replaceHost(oldHost: Host, newHost: Host) {
         if (!config.hosts.items.contains(oldHost)) {
             Log.w(TAG, "Tried to replace host that does not exist in config! - $oldHost")
             return
@@ -155,23 +163,23 @@ class HomeViewModel : ViewModel() {
         FileHelper.writeSettings(config)
     }
 
-    fun cycleHost(host: com.t895.dnsnet.Host) {
+    fun cycleHost(host: Host) {
         val newHost = host.copy()
         newHost.state = when (newHost.state) {
-            com.t895.dnsnet.HostState.IGNORE -> com.t895.dnsnet.HostState.DENY
-            com.t895.dnsnet.HostState.DENY -> com.t895.dnsnet.HostState.ALLOW
-            com.t895.dnsnet.HostState.ALLOW -> com.t895.dnsnet.HostState.IGNORE
+            HostState.IGNORE -> HostState.DENY
+            HostState.DENY -> HostState.ALLOW
+            HostState.ALLOW -> HostState.IGNORE
         }
         replaceHost(host, newHost)
     }
 
-    fun addDnsServer(server: com.t895.dnsnet.DnsServer) {
+    fun addDnsServer(server: DnsServer) {
         config.dnsServers.items.add(server)
         _dnsServers.value = config.dnsServers.items.toList()
         FileHelper.writeSettings(config)
     }
 
-    fun removeDnsServer(server: com.t895.dnsnet.DnsServer) {
+    fun removeDnsServer(server: DnsServer) {
         if (!config.dnsServers.items.contains(server)) {
             Log.w(TAG, "Tried to remove DnsServer that does not exist in config! - $server")
             return
@@ -181,7 +189,10 @@ class HomeViewModel : ViewModel() {
         FileHelper.writeSettings(config)
     }
 
-    fun replaceDnsServer(oldServer: com.t895.dnsnet.DnsServer, newDnsServer: com.t895.dnsnet.DnsServer) {
+    fun replaceDnsServer(
+        oldServer: DnsServer,
+        newDnsServer: DnsServer
+    ) {
         if (!config.dnsServers.items.contains(oldServer)) {
             Log.w(TAG, "Tried to replace host that does not exist in config! - $oldServer")
             return
@@ -193,7 +204,7 @@ class HomeViewModel : ViewModel() {
         FileHelper.writeSettings(config)
     }
 
-    fun toggleDnsServer(server: com.t895.dnsnet.DnsServer) {
+    fun toggleDnsServer(server: DnsServer) {
         val newServer = server.copy()
         newServer.enabled = !newServer.enabled
         replaceDnsServer(server, newServer)
@@ -269,6 +280,14 @@ class HomeViewModel : ViewModel() {
 
     fun onDismissVpnConfigurationFailure() {
         _showVpnConfigurationFailureDialog.value = false
+    }
+
+    fun onPrivateDnsEnabledWarning() {
+        _showDisablePrivateDnsDialog.value = true
+    }
+
+    fun onDismissPrivateDnsEnabledWarning() {
+        _showDisablePrivateDnsDialog.value = false
     }
 
     companion object {

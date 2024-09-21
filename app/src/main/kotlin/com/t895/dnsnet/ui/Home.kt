@@ -119,8 +119,9 @@ fun App(
     onExport: () -> Unit,
     onShareLogcat: () -> Unit,
     onTryToggleService: () -> Unit,
-    onStartWithoutChecks: () -> Unit,
+    onStartWithoutHostsCheck: () -> Unit,
     onUpdateRefreshWork: () -> Unit,
+    onOpenNetworkSettings: () -> Unit,
 ) {
     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
         val notificationPermissionState =
@@ -196,7 +197,7 @@ fun App(
             confirmButton = {
                 TextButton(
                     onClick = {
-                        onStartWithoutChecks()
+                        onStartWithoutHostsCheck()
                         vm.onDismissHostsFilesNotFound()
                     },
                 ) {
@@ -246,6 +247,33 @@ fun App(
             },
             title = { Text(text = stringResource(R.string.could_not_start_vpn)) },
             text = { Text(text = stringResource(R.string.could_not_start_vpn_description)) },
+        )
+    }
+
+    val showDisablePrivateDnsDialog by vm.showDisablePrivateDnsDialog.collectAsState()
+    if (showDisablePrivateDnsDialog) {
+        AlertDialog(
+            onDismissRequest = {},
+            confirmButton = {
+                TextButton(onClick = onOpenNetworkSettings) {
+                    Text(text = stringResource(R.string.open_settings))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { vm.onDismissPrivateDnsEnabledWarning() }) {
+                    Text(text = stringResource(R.string.close))
+                }
+                TextButton(
+                    onClick = {
+                        vm.onDismissPrivateDnsEnabledWarning()
+                        onTryToggleService()
+                    },
+                ) {
+                    Text(text = stringResource(R.string.try_again))
+                }
+            },
+            title = { Text(text = stringResource(R.string.private_dns_warning)) },
+            text = { Text(text = stringResource(R.string.private_dns_warning_description)) },
         )
     }
 
@@ -335,8 +363,9 @@ fun AppPreview() {
         onExport = {},
         onShareLogcat = {},
         onTryToggleService = {},
-        onStartWithoutChecks = {},
+        onStartWithoutHostsCheck = {},
         onUpdateRefreshWork = {},
+        onOpenNetworkSettings = {},
     )
 }
 

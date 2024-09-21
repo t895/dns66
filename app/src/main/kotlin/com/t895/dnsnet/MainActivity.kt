@@ -14,9 +14,11 @@ package com.t895.dnsnet
 import android.app.Activity
 import android.app.PendingIntent
 import android.content.Intent
+import android.net.ConnectivityManager
 import android.net.VpnService.prepare
 import android.os.Build
 import android.os.Bundle
+import android.provider.Settings
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
@@ -131,9 +133,10 @@ class MainActivity : AppCompatActivity() {
                         onImport = { importLauncher.launch(arrayOf("*/*")) },
                         onExport = { exportLauncher.launch("dnsnet.json") },
                         onShareLogcat = ::sendLogcat,
-                        onTryToggleService = { tryToggleService(vpnLauncher) },
-                        onStartWithoutChecks = { startService(vpnLauncher) },
+                        onTryToggleService = { tryToggleService(true, vpnLauncher) },
+                        onStartWithoutHostsCheck = { tryToggleService(false, vpnLauncher) },
                         onUpdateRefreshWork = ::updateRefreshWork,
+                        onOpenNetworkSettings = ::openNetworkSettings,
                     )
                 }
             }
@@ -193,25 +196,26 @@ class MainActivity : AppCompatActivity() {
         WorkManager.getInstance(this).enqueue(workRequest)
     }
 
-    private fun tryToggleService(launcher: ManagedActivityResultLauncher<Intent, ActivityResult>) {
+    private fun tryToggleService(
+        hostsCheck: Boolean,
+        launcher: ManagedActivityResultLauncher<Intent, ActivityResult>,
+    ) {
         if (AdVpnService.status.value != VpnStatus.STOPPED) {
             Log.i(TAG, "Attempting to disconnect")
             val intent = Intent(this, AdVpnService::class.java)
                 .putExtra("COMMAND", Command.STOP.ordinal)
             startService(intent)
         } else {
-            checkHostsFilesAndStartService(launcher)
+            if (isPrivateDnsEnabled()) {
+                vm.onPrivateDnsEnabledWarning()
+                return
+            }
+            if (!areHostsFilesExistent() && hostsCheck) {
+                vm.onHostsFilesNotFound()
+                return
+            }
+            startService(launcher)
         }
-    }
-
-    private fun checkHostsFilesAndStartService(
-        launcher: ManagedActivityResultLauncher<Intent, ActivityResult>
-    ) {
-        if (!areHostsFilesExistent()) {
-            vm.onHostsFilesNotFound()
-            return
-        }
-        startService(launcher)
     }
 
     /**
@@ -236,6 +240,20 @@ class MainActivity : AppCompatActivity() {
         }
         return true
     }
+
+    private fun isPrivateDnsEnabled(): Boolean {
+        // Private DNS isn't enabled by default until Android 10
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+            return false
+        }
+
+        val connectivityManager = getSystemService(ConnectivityManager::class.java)
+        val network = connectivityManager.activeNetwork ?: return false
+        val linkProperties = connectivityManager.getLinkProperties(network) ?: return false
+        return linkProperties.isPrivateDnsActive || linkProperties.privateDnsServerName != null
+    }
+
+    private fun openNetworkSettings() = startActivity(Intent(Settings.ACTION_WIRELESS_SETTINGS))
 
     /**
      * Starts the AdVpnService. If the user has not allowed this
