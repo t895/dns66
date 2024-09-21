@@ -17,8 +17,8 @@ android {
         applicationId = "com.t895.dnsnet"
         minSdk = 24
         targetSdk = 35
-        versionCode = 6
-        versionName = "0.1.7"
+        versionCode = 7
+        versionName = "0.1.8"
     }
 
     val storeFilePath = System.getenv("STORE_FILE_PATH")
