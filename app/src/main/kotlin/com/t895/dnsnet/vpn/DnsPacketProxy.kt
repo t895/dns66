@@ -36,13 +36,15 @@ import org.xbill.DNS.TextParseException
 import java.io.IOException
 import java.net.DatagramPacket
 import java.net.InetAddress
-import java.util.Locale
 
 /**
  * Creates and parses packets, and sends packets to a remote socket or the device using
  * {@link AdVpnThread}.
  */
-class DnsPacketProxy {
+class DnsPacketProxy(
+    private val eventLoop: EventLoop,
+    private val log: (name: String, allowed: Boolean) -> Unit,
+) {
     companion object {
         private const val TAG = "DnsPacketProxy"
 
@@ -69,19 +71,8 @@ class DnsPacketProxy {
         }
     }
 
-    private val ruleDatabase: RuleDatabase
-    private val eventLoop: EventLoop
+    private val ruleDatabase: RuleDatabase = RuleDatabase.instance
     private var upstreamDnsServers = ArrayList<InetAddress>()
-
-    constructor(eventLoop: EventLoop, database: RuleDatabase) {
-        this.ruleDatabase = database
-        this.eventLoop = eventLoop
-    }
-
-    constructor(eventLoop: EventLoop) {
-        this.eventLoop = eventLoop
-        this.ruleDatabase = RuleDatabase.instance
-    }
 
     /**
      * Initializes the rules database and the list of upstream servers.
@@ -212,9 +203,10 @@ class DnsPacketProxy {
             return
         }
 
-        val dnsQueryName = dnsMsg.question.name.toString(true)
-        if (!ruleDatabase.isBlocked(dnsQueryName.lowercase(Locale.ENGLISH))) {
+        val dnsQueryName = dnsMsg.question.name.toString(true).lowercase()
+        if (!ruleDatabase.isBlocked(dnsQueryName)) {
             Log.i(TAG, "handleDnsRequest: DNS Name $dnsQueryName Allowed, sending to $destAddr")
+            log(dnsQueryName, true)
             val outPacket = DatagramPacket(
                 dnsRawData,
                 0,
@@ -225,6 +217,7 @@ class DnsPacketProxy {
             eventLoop.forwardPacket(outPacket, parsedPacket)
         } else {
             Log.i(TAG, "handleDnsRequest: DNS Name $dnsQueryName Blocked!")
+            log(dnsQueryName, false)
             dnsMsg.header.setFlag(Flags.QR.toInt())
             dnsMsg.header.rcode = Rcode.NOERROR
             dnsMsg.addRecord(NEGATIVE_CACHE_SOA_RECORD, Section.AUTHORITY)

@@ -80,6 +80,9 @@ class AdVpnService : VpnService(), Handler.Callback {
         private val _status = MutableStateFlow(VpnStatus.STOPPED)
         val status = _status.asStateFlow()
 
+        private const val logFilename = "connections.json"
+        val logger = BlockLogger.load(logFilename)
+
         fun checkStartVpnOnBoot(context: Context) {
             Log.i("BOOT", "Checking whether to start ad buster on boot")
             val config = FileHelper.loadCurrentSettings()
@@ -130,9 +133,15 @@ class AdVpnService : VpnService(), Handler.Callback {
 
     private val handler = Handler(Looper.myLooper()!!, this)
 
-    private var vpnThread: AdVpnThread? = AdVpnThread(this) { status ->
-        handler.sendMessage(handler.obtainMessage(VPN_MSG_STATUS_UPDATE, status.ordinal, 0))
-    }
+    private var vpnThread: AdVpnThread? = AdVpnThread(
+        vpnService = this,
+        notify = { status ->
+            handler.sendMessage(handler.obtainMessage(VPN_MSG_STATUS_UPDATE, status.ordinal, 0))
+        },
+        log = { connectionName, allowed ->
+            logger.newConnection(connectionName, allowed)
+        }
+    )
 
     private val connectivityChangedCallback = object : NetworkCallback() {
         override fun onAvailable(network: Network) {
@@ -302,6 +311,8 @@ class AdVpnService : VpnService(), Handler.Callback {
 
         val connectivityManager = getSystemService(ConnectivityManager::class.java)
         connectivityManager.unregisterNetworkCallback(connectivityChangedCallback)
+
+        logger.save(logFilename)
 
         stopSelf()
     }

@@ -58,6 +58,7 @@ import java.util.Queue
 class AdVpnThread(
     private val vpnService: VpnService,
     private val notify: (VpnStatus) -> Unit,
+    log: (name: String, allowed: Boolean) -> Unit,
 ) : Runnable, EventLoop {
     companion object {
         private const val TAG = "AdVpnThread"
@@ -112,7 +113,7 @@ class AdVpnThread(
     private val dnsIn: WospList = WospList()
 
     // The object where we actually handle packets.
-    private val dnsPacketProxy = DnsPacketProxy(this)
+    private val dnsPacketProxy = DnsPacketProxy(this, log)
 
     // Watch dog that checks our connection is alive.
     private val vpnWatchDog = VpnWatchdog()
