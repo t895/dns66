@@ -42,6 +42,7 @@ data class Configuration(
     var nightMode: Boolean = false,
     var watchDog: Boolean = false,
     var ipV6Support: Boolean = true,
+    var blockLogging: Boolean = false,
 ) {
     companion object {
         private const val TAG = "Configuration"

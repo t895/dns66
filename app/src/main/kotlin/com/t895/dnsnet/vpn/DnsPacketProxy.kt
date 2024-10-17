@@ -43,7 +43,7 @@ import java.net.InetAddress
  */
 class DnsPacketProxy(
     private val eventLoop: EventLoop,
-    private val log: (name: String, allowed: Boolean) -> Unit,
+    private val log: ((name: String, allowed: Boolean) -> Unit)?,
 ) {
     companion object {
         private const val TAG = "DnsPacketProxy"
@@ -206,7 +206,7 @@ class DnsPacketProxy(
         val dnsQueryName = dnsMsg.question.name.toString(true).lowercase()
         if (!ruleDatabase.isBlocked(dnsQueryName)) {
             Log.i(TAG, "handleDnsRequest: DNS Name $dnsQueryName Allowed, sending to $destAddr")
-            log(dnsQueryName, true)
+            log?.invoke(dnsQueryName, true)
             val outPacket = DatagramPacket(
                 dnsRawData,
                 0,
@@ -217,7 +217,7 @@ class DnsPacketProxy(
             eventLoop.forwardPacket(outPacket, parsedPacket)
         } else {
             Log.i(TAG, "handleDnsRequest: DNS Name $dnsQueryName Blocked!")
-            log(dnsQueryName, false)
+            log?.invoke(dnsQueryName, false)
             dnsMsg.header.setFlag(Flags.QR.toInt())
             dnsMsg.header.rcode = Rcode.NOERROR
             dnsMsg.addRecord(NEGATIVE_CACHE_SOA_RECORD, Section.AUTHORITY)

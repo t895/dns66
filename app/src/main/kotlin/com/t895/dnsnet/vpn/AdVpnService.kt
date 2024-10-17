@@ -138,8 +138,12 @@ class AdVpnService : VpnService(), Handler.Callback {
         notify = { status ->
             handler.sendMessage(handler.obtainMessage(VPN_MSG_STATUS_UPDATE, status.ordinal, 0))
         },
-        log = { connectionName, allowed ->
-            logger.newConnection(connectionName, allowed)
+        log = if (FileHelper.loadCurrentSettings().blockLogging) {
+            { connectionName, allowed ->
+                logger.newConnection(connectionName, allowed)
+            }
+        } else {
+            null
         }
     )
 
