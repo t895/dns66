@@ -181,11 +181,7 @@ class MainActivity : AppCompatActivity() {
             refresh()
         }
 
-        val errors = RuleDatabaseUpdateWorker.lastErrors
-        if (!errors.isNullOrEmpty()) {
-            Log.d(TAG, "onNewIntent: It's an error")
-            vm.onUpdateIncomplete(errors)
-        }
+        vm.onCheckForUpdateErrors()
 
         super.onNewIntent(intent)
     }
@@ -317,10 +313,6 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
-        val errors = RuleDatabaseUpdateWorker.lastErrors
-        if (!errors.isNullOrEmpty()) {
-            Log.d(TAG, "onNewIntent: It's an error")
-            vm.onUpdateIncomplete(errors)
-        }
+        vm.onCheckForUpdateErrors()
     }
 }

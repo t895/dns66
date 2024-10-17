@@ -20,6 +20,7 @@ import com.t895.dnsnet.DnsServer
 import com.t895.dnsnet.FileHelper
 import com.t895.dnsnet.Host
 import com.t895.dnsnet.HostState
+import com.t895.dnsnet.db.RuleDatabaseUpdateWorker
 import com.t895.dnsnet.ui.App
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.Dispatchers
@@ -72,9 +73,13 @@ class HomeViewModel : ViewModel() {
         populateAppList()
     }
 
-    fun onUpdateIncomplete(errors: List<String>) {
-        _showUpdateIncompleteDialog.value = true
-        this.errors = errors
+    fun onCheckForUpdateErrors() {
+        val workerErrors = RuleDatabaseUpdateWorker.lastErrors
+        if (!workerErrors.isNullOrEmpty()) {
+            _showUpdateIncompleteDialog.value = true
+            errors = workerErrors
+            RuleDatabaseUpdateWorker.lastErrors = null
+        }
     }
 
     fun onDismissUpdateIncomplete() {
