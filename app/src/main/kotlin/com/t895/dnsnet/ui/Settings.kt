@@ -36,15 +36,10 @@ import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
-import androidx.compose.material3.CheckboxColors
-import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
-import androidx.compose.material3.RadioButtonColors
-import androidx.compose.material3.RadioButtonDefaults
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.minimumInteractiveComponentSize
@@ -67,69 +62,45 @@ import androidx.compose.ui.unit.dp
 import com.t895.dnsnet.R
 import com.t895.dnsnet.ui.theme.DnsNetTheme
 import com.t895.materialswitch.MaterialSwitch
-import com.t895.materialswitch.MaterialSwitchColors
+
+private val innerHorizontalPadding = 8.dp
+private val clickablePadding = 8.dp
 
 @Composable
-fun AccessibleCheckbox(
-    checked: Boolean,
-    onCheckedChange: ((Boolean) -> Unit)?,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    colors: CheckboxColors = CheckboxDefaults.colors(),
-    interactionSource: MutableInteractionSource? = null
-) {
-    Checkbox(
-        checked = checked,
-        onCheckedChange = onCheckedChange,
-        modifier = modifier.minimumInteractiveComponentSize(),
+private fun Modifier.roundedClickable(
+    enabled: Boolean,
+    interactionSource: MutableInteractionSource?,
+    role: Role,
+    onClick: () -> Unit,
+) = this
+    .clip(CardDefaults.shape)
+    .clickable(
         enabled = enabled,
-        colors = colors,
-        interactionSource = interactionSource,
-    )
-}
-
-@Composable
-fun AccessibleSwitch(
-    checked: Boolean,
-    onCheckedChange: ((Boolean) -> Unit)?,
-    modifier: Modifier = Modifier,
-    thumbContent: (@Composable BoxScope.() -> Unit)? = null,
-    enabled: Boolean = true,
-    colors: MaterialSwitchColors = MaterialSwitchColors(
-        MaterialTheme.colorScheme,
-        SwitchDefaults.colors()
-    ),
-    interactionSource: MutableInteractionSource? = null,
-) {
-    MaterialSwitch(
-        checked = checked,
-        onCheckedChange = onCheckedChange,
-        modifier = modifier.minimumInteractiveComponentSize(),
-        thumbContent = thumbContent,
-        enabled = enabled,
-        colors = colors,
-        interactionSource = interactionSource,
-    )
-}
-
-@Composable
-fun AccessibleRadioButton(
-    selected: Boolean,
-    onClick: (() -> Unit)?,
-    modifier: Modifier = Modifier,
-    enabled: Boolean = true,
-    colors: RadioButtonColors = RadioButtonDefaults.colors(),
-    interactionSource: MutableInteractionSource? = null
-) {
-    RadioButton(
-        selected = selected,
         onClick = onClick,
-        modifier = modifier.minimumInteractiveComponentSize(),
-        enabled = enabled,
-        colors = colors,
         interactionSource = interactionSource,
+        indication = ripple(),
+        role = role,
     )
-}
+    .padding(clickablePadding)
+
+@Composable
+private fun Modifier.roundedToggleable(
+    value: Boolean,
+    enabled: Boolean,
+    interactionSource: MutableInteractionSource?,
+    role: Role,
+    onValueChange: (Boolean) -> Unit,
+) = this
+    .clip(CardDefaults.shape)
+    .toggleable(
+        value = value,
+        enabled = enabled,
+        onValueChange = onValueChange,
+        interactionSource = interactionSource,
+        indication = ripple(),
+        role = role,
+    )
+    .padding(clickablePadding)
 
 @Composable
 fun SettingInfo(
@@ -163,9 +134,12 @@ fun SettingInfo(
 }
 
 @Composable
-private fun StartContentContainer(startContent: @Composable BoxScope.() -> Unit) {
+private fun StartContentContainer(
+    modifier: Modifier = Modifier,
+    startContent: @Composable BoxScope.() -> Unit,
+) {
     Box(
-        modifier = Modifier
+        modifier = modifier
             .size(56.dp),
         contentAlignment = Alignment.Center,
         content = startContent,
@@ -185,8 +159,11 @@ private fun ContentSetting(
         verticalAlignment = Alignment.CenterVertically
     ) {
         if (startContent != null) {
-            StartContentContainer(startContent)
-            Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+            StartContentContainer(
+                modifier = Modifier.minimumInteractiveComponentSize(),
+                startContent = startContent,
+            )
+            Spacer(modifier = Modifier.padding(horizontal = innerHorizontalPadding))
         }
 
         SettingInfo(
@@ -196,8 +173,9 @@ private fun ContentSetting(
         )
 
         if (endContent != null) {
-            Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+            Spacer(modifier = Modifier.padding(horizontal = innerHorizontalPadding))
             Box(
+                modifier = Modifier.minimumInteractiveComponentSize(),
                 contentAlignment = Alignment.Center,
                 content = endContent,
             )
@@ -223,21 +201,21 @@ fun SplitContentSetting(
     ) {
         Row(
             modifier = Modifier
-                .clip(CardDefaults.shape)
-                .clickable(
+                .roundedClickable(
                     enabled = enabled,
                     onClick = onBodyClick,
                     interactionSource = interactionSource,
-                    indication = ripple(),
                     role = Role.Button,
                 )
-                .padding(8.dp)
                 .weight(1f),
             verticalAlignment = Alignment.CenterVertically
         ) {
             if (startContent != null) {
-                StartContentContainer(startContent)
-                Spacer(modifier = Modifier.padding(horizontal = 4.dp))
+                StartContentContainer(
+                    modifier = Modifier.minimumInteractiveComponentSize(),
+                    startContent = startContent,
+                )
+                Spacer(modifier = Modifier.padding(horizontal = innerHorizontalPadding))
             }
 
             SettingInfo(
@@ -247,17 +225,21 @@ fun SplitContentSetting(
                 maxDetailLines = 1,
             )
         }
+        Spacer(modifier = Modifier.padding(horizontal = innerHorizontalPadding / 2))
         VerticalDivider(
             modifier = Modifier
                 .fillMaxHeight()
-                .padding(8.dp),
+                .padding(vertical = 8.dp),
             color = MaterialTheme.colorScheme.outlineVariant,
         )
+        Spacer(modifier = Modifier.padding(horizontal = innerHorizontalPadding))
         Box(
+            modifier = Modifier
+                .minimumInteractiveComponentSize()
+                .padding(end = clickablePadding),
             contentAlignment = Alignment.Center,
             content = endContent,
         )
-        Spacer(modifier = Modifier.padding(horizontal = 4.dp))
     }
 }
 
@@ -275,15 +257,12 @@ private fun ClickableSetting(
 ) {
     ContentSetting(
         modifier = modifier
-            .clip(CardDefaults.shape)
-            .clickable(
+            .roundedClickable(
                 enabled = enabled,
                 onClick = onClick,
                 interactionSource = sharedInteractionSource,
-                indication = ripple(),
                 role = role,
-            )
-            .padding(8.dp),
+            ),
         title = title,
         details = details,
         startContent = startContent,
@@ -306,16 +285,13 @@ private fun ToggleableSetting(
 ) {
     ContentSetting(
         modifier = modifier
-            .clip(CardDefaults.shape)
-            .toggleable(
+            .roundedToggleable(
                 value = checked,
                 enabled = enabled,
                 onValueChange = onCheckedChange,
                 interactionSource = sharedInteractionSource,
-                indication = ripple(),
                 role = role,
-            )
-            .padding(8.dp),
+            ),
         title = title,
         details = details,
         startContent = startContent,
@@ -345,7 +321,7 @@ fun CheckboxListItem(
         onCheckedChange = onCheckedChange,
         startContent = startContent,
     ) {
-        AccessibleCheckbox(
+        Checkbox(
             enabled = enabled,
             checked = checked,
             onCheckedChange = null,
@@ -389,7 +365,7 @@ fun SplitCheckboxListItem(
         enabled = bodyEnabled,
         startContent = startContent,
         endContent = {
-            AccessibleCheckbox(
+            Checkbox(
                 enabled = checkboxEnabled,
                 checked = checked,
                 onCheckedChange = onCheckedChange,
@@ -435,7 +411,7 @@ fun SwitchListItem(
         sharedInteractionSource = sharedInteractionSource,
         startContent = startContent,
         toggleableContent = {
-            AccessibleSwitch(
+            MaterialSwitch(
                 enabled = enabled,
                 checked = checked,
                 onCheckedChange = null,
@@ -480,7 +456,7 @@ fun SplitSwitchListItem(
         enabled = bodyEnabled,
         startContent = startContent,
         endContent = {
-            AccessibleSwitch(
+            MaterialSwitch(
                 enabled = switchEnabled,
                 checked = checked,
                 onCheckedChange = onCheckedChange,
@@ -642,7 +618,7 @@ fun RadioListItem(
         onCheckedChange = onCheckedChange,
         sharedInteractionSource = sharedInteractionSource,
         toggleableContent = {
-            AccessibleRadioButton(
+            RadioButton(
                 selected = checked,
                 onClick = null,
                 interactionSource = sharedInteractionSource,
