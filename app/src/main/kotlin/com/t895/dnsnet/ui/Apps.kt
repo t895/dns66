@@ -37,7 +37,7 @@ import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.google.accompanist.drawablepainter.rememberDrawablePainter
+import coil3.compose.rememberAsyncImagePainter
 import com.t895.dnsnet.AllowListMode
 import com.t895.dnsnet.AllowListMode.Companion.toAllowListMode
 import com.t895.dnsnet.R
@@ -125,9 +125,10 @@ fun AppsScreen(
                     onCheckedChange = { _ -> onAppClick(it) },
                     startContent = {
                         it.loadIcon(pm)
+                        val painter = rememberAsyncImagePainter(it.getIcon())
                         Image(
                             modifier = Modifier.fillMaxSize(),
-                            painter = rememberDrawablePainter(it.getIcon()),
+                            painter = painter,
                             contentDescription = it.label,
                         )
                     }
