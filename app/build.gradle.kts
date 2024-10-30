@@ -48,6 +48,12 @@ android {
     }
 
     buildTypes {
+        debug {
+            val debug = ".debug"
+            applicationIdSuffix = debug
+            versionNameSuffix = debug
+        }
+
         release {
             if (storeFilePath != null) {
                 signingConfig = signingConfigs.getByName("release")
