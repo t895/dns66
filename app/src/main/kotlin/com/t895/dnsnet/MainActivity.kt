@@ -29,7 +29,6 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
-import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.Surface
 import androidx.compose.ui.ExperimentalComposeUiApi
@@ -120,7 +119,6 @@ class MainActivity : AppCompatActivity() {
                 Surface(
                     modifier = Modifier
                         .fillMaxSize()
-                        .displayCutoutPadding()
                         .semantics { testTagsAsResourceId = true },
                 ) {
                     App(

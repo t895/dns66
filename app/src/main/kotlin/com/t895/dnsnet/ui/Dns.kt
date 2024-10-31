@@ -19,6 +19,8 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
@@ -204,9 +206,11 @@ fun EditDnsScreen(
 
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
+        contentWindowInsets = scaffoldContentInsets,
         modifier = modifier,
         topBar = {
             TopAppBar(
+                windowInsets = topAppBarInsets,
                 title = {
                     Text(text = stringResource(R.string.activity_edit_dns_server))
                 },
@@ -257,6 +261,7 @@ fun EditDnsScreen(
     ) { contentPadding ->
         EditDns(
             modifier = Modifier
+                .verticalScroll(rememberScrollState())
                 .padding(contentPadding)
                 .padding(horizontal = 16.dp),
             titleText = titleInput,

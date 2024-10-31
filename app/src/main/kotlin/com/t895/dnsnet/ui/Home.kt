@@ -18,6 +18,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.displayCutout
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
@@ -57,11 +60,14 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.input.nestedscroll.nestedScroll
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
@@ -412,10 +418,19 @@ fun HomeScreen(
 
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+
+    val displayCutout = WindowInsets.displayCutout
+    val localDensity = LocalDensity.current
+    val layoutDirection = LocalLayoutDirection.current
+    val startCutoutInset =
+        (displayCutout.getLeft(localDensity, layoutDirection) / localDensity.density).dp
+    val endCutoutInset =
+        (displayCutout.getRight(localDensity, layoutDirection) / localDensity.density).dp
     NavigationSuiteScaffold(
         navigationSuiteItems = {
             HomeDestination.entries.forEach {
                 item(
+                    modifier = Modifier.padding(start = startCutoutInset),
                     selected = it.route == selectedRoute,
                     onClick = { setDestination(it) },
                     icon = {
@@ -446,9 +461,11 @@ fun HomeScreen(
             derivedStateOf { status == VpnStatus.STOPPED }
         }
         Scaffold(
+            contentWindowInsets = navigationSuiteScaffoldContentInsets,
             modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             topBar = {
                 TopAppBar(
+                    windowInsets = navigationSuiteScaffoldTopAppBarInsets,
                     title = {
                         Text(text = stringResource(R.string.app_name))
                     },
@@ -516,6 +533,7 @@ fun HomeScreen(
                     exit = scaleOut(animationSpec = tween(easing = EmphasizedAccelerateEasing)),
                 ) {
                     FloatingActionButton(
+                        modifier = Modifier.padding(end = endCutoutInset),
                         onClick = {
                             if (selectedRoute == HomeDestination.Hosts.route) {
                                 topLevelNavController.navigate(Host())

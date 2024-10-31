@@ -12,7 +12,6 @@ import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -24,10 +23,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AttachFile
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.DropdownMenuItem
@@ -397,9 +397,11 @@ fun EditHostScreen(
             locationInput = it.toString()
         }
     Scaffold(
+        contentWindowInsets = scaffoldContentInsets,
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
+                windowInsets = topAppBarInsets,
                 title = {
                     Text(text = stringResource(R.string.activity_edit_filter))
                 },
@@ -443,7 +445,10 @@ fun EditHostScreen(
         },
     ) { paddingValues ->
         EditHost(
-            modifier = Modifier.padding(paddingValues).padding(horizontal = 16.dp),
+            modifier = Modifier
+                .verticalScroll(rememberScrollState())
+                .padding(paddingValues)
+                .padding(horizontal = 16.dp),
             titleText = titleInput,
             titleTextError = titleInputError,
             onTitleTextChanged = { titleInput = it },
