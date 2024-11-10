@@ -85,7 +85,7 @@ dependencies {
     implementation("dnsjava:dnsjava:3.6.2")
 
     // Compose
-    val composeBom = platform("androidx.compose:compose-bom:2024.09.03")
+    val composeBom = platform("androidx.compose:compose-bom:2024.10.01")
     implementation(composeBom)
     debugImplementation(composeBom)
     androidTestImplementation(composeBom)
@@ -99,11 +99,11 @@ dependencies {
     val accompanistVersion = "0.36.0"
     implementation("com.google.accompanist:accompanist-permissions:$accompanistVersion")
 
-    implementation("io.coil-kt.coil3:coil-compose:3.0.0-rc01")
+    implementation("io.coil-kt.coil3:coil-compose:3.0.2")
 
     implementation("androidx.navigation:navigation-compose:2.8.3")
 
-    val lifecycleVersion = "2.8.6"
+    val lifecycleVersion = "2.8.7"
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycleVersion")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:$lifecycleVersion")
@@ -112,13 +112,13 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 
-    implementation("org.jetbrains.kotlinx:atomicfu:0.25.0")
+    implementation("org.jetbrains.kotlinx:atomicfu:0.26.0")
 
     // Baseline profiles
     implementation("androidx.profileinstaller:profileinstaller:1.4.1")
     "baselineProfile"(project(":baselineprofile"))
 
-    implementation("androidx.work:work-runtime-ktx:2.9.1")
+    implementation("androidx.work:work-runtime-ktx:2.10.0")
 
     implementation("androidx.preference:preference-ktx:1.2.1")
 
