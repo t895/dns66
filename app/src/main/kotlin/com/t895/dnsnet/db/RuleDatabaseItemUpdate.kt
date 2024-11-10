@@ -17,7 +17,6 @@ import android.net.Uri
 import android.util.Log
 import com.t895.dnsnet.FileHelper
 import com.t895.dnsnet.Host
-import com.t895.dnsnet.HostState
 import com.t895.dnsnet.R
 import com.t895.dnsnet.SingleWriterMultipleReaderFile
 import java.io.File
@@ -51,10 +50,6 @@ class RuleDatabaseItemUpdate(
     private var file: File? = null
 
     fun shouldDownload(): Boolean {
-        if (item.state == HostState.IGNORE) {
-            return false
-        }
-
         // Not sure if that is slow or not
         if (item.location.startsWith("content://")) {
             return true
