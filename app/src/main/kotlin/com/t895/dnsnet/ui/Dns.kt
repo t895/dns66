@@ -84,6 +84,7 @@ fun DnsScreen(
                 title = it.title,
                 details = it.location,
                 checked = it.enabled,
+                bodyEnabled = enabled,
                 checkboxEnabled = enabled,
                 onBodyClick = { onItemClick(it) },
                 onCheckedChange = { _ -> onItemCheckClicked(it) },
