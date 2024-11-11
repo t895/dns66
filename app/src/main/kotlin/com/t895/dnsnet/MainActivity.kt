@@ -19,7 +19,6 @@ import android.net.VpnService.prepare
 import android.os.Build
 import android.os.Bundle
 import android.provider.Settings
-import android.util.Log
 import android.widget.Toast
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -56,10 +55,6 @@ import java.io.OutputStreamWriter
 import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
-    companion object {
-        const val TAG = "MainActivity"
-    }
-
     private val vm: HomeViewModel by viewModels()
 
     @OptIn(ExperimentalComposeUiApi::class)
@@ -111,7 +106,7 @@ class MainActivity : AppCompatActivity() {
                         if (it.resultCode == Activity.RESULT_CANCELED) {
                             vm.onVpnConfigurationFailure()
                         } else if (it.resultCode == Activity.RESULT_OK) {
-                            Log.d("MainActivity", "onActivityResult: Starting service")
+                            logd("onActivityResult: Starting service")
                             createService()
                         }
                     }
@@ -197,7 +192,7 @@ class MainActivity : AppCompatActivity() {
         launcher: ManagedActivityResultLauncher<Intent, ActivityResult>,
     ) {
         if (AdVpnService.status.value != VpnStatus.STOPPED) {
-            Log.i(TAG, "Attempting to disconnect")
+            logi("Attempting to disconnect")
             val intent = Intent(this, AdVpnService::class.java)
                 .putExtra("COMMAND", Command.STOP.ordinal)
             startService(intent)
@@ -258,7 +253,7 @@ class MainActivity : AppCompatActivity() {
      * or [Activity.RESULT_OK] for deny/allow respectively.
      */
     private fun startService(launcher: ManagedActivityResultLauncher<Intent, ActivityResult>) {
-        Log.i(TAG, "Attempting to connect")
+        logi("Attempting to connect")
         val intent = prepare(DnsNetApplication.applicationContext)
         if (intent != null) {
             launcher.launch(intent)

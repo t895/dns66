@@ -16,8 +16,10 @@
 
 package com.t895.dnsnet.vpn
 
-import android.util.Log
 import com.t895.dnsnet.db.RuleDatabase
+import com.t895.dnsnet.logd
+import com.t895.dnsnet.loge
+import com.t895.dnsnet.logi
 import org.pcap4j.packet.IpPacket
 import org.pcap4j.packet.IpSelector
 import org.pcap4j.packet.IpV4Packet
@@ -36,6 +38,7 @@ import org.xbill.DNS.TextParseException
 import java.io.IOException
 import java.net.DatagramPacket
 import java.net.InetAddress
+import java.util.Locale
 
 /**
  * Creates and parses packets, and sends packets to a remote socket or the device using
@@ -46,8 +49,6 @@ class DnsPacketProxy(
     private val log: ((name: String, allowed: Boolean) -> Unit)?,
 ) {
     companion object {
-        private const val TAG = "DnsPacketProxy"
-
         // Choose a value that is smaller than the time needed to unblock a host.
         private const val NEGATIVE_CACHE_TTL_SECONDS = 5L
         private var NEGATIVE_CACHE_SOA_RECORD: SOARecord = try {
@@ -136,7 +137,7 @@ class DnsPacketProxy(
         val parsedPacket = try {
             IpSelector.newPacket(packetData, 0, packetData.size) as IpPacket
         } catch (e: Exception) {
-            Log.i(TAG, "handleDnsRequest: Discarding invalid IP packet", e)
+            logi("handleDnsRequest: Discarding invalid IP packet", e)
             return
         }
 
@@ -148,14 +149,12 @@ class DnsPacketProxy(
             udpPayload = parsedUdp.payload
         } catch (e: Exception) {
             try {
-                Log.i(
-                    TAG,
+                logi(
                     "handleDnsRequest: Discarding unknown packet type ${parsedPacket.header}",
                     e
                 )
             } catch (e1: java.lang.Exception) {
-                Log.i(
-                    TAG,
+                logi(
                     "handleDnsRequest: Discarding unknown packet type, could not log packet info",
                     e1
                 )
@@ -167,9 +166,9 @@ class DnsPacketProxy(
 
         if (udpPayload == null) {
             try {
-                Log.i(TAG, "handleDnsRequest: Sending UDP packet without payload: $parsedUdp")
+                logi("handleDnsRequest: Sending UDP packet without payload: $parsedUdp")
             } catch (e1: java.lang.Exception) {
-                Log.i(TAG, "handleDnsRequest: Sending UDP packet without payload")
+                logi("handleDnsRequest: Sending UDP packet without payload")
             }
 
             // Let's be nice to Firefox. Firefox uses an empty UDP packet to
@@ -185,7 +184,7 @@ class DnsPacketProxy(
                 )
                 eventLoop.forwardPacket(outPacket, null)
             } catch (e: Exception) {
-                Log.i(TAG, "handleDnsRequest: Could not send empty UDP packet", e)
+                logi("handleDnsRequest: Could not send empty UDP packet", e)
             }
             return
         }
@@ -194,18 +193,18 @@ class DnsPacketProxy(
         val dnsMsg = try {
             Message(dnsRawData)
         } catch (e: IOException) {
-            Log.i(TAG, "handleDnsRequest: Discarding non-DNS or invalid packet", e)
+            logi("handleDnsRequest: Discarding non-DNS or invalid packet", e)
             return
         }
 
         if (dnsMsg.question == null) {
-            Log.i(TAG, "handleDnsRequest: Discarding DNS packet with no query $dnsMsg")
+            logi("handleDnsRequest: Discarding DNS packet with no query $dnsMsg")
             return
         }
 
         val dnsQueryName = dnsMsg.question.name.toString(true).lowercase()
         if (!ruleDatabase.isBlocked(dnsQueryName)) {
-            Log.i(TAG, "handleDnsRequest: DNS Name $dnsQueryName Allowed, sending to $destAddr")
+            logi("handleDnsRequest: DNS Name $dnsQueryName Allowed, sending to $destAddr")
             log?.invoke(dnsQueryName, true)
             val outPacket = DatagramPacket(
                 dnsRawData,
@@ -216,7 +215,7 @@ class DnsPacketProxy(
             )
             eventLoop.forwardPacket(outPacket, parsedPacket)
         } else {
-            Log.i(TAG, "handleDnsRequest: DNS Name $dnsQueryName Blocked!")
+            logi("handleDnsRequest: DNS Name $dnsQueryName Blocked!")
             log?.invoke(dnsQueryName, false)
             dnsMsg.header.setFlag(Flags.QR.toInt())
             dnsMsg.header.rcode = Rcode.NOERROR
@@ -241,16 +240,15 @@ class DnsPacketProxy(
             try {
                 destAddr = upstreamDnsServers[index]
             } catch (e: Exception) {
-                Log.e(
-                    TAG,
+                loge(
                     "handleDnsRequest: Cannot handle packets to ${parsedPacket.header.dstAddr.hostAddress} - not a valid address for this network",
                     e
                 )
                 return null
             }
-            Log.d(
-                TAG,
+            logd(
                 String.format(
+                    Locale.ENGLISH,
                     "handleDnsRequest: Incoming packet to %s AKA %d AKA %s",
                     parsedPacket.header.dstAddr.hostAddress,
                     index,
@@ -259,8 +257,7 @@ class DnsPacketProxy(
             )
         } else {
             destAddr = parsedPacket.header.dstAddr
-            Log.d(
-                TAG,
+            logd(
                 "handleDnsRequest: Incoming packet to ${parsedPacket.header.dstAddr.hostAddress} - is upstream"
             )
         }

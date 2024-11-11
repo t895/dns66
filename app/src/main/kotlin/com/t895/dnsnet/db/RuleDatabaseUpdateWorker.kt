@@ -16,7 +16,6 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
@@ -25,6 +24,9 @@ import com.t895.dnsnet.Host
 import com.t895.dnsnet.MainActivity
 import com.t895.dnsnet.NotificationChannels
 import com.t895.dnsnet.R
+import com.t895.dnsnet.logd
+import com.t895.dnsnet.logi
+import com.t895.dnsnet.logv
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.Dispatchers
@@ -39,7 +41,6 @@ class RuleDatabaseUpdateWorker(
     params: WorkerParameters
 ) : CoroutineWorker(context, params) {
     companion object {
-        private const val TAG = "RuleDatabaseUpdateWorker"
         private const val UPDATE_NOTIFICATION_ID = 42
 
         const val PERIODIC_TAG = "RuleDatabaseUpdatePeriodicWorker"
@@ -57,13 +58,13 @@ class RuleDatabaseUpdateWorker(
     private val config = FileHelper.loadCurrentSettings()
 
     init {
-        Log.d(TAG, "Begin")
+        logd("Begin")
         setupNotificationBuilder()
-        Log.d(TAG, "Setup")
+        logd("Setup")
     }
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
-        Log.d(TAG, "doWork: Begin")
+        logd("doWork: Begin")
         val start = System.currentTimeMillis()
         val jobs = mutableListOf<Deferred<Unit>>()
         config.hosts.items.forEach {
@@ -84,7 +85,7 @@ class RuleDatabaseUpdateWorker(
         } catch (_: TimeoutCancellationException) {
         }
         val end = System.currentTimeMillis()
-        Log.d(TAG, "doWork: end after ${end - start} milliseconds")
+        logd("doWork: end after ${end - start} milliseconds")
 
         postExecute()
 
@@ -108,13 +109,13 @@ class RuleDatabaseUpdateWorker(
         val contentResolver = context.contentResolver
         for (permission in contentResolver.persistedUriPermissions) {
             if (isGarbage(permission.uri)) {
-                Log.i(TAG, "releaseGarbagePermissions: Releasing permission for ${permission.uri}")
+                logi("releaseGarbagePermissions: Releasing permission for ${permission.uri}")
                 contentResolver.releasePersistableUriPermission(
                     permission.uri,
                     Intent.FLAG_GRANT_READ_URI_PERMISSION
                 )
             } else {
-                Log.v(TAG, "releaseGarbagePermissions: Keeping permission for ${permission.uri}")
+                logv("releaseGarbagePermissions: Keeping permission for ${permission.uri}")
             }
         }
     }
@@ -157,7 +158,7 @@ class RuleDatabaseUpdateWorker(
      */
     @Synchronized
     private fun postExecute() {
-        Log.d(TAG, "postExecute: Sending notification")
+        logd("postExecute: Sending notification")
         try {
             RuleDatabase.instance.initialize()
         } catch (e: InterruptedException) {
@@ -197,13 +198,13 @@ class RuleDatabaseUpdateWorker(
      */
     @Synchronized
     fun addError(item: Host, message: String) {
-        Log.d(TAG, "error: ${item.title}:$message")
+        logd("error: ${item.title}:$message")
         errors.add("${item.title}\n$message")
     }
 
     @Synchronized
     fun addDone(item: Host) {
-        Log.d(TAG, "done: ${item.title}")
+        logd("done: ${item.title}")
         pending.remove(item.title)
         done.add(item.title)
         updateProgressNotification()

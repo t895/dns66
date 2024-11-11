@@ -29,7 +29,6 @@ import android.os.Build
 import android.os.Handler
 import android.os.Looper
 import android.os.Message
-import android.util.Log
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
 import com.t895.dnsnet.FileHelper
@@ -37,6 +36,7 @@ import com.t895.dnsnet.MainActivity
 import com.t895.dnsnet.NotificationChannels
 import com.t895.dnsnet.Preferences
 import com.t895.dnsnet.R
+import com.t895.dnsnet.logi
 import com.t895.dnsnet.vpn.VpnStatus.Companion.toVpnStatus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -69,8 +69,6 @@ enum class VpnStatus {
 
 class AdVpnService : VpnService(), Handler.Callback {
     companion object {
-        private const val TAG = "VpnService"
-
         const val NOTIFICATION_ID_STATE = 10
         const val REQUEST_CODE_START = 43
 
@@ -85,7 +83,7 @@ class AdVpnService : VpnService(), Handler.Callback {
         val logger = BlockLogger.load(logFilename)
 
         fun checkStartVpnOnBoot(context: Context) {
-            Log.i("BOOT", "Checking whether to start DNSNet on boot")
+            logi("Checking whether to start DNSNet on boot")
             val config = FileHelper.loadCurrentSettings()
             if (!config.autoStart) {
                 return
@@ -95,10 +93,10 @@ class AdVpnService : VpnService(), Handler.Callback {
             }
 
             if (prepare(context) != null) {
-                Log.i("BOOT", "VPN preparation not confirmed by user, changing enabled to false")
+                logi("VPN preparation not confirmed by user, changing enabled to false")
             }
 
-            Log.i("BOOT", "Starting ad buster from boot")
+            logi("Starting ad buster from boot")
             NotificationChannels.onCreate(context)
 
             val intent = getStartIntent(context)
@@ -197,7 +195,7 @@ class AdVpnService : VpnService(), Handler.Callback {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        Log.i(TAG, "onStartCommand$intent")
+        logi("onStartCommand$intent")
         val command = if (intent == null) {
             Command.START
         } else {
@@ -271,7 +269,7 @@ class AdVpnService : VpnService(), Handler.Callback {
 
     private fun restartVpnThread() {
         if (vpnThread == null) {
-            Log.i(TAG, "restartVpnThread: Not restarting thread, could not find thread.")
+            logi("restartVpnThread: Not restarting thread, could not find thread.")
             return
         }
 
@@ -300,7 +298,7 @@ class AdVpnService : VpnService(), Handler.Callback {
     }
 
     private fun stopVpn() {
-        Log.i(TAG, "Stopping Service")
+        logi("Stopping Service")
         if (vpnThread != null) {
             stopVpnThread()
         }
@@ -317,7 +315,7 @@ class AdVpnService : VpnService(), Handler.Callback {
     }
 
     override fun onDestroy() {
-        Log.i(TAG, "Destroyed, shutting down")
+        logi("Destroyed, shutting down")
         stopVpn()
     }
 

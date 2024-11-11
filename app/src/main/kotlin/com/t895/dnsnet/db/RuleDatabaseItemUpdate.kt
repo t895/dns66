@@ -14,11 +14,11 @@ package com.t895.dnsnet.db
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
-import android.util.Log
 import com.t895.dnsnet.FileHelper
 import com.t895.dnsnet.Host
 import com.t895.dnsnet.R
 import com.t895.dnsnet.SingleWriterMultipleReaderFile
+import com.t895.dnsnet.logd
 import java.io.File
 import java.io.FileNotFoundException
 import java.io.FileOutputStream
@@ -43,7 +43,6 @@ class RuleDatabaseItemUpdate(
     companion object {
         private const val CONNECT_TIMEOUT_MILLIS = 3000
         private const val READ_TIMEOUT_MILLIS = 10000
-        private const val TAG = "RuleDbItemUpdate"
     }
 
     private lateinit var url: URL
@@ -83,9 +82,9 @@ class RuleDatabaseItemUpdate(
                 )
 
                 context.contentResolver.openInputStream(uri)?.close()
-                Log.d(TAG, "run: Permission requested for ${item.location}")
+                logd("run: Permission requested for ${item.location}")
             } catch (e: SecurityException) {
-                Log.d(TAG, "doInBackground: Error taking permission: $e")
+                logd("doInBackground: Error taking permission: $e")
                 worker.addError(item, context.getString(R.string.permission_denied))
             } catch (e: FileNotFoundException) {
                 worker.addError(item, context.getString(R.string.file_not_found))
@@ -171,16 +170,19 @@ class RuleDatabaseItemUpdate(
      */
     @Throws(IOException::class)
     fun validateResponse(connection: HttpURLConnection): Boolean {
-        Log.d(
-            TAG,
-            "validateResponse: ${item.title}: local = ${Date(connection.ifModifiedSince)} remote = ${
-                Date(connection.lastModified)
-            }"
+        logd(
+            """
+                validateResponse: ${item.title}
+                local = ${Date(connection.ifModifiedSince)}
+                remote = ${Date(connection.lastModified)}
+            """.trimIndent()
         )
         if (connection.responseCode != 200) {
-            Log.d(
-                TAG,
-                "validateResponse: ${item.title}: Skipping: Server responded with ${connection.responseCode} for ${item.location}"
+            logd(
+                """
+                    validateResponse: ${item.title}: Skipping
+                    Server responded with ${connection.responseCode} for ${item.location}"
+                """.trimIndent()
             )
 
             if (connection.responseCode == 404) {
@@ -225,7 +227,7 @@ class RuleDatabaseItemUpdate(
 
             // Write has started, set modification time
             if (connection.lastModified == 0L || !file.setLastModified(connection.lastModified)) {
-                Log.d(TAG, "downloadFile: Could not set last modified")
+                logd("downloadFile: Could not set last modified")
             }
         } finally {
             if (outStream != null) {

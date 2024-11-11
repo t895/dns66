@@ -31,10 +31,6 @@ import java.io.InputStream
  * one, causing it to replace that atomically.
  */
 class SingleWriterMultipleReaderFile(file: File) {
-    companion object {
-        private const val TAG = "SingleWriteMultipleReaderFile"
-    }
-
     val activeFile = file.absoluteFile
     val workFile = File(activeFile.absolutePath + ".dnsnet-new")
 
@@ -85,7 +81,7 @@ class SingleWriterMultipleReaderFile(file: File) {
      */
     @Throws(IOException::class)
     fun failWrite(stream: FileOutputStream) {
-        FileHelper.closeOrWarn(stream, TAG, "Cannot close working file")
+        FileHelper.closeOrWarn(stream, "Cannot close working file")
         if (!workFile.delete()) {
             throw IOException("Cannot delete working file")
         }

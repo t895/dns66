@@ -1,7 +1,7 @@
 package com.t895.dnsnet.vpn
 
-import android.util.Log
 import com.t895.dnsnet.FileHelper
+import com.t895.dnsnet.loge
 import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -33,27 +33,25 @@ data class BlockLogger(
     fun save(name: String) {
         val outputStream = FileHelper.openWrite(name)
         if (outputStream == null) {
-            Log.e(TAG, "Failed to write connection history")
+            loge("Failed to write connection history")
             return
         }
 
         try {
             Json.encodeToStream(this, outputStream)
         } catch (e: Exception) {
-            Log.e(TAG, "Failed to write connection history")
+            loge("Failed to write connection history")
         }
     }
 
     companion object {
-        const val TAG = "BlockLogger"
-
         @OptIn(ExperimentalSerializationApi::class)
         fun load(name: String): BlockLogger {
             val inputStream = FileHelper.openRead(name) ?: return BlockLogger()
             return try {
                 Json.decodeFromStream<BlockLogger>(inputStream)
             } catch (e: Exception) {
-                Log.e(TAG, "Failed to load connection history - ${e.message}")
+                loge("Failed to load connection history - ${e.message}")
                 BlockLogger()
             }
         }

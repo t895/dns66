@@ -16,28 +16,24 @@
 
 package com.t895.dnsnet.vpn
 
-import android.util.Log
+import com.t895.dnsnet.logd
 import java.util.LinkedList
 
 /**
  * Queue of WaitingOnSocketPacket, bound on time and space.
  */
 class WospList {
-    companion object {
-        private const val TAG = "WospList"
-    }
-
     private val list: LinkedList<WaitingOnSocketPacket> = LinkedList<WaitingOnSocketPacket>()
 
     fun add(wosp: WaitingOnSocketPacket) {
         if (list.size > AdVpnThread.DNS_MAXIMUM_WAITING) {
-            Log.d(TAG, "Dropping socket due to space constraints: ${list.element().socket}")
+            logd("Dropping socket due to space constraints: ${list.element().socket}")
             list.element().socket.close()
             list.remove()
         }
 
         while (!list.isEmpty() && list.element().ageSeconds() > AdVpnThread.DNS_TIMEOUT_SEC) {
-            Log.d(TAG, "Timeout on socket " + list.element().socket)
+            logd("Timeout on socket " + list.element().socket)
             list.element().socket.close()
             list.remove()
         }

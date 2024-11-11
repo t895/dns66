@@ -35,10 +35,13 @@ import android.system.ErrnoException
 import android.system.Os
 import android.system.OsConstants
 import android.system.StructPollfd
-import android.util.Log
 import com.t895.dnsnet.Configuration
 import com.t895.dnsnet.FileHelper
 import com.t895.dnsnet.MainActivity
+import com.t895.dnsnet.logd
+import com.t895.dnsnet.loge
+import com.t895.dnsnet.logi
+import com.t895.dnsnet.logw
 import org.pcap4j.packet.IpPacket
 import java.io.FileDescriptor
 import java.io.FileInputStream
@@ -61,7 +64,6 @@ class AdVpnThread(
     log: ((name: String, allowed: Boolean) -> Unit)?,
 ) : Runnable, EventLoop {
     companion object {
-        private const val TAG = "AdVpnThread"
         private const val MIN_RETRY_TIME = 5
         private const val MAX_RETRY_TIME = 2 * 60
 
@@ -123,38 +125,38 @@ class AdVpnThread(
     private var interruptFd: FileDescriptor? = null
 
     fun startThread() {
-        Log.i(TAG, "Starting Vpn Thread")
+        logi("Starting Vpn Thread")
         thread = Thread(this, "AdVpnThread")
         thread?.start()
-        Log.i(TAG, "Vpn Thread started")
+        logi("Vpn Thread started")
     }
 
     fun stopThread() {
-        Log.i(TAG, "Stopping Vpn Thread")
+        logi("Stopping Vpn Thread")
         if (thread != null) {
             thread?.interrupt()
         }
 
         interruptFd =
-            FileHelper.closeOrWarn(interruptFd, TAG, "stopThread: Could not close interruptFd")
+            FileHelper.closeOrWarn(interruptFd, "stopThread: Could not close interruptFd")
         try {
             if (thread != null) {
                 thread?.join(2000)
             }
         } catch (e: InterruptedException) {
-            Log.w(TAG, "stopThread: Interrupted while joining thread", e)
+            logw("stopThread: Interrupted while joining thread", e)
         }
         if (thread != null && thread!!.isAlive) {
-            Log.w(TAG, "stopThread: Could not kill VPN thread, it is still alive")
+            logw("stopThread: Could not kill VPN thread, it is still alive")
         } else {
             thread = null
-            Log.i(TAG, "Vpn Thread stopped")
+            logi("Vpn Thread stopped")
         }
     }
 
     @Synchronized
     override fun run() {
-        Log.i(TAG, "Starting")
+        logi("Starting")
 
         // Load the block list
         try {
@@ -175,7 +177,7 @@ class AdVpnThread(
                 // If the function returns, that means it was interrupted
                 runVpn()
 
-                Log.i(TAG, "Told to stop")
+                logi("Told to stop")
                 notify(VpnStatus.STOPPING)
                 break
             } catch (e: InterruptedException) {
@@ -183,26 +185,26 @@ class AdVpnThread(
             } catch (e: VpnLostConnectionException) {
                 // We want to filter out VpnNetworkException from out crash analytics as these
                 // are exceptions that we expect to happen from network errors
-                Log.w(TAG, "Network exception in vpn thread, ignoring and reconnecting", e)
+                logw("Network exception in vpn thread, ignoring and reconnecting", e)
                 // If an exception was thrown, show to the user and try again
                 notify(VpnStatus.RECONNECTING)
             } catch (e: VpnNetworkException) {
                 // Same thing here, but show that there was an error
-                Log.w(TAG, "Network exception in vpn thread, ignoring and reconnecting", e)
+                logw("Network exception in vpn thread, ignoring and reconnecting", e)
                 notify(VpnStatus.RECONNECTING_NETWORK_ERROR)
             } catch (e: Exception) {
-                Log.e(TAG, "Network exception in vpn thread, reconnecting", e)
+                loge("Network exception in vpn thread, reconnecting", e)
                 //ExceptionHandler.saveException(e, Thread.currentThread(), null);
                 notify(VpnStatus.RECONNECTING_NETWORK_ERROR)
             }
 
             if (System.currentTimeMillis() - connectTimeMillis >= RETRY_RESET_SEC * 1000) {
-                Log.i(TAG, "Resetting timeout")
+                logi("Resetting timeout")
                 retryTimeout = MIN_RETRY_TIME
             }
 
             // ...wait and try again
-            Log.i(TAG, "Retrying to connect in ${retryTimeout}seconds...")
+            logi("Retrying to connect in ${retryTimeout}seconds...")
             try {
                 Thread.sleep(retryTimeout.toLong() * 1000)
             } catch (e: InterruptedException) {
@@ -215,7 +217,7 @@ class AdVpnThread(
         }
 
         notify(VpnStatus.STOPPED)
-        Log.i(TAG, "Exiting")
+        logi("Exiting")
     }
 
     @Throws(
@@ -248,7 +250,7 @@ class AdVpnThread(
                 }
             }
         } finally {
-            blockFd = FileHelper.closeOrWarn(blockFd, TAG, "runVpn: Could not close blockFd")
+            blockFd = FileHelper.closeOrWarn(blockFd, "runVpn: Could not close blockFd")
         }
     }
 
@@ -288,7 +290,7 @@ class AdVpnThread(
             }
         }
 
-        Log.d(TAG, "doOne: Polling ${polls.size} file descriptors")
+        logd("doOne: Polling ${polls.size} file descriptors")
         val result = FileHelper.poll(polls, vpnWatchDog.pollTimeout)
         if (result == 0) {
             vpnWatchDog.handleTimeout()
@@ -296,7 +298,7 @@ class AdVpnThread(
         }
 
         if (blockFd.revents.toInt() != 0) {
-            Log.i(TAG, "Told to stop VPN")
+            logi("Told to stop VPN")
             return false
         }
 
@@ -310,7 +312,7 @@ class AdVpnThread(
                 i++
                 val wosp = iter.next()
                 if (polls[i + 2]!!.revents.toInt() and OsConstants.POLLIN != 0) {
-                    Log.d(TAG, "Read from DNS socket" + wosp.socket)
+                    logd("Read from DNS socket" + wosp.socket)
                     iter.remove()
                     handleRawDnsResponse(wosp.packet, wosp.socket)
                     wosp.socket.close()
@@ -319,12 +321,12 @@ class AdVpnThread(
         }
 
         if ((deviceFd.revents.toInt() and OsConstants.POLLOUT) != 0) {
-            Log.d(TAG, "Write to device")
+            logd("Write to device")
             writeToDevice(outFd)
         }
 
         if (deviceFd.revents.toInt() and OsConstants.POLLIN != 0) {
-            Log.d(TAG, "Read from device")
+            logd("Read from device")
             readPacketFromDevice(inputStream, packet)
         }
 
@@ -350,7 +352,7 @@ class AdVpnThread(
 
         if (length == 0) {
             // TODO: Possibly change to exception
-            Log.w(TAG, "Got empty packet!")
+            logw("Got empty packet!")
             return
         }
 
@@ -376,19 +378,18 @@ class AdVpnThread(
             } else {
                 FileHelper.closeOrWarn(
                     dnsSocket,
-                    TAG,
                     "handleDnsRequest: Cannot close socket in error"
                 )
             }
         } catch (e: IOException) {
-            FileHelper.closeOrWarn(dnsSocket, TAG, "handleDnsRequest: Cannot close socket in error")
+            FileHelper.closeOrWarn(dnsSocket, "handleDnsRequest: Cannot close socket in error")
             if (e.cause is ErrnoException) {
                 val errnoExc = e.cause as ErrnoException
                 if (errnoExc.errno == OsConstants.ENETUNREACH || errnoExc.errno == OsConstants.EPERM) {
                     throw VpnLostConnectionException("Cannot send message:", e)
                 }
             }
-            Log.w(TAG, "handleDnsRequest: Could not send packet to upstream", e)
+            logw("handleDnsRequest: Could not send packet to upstream", e)
         }
     }
 
@@ -415,20 +416,20 @@ class AdVpnThread(
         // Optimally we'd allow either one, but the forwarder checks if upstream size is empty, so
         // we really need to acquire both an ipv6 and an ipv4 subnet.
         if (addr is Inet6Address && ipv6Template == null) {
-            Log.i(TAG, "newDNSServer: Ignoring DNS server $addr")
+            logi("newDNSServer: Ignoring DNS server $addr")
         } else if (addr is Inet4Address && format == null) {
-            Log.i(TAG, "newDNSServer: Ignoring DNS server $addr")
+            logi("newDNSServer: Ignoring DNS server $addr")
         } else if (addr is Inet4Address) {
             upstreamDnsServers.add(addr)
             val alias = String.format(format!!, upstreamDnsServers.size + 1)
-            Log.i(TAG, "configure: Adding DNS Server $addr as $alias")
+            logi("configure: Adding DNS Server $addr as $alias")
             builder.addDnsServer(alias).addRoute(alias, 32)
             vpnWatchDog.setTarget(InetAddress.getByName(alias))
         } else if (addr is Inet6Address) {
             upstreamDnsServers.add(addr)
             ipv6Template!![ipv6Template.size - 1] = (upstreamDnsServers.size + 1).toByte()
             val i6addr = Inet6Address.getByAddress(ipv6Template)
-            Log.i(TAG, "configure: Adding DNS Server $addr as $i6addr")
+            logi("configure: Adding DNS Server $addr as $i6addr")
             builder.addDnsServer(i6addr)
             vpnWatchDog.setTarget(i6addr)
         }
@@ -443,19 +444,19 @@ class AdVpnThread(
         if (config.appList.defaultMode == com.t895.dnsnet.AllowListMode.NOT_ON_VPN) {
             for (app in allowOnVpn) {
                 try {
-                    Log.d(TAG, "configure: Allowing $app to use the DNS VPN")
+                    logd("configure: Allowing $app to use the DNS VPN")
                     builder.addAllowedApplication(app)
                 } catch (e: Exception) {
-                    Log.w(TAG, "configure: Cannot disallow", e)
+                    logw("configure: Cannot disallow", e)
                 }
             }
         } else {
             for (app in doNotAllowOnVpn) {
                 try {
-                    Log.d(TAG, "configure: Disallowing $app from using the DNS VPN")
+                    logd("configure: Disallowing $app from using the DNS VPN")
                     builder.addDisallowedApplication(app)
                 } catch (e: Exception) {
-                    Log.w(TAG, "configure: Cannot disallow", e)
+                    logw("configure: Cannot disallow", e)
                 }
             }
         }
@@ -463,13 +464,13 @@ class AdVpnThread(
 
     @Throws(VpnNetworkException::class)
     private fun configure(): ParcelFileDescriptor? {
-        Log.i(TAG, "Configuring $this")
+        logi("Configuring $this")
 
         val config = FileHelper.loadCurrentSettings()
 
         // Get the current DNS servers before starting the VPN
         val dnsServers = getDnsServers(vpnService)
-        Log.i(TAG, "Got DNS servers = $dnsServers")
+        logi("Got DNS servers = $dnsServers")
 
         // Configure a builder while parsing the parameters.
         val builder = vpnService.Builder()
@@ -497,7 +498,7 @@ class AdVpnThread(
         if (hasIpV6Servers(config, dnsServers)) {
             try {
                 val addr = Inet6Address.getByAddress(ipv6Template)
-                Log.d(TAG, "configure: Adding IPv6 address$addr")
+                logd("configure: Adding IPv6 address$addr")
                 builder.addAddress(addr, 120)
             } catch (e: java.lang.Exception) {
                 e.printStackTrace()
@@ -508,7 +509,7 @@ class AdVpnThread(
         }
 
         if (format == null) {
-            Log.w(TAG, "configure: Could not find a prefix to use, directly using DNS servers")
+            logw("configure: Could not find a prefix to use, directly using DNS servers")
             builder.addAddress("192.168.50.1", 24)
         }
 
@@ -525,7 +526,7 @@ class AdVpnThread(
                             InetAddress.getByName(item.location)
                         )
                     } catch (e: Exception) {
-                        Log.e(TAG, "configure: Cannot add custom DNS server", e)
+                        loge("configure: Cannot add custom DNS server", e)
                     }
                 }
             }
@@ -536,7 +537,7 @@ class AdVpnThread(
             try {
                 newDNSServer(builder, format, ipv6Template, addr)
             } catch (e: java.lang.Exception) {
-                Log.e(TAG, "configure: Cannot add server:", e)
+                loge("configure: Cannot add server:", e)
             }
         }
 
@@ -568,7 +569,7 @@ class AdVpnThread(
             .setSession("DNSNet")
             .setConfigureIntent(pendingIntent)
             .establish()
-        Log.i(TAG, "Configured")
+        logi("Configured")
 
         return pfd
     }

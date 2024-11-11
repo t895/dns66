@@ -9,7 +9,6 @@
 package com.t895.dnsnet.viewmodel
 
 import android.content.pm.ApplicationInfo
-import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.t895.dnsnet.BuildConfig
@@ -21,6 +20,7 @@ import com.t895.dnsnet.Host
 import com.t895.dnsnet.HostState
 import com.t895.dnsnet.Preferences
 import com.t895.dnsnet.db.RuleDatabaseUpdateWorker
+import com.t895.dnsnet.logw
 import com.t895.dnsnet.ui.App
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.Dispatchers
@@ -148,7 +148,7 @@ class HomeViewModel : ViewModel() {
 
     fun removeHost(host: Host) {
         if (!config.hosts.items.contains(host)) {
-            Log.w(TAG, "Tried to remove host that does not exist in config! - $host")
+            logw("Tried to remove host that does not exist in config! - $host")
             return
         }
         config.hosts.items.remove(host)
@@ -158,7 +158,7 @@ class HomeViewModel : ViewModel() {
 
     fun replaceHost(oldHost: Host, newHost: Host) {
         if (!config.hosts.items.contains(oldHost)) {
-            Log.w(TAG, "Tried to replace host that does not exist in config! - $oldHost")
+            logw("Tried to replace host that does not exist in config! - $oldHost")
             return
         }
         val oldIndex = config.hosts.items.indexOf(oldHost)
@@ -186,7 +186,7 @@ class HomeViewModel : ViewModel() {
 
     fun removeDnsServer(server: DnsServer) {
         if (!config.dnsServers.items.contains(server)) {
-            Log.w(TAG, "Tried to remove DnsServer that does not exist in config! - $server")
+            logw("Tried to remove DnsServer that does not exist in config! - $server")
             return
         }
         config.dnsServers.items.remove(server)
@@ -199,7 +199,7 @@ class HomeViewModel : ViewModel() {
         newDnsServer: DnsServer
     ) {
         if (!config.dnsServers.items.contains(oldServer)) {
-            Log.w(TAG, "Tried to replace host that does not exist in config! - $oldServer")
+            logw("Tried to replace host that does not exist in config! - $oldServer")
             return
         }
         val oldIndex = config.dnsServers.items.indexOf(oldServer)
@@ -225,7 +225,7 @@ class HomeViewModel : ViewModel() {
         val newApp = app.copy()
         newApp.enabled = !newApp.enabled
         if (!_appList.value.contains(app)) {
-            Log.w(TAG, "Tried to toggle app that does not exist in list! - $app")
+            logw("Tried to toggle app that does not exist in list! - $app")
             return
         }
         val oldIndex = _appList.value.indexOf(app)
@@ -289,9 +289,5 @@ class HomeViewModel : ViewModel() {
 
     fun onDismissPrivateDnsEnabledWarning() {
         _showDisablePrivateDnsDialog.value = false
-    }
-
-    companion object {
-        const val TAG = "HomeViewModel"
     }
 }

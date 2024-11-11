@@ -16,7 +16,7 @@
 
 package com.t895.dnsnet.vpn
 
-import android.util.Log
+import com.t895.dnsnet.logd
 import java.io.IOException
 import java.net.DatagramPacket
 import java.net.DatagramSocket
@@ -38,8 +38,6 @@ import java.net.SocketException
 
 class VpnWatchdog {
     companion object {
-        private const val TAG = "VpnWatchdog"
-
         // Polling is quadrupled on every success, and values range from 4s to 1h8m.
         private const val POLL_TIMEOUT_START = 1000
         private const val POLL_TIMEOUT_END = 4096000
@@ -88,19 +86,19 @@ class VpnWatchdog {
      */
     @Throws(InterruptedException::class)
     fun initialize(enabled: Boolean) {
-        Log.d(TAG, "initialize: Initializing watchdog")
+        logd("initialize: Initializing watchdog")
 
         pollTimeout = POLL_TIMEOUT_START
         lastPacketSent = 0
         this.enabled = enabled
 
         if (!enabled) {
-            Log.d(TAG, "initialize: Disabled.")
+            logd("initialize: Disabled.")
             return
         }
 
         if (initPenalty > 0) {
-            Log.d(TAG, "init penalty: Sleeping for " + initPenalty + "ms")
+            logd("init penalty: Sleeping for " + initPenalty + "ms")
             Thread.sleep(initPenalty.toLong())
         }
     }
@@ -116,8 +114,7 @@ class VpnWatchdog {
             return
         }
 
-        Log.d(
-            TAG,
+        logd(
             "handleTimeout: Milliseconds elapsed between last receive and sent: ${lastPacketReceived - lastPacketSent}"
         )
 
@@ -150,7 +147,7 @@ class VpnWatchdog {
             return
         }
 
-        Log.d(TAG, "handlePacket: Received packet of length ${packetData.size}")
+        logd("handlePacket: Received packet of length ${packetData.size}")
         lastPacketReceived = System.currentTimeMillis()
     }
 
@@ -165,7 +162,7 @@ class VpnWatchdog {
             return
         }
 
-        Log.d(TAG, "sendPacket: Sending packet, poll timeout is $pollTimeout")
+        logd("sendPacket: Sending packet, poll timeout is $pollTimeout")
         val outPacket = DatagramPacket(ByteArray(0), 0, 0, target, 53)
         try {
             newDatagramSocket().use {

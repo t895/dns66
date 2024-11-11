@@ -17,7 +17,6 @@ import android.system.ErrnoException
 import android.system.Os
 import android.system.OsConstants
 import android.system.StructPollfd
-import android.util.Log
 import android.widget.Toast
 import com.t895.dnsnet.DnsNetApplication.Companion.applicationContext
 import java.io.Closeable
@@ -37,8 +36,6 @@ import java.net.URLEncoder
  * Utility object for working with files.
  */
 object FileHelper {
-    private const val TAG = "FileHelper"
-
     /**
      * Try open the file with [Context.openFileInput]
      */
@@ -72,7 +69,7 @@ object FileHelper {
         return if (stream != null) {
             Configuration.read(InputStreamReader(stream))
         } else {
-            Log.d(TAG, "Config file not found, creating new file.")
+            logd("Config file not found, creating new file.")
             Configuration()
         }
     }
@@ -104,7 +101,7 @@ object FileHelper {
     fun loadDefaultSettings(): Configuration = Configuration.read(null)
 
     fun writeSettings(config: Configuration) {
-        Log.d(TAG, "writeSettings: Writing the settings file")
+        logd("writeSettings: Writing the settings file")
         try {
             OutputStreamWriter(openWrite("settings.json")).use {
                 config.write(it)
@@ -145,7 +142,7 @@ object FileHelper {
             try {
                 InputStreamReader(applicationContext.contentResolver.openInputStream(Uri.parse(host.location)))
             } catch (e: SecurityException) {
-                Log.d("FileHelper", "openItemFile: Cannot open", e)
+                logd("openItemFile: Cannot open", e)
                 throw FileNotFoundException(e.message)
             }
         } else {
@@ -188,24 +185,24 @@ object FileHelper {
         }
     }
 
-    fun closeOrWarn(fd: FileDescriptor?, tag: String?, message: String): FileDescriptor? {
+    fun closeOrWarn(fd: FileDescriptor?, message: String): FileDescriptor? {
         try {
             if (fd != null) {
                 Os.close(fd)
             }
         } catch (e: ErrnoException) {
-            Log.e(tag, "closeOrWarn: $message", e)
+            loge("closeOrWarn: $message", e)
         }
 
         // Always return null
         return null
     }
 
-    fun <T : Closeable?> closeOrWarn(fd: T, tag: String?, message: String): FileDescriptor? {
+    fun <T : Closeable?> closeOrWarn(fd: T, message: String): FileDescriptor? {
         try {
             fd?.close()
         } catch (e: java.lang.Exception) {
-            Log.e(tag, "closeOrWarn: $message", e)
+            loge("closeOrWarn: $message", e)
         }
 
         // Always return null

@@ -17,7 +17,6 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable
-import android.util.Log
 import androidx.annotation.Keep
 import com.t895.dnsnet.HostState.Companion.toHostState
 import kotlinx.parcelize.Parceler
@@ -45,8 +44,6 @@ data class Configuration(
     var blockLogging: Boolean = false,
 ) {
     companion object {
-        private const val TAG = "Configuration"
-
         private const val VERSION = 1
 
         /* Default tweak level */
@@ -59,7 +56,7 @@ data class Configuration(
                 try {
                     Json.decodeFromString<Configuration>(data)
                 } catch (e: Exception) {
-                    Log.e(TAG, "Failed to decode config! - ${e.localizedMessage}")
+                    loge("Failed to decode config! - ${e.localizedMessage}")
                     throw IOException()
                 }
             } ?: Configuration()
@@ -123,7 +120,7 @@ data class Configuration(
         hosts.items.removeAll { it.location == oldURL }
 
     fun disableURL(oldURL: String) {
-        Log.d(TAG, String.format("disableURL: Disabling %s", oldURL))
+        logd(String.format("disableURL: Disabling %s", oldURL))
         hosts.items.forEach {
             if (it.location == oldURL) {
                 it.state = HostState.IGNORE
@@ -134,7 +131,7 @@ data class Configuration(
     @Throws(IOException::class)
     fun write(writer: Writer?) {
         val error = { e: Exception ->
-            Log.e(TAG, "Failed to write config to disk! - ${e.localizedMessage}")
+            loge("Failed to write config to disk! - ${e.localizedMessage}")
             throw IOException()
         }
         try {

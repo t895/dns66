@@ -11,10 +11,12 @@
 
 package com.t895.dnsnet.db
 
-import android.util.Log
 import com.t895.dnsnet.FileHelper
 import com.t895.dnsnet.Host
 import com.t895.dnsnet.HostState
+import com.t895.dnsnet.logd
+import com.t895.dnsnet.loge
+import com.t895.dnsnet.logi
 import java.io.BufferedReader
 import java.io.FileNotFoundException
 import java.io.IOException
@@ -31,7 +33,6 @@ import java.util.concurrent.atomic.AtomicReference
  */
 class RuleDatabase private constructor() {
     companion object {
-        private const val TAG = "RuleDatabase"
         val instance = RuleDatabase()
 
         fun parseLine(line: String): String? {
@@ -124,10 +125,10 @@ class RuleDatabase private constructor() {
 
         nextBlockedHosts = HashSet(blockedHosts.get().size)
 
-        Log.i(TAG, "Loading block list")
+        logi("Loading block list")
 
         if (!config.hosts.enabled) {
-            Log.d(TAG, "loadBlockedHosts: Not loading, disabled.")
+            logd("loadBlockedHosts: Not loading, disabled.")
         } else {
             for (item in config.hosts.items) {
                 if (Thread.interrupted()) {
@@ -156,7 +157,7 @@ class RuleDatabase private constructor() {
         val reader = try {
             FileHelper.openItemFile(item)
         } catch (e: FileNotFoundException) {
-            Log.d(TAG, "loadItem: File not found: ${item.location}")
+            logd("loadItem: File not found: ${item.location}")
             return
         }
 
@@ -176,13 +177,11 @@ class RuleDatabase private constructor() {
     private fun addHost(item: Host, host: String) {
         // Single address to block
         if (item.state == HostState.ALLOW) {
-            nextBlockedHosts?.remove(host) ?: Log.d(
-                TAG,
+            nextBlockedHosts?.remove(host) ?: logd(
                 "addHost: nextBlockedHosts was null when attempting to remove host!"
             )
         } else if (item.state == HostState.DENY) {
-            nextBlockedHosts?.add(host) ?: Log.d(
-                TAG,
+            nextBlockedHosts?.add(host) ?: logd(
                 "addHost: nextBlockedHosts was null when attempting to add host!"
             )
         }
@@ -199,7 +198,7 @@ class RuleDatabase private constructor() {
     fun loadReader(item: Host, reader: Reader): Boolean {
         var count = 0
         try {
-            Log.d(TAG, "loadBlockedHosts: Reading: ${item.location}")
+            logd("loadBlockedHosts: Reading: ${item.location}")
             BufferedReader(reader).use {
                 var line = it.readLine()
                 while (line != null) {
@@ -217,17 +216,16 @@ class RuleDatabase private constructor() {
                 }
             }
 
-            Log.d(TAG, "loadBlockedHosts: Loaded $count hosts from ${item.location}")
+            logd("loadBlockedHosts: Loaded $count hosts from ${item.location}")
             return true
         } catch (e: IOException) {
-            Log.e(
-                TAG,
+            loge(
                 "loadBlockedHosts: Error while reading ${item.location} after $count items",
                 e
             )
             return false
         } finally {
-            FileHelper.closeOrWarn(reader, TAG, "loadBlockedHosts: Error closing ${item.location}")
+            FileHelper.closeOrWarn(reader, "loadBlockedHosts: Error closing ${item.location}")
         }
     }
 }
