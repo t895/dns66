@@ -26,7 +26,6 @@ data class App(
     fun getIcon(): Drawable? = weakIcon?.get()
 
     fun loadIcon(pm: PackageManager): Drawable? {
-        info.packageName
         var icon = getIcon()
         if (icon == null) {
             icon = info.loadIcon(pm)

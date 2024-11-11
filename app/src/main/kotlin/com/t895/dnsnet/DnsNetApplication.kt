@@ -10,6 +10,13 @@ package com.t895.dnsnet
 
 import android.app.Application
 import android.content.Context
+import coil3.ImageLoader
+import coil3.SingletonImageLoader
+import coil3.disk.DiskCache
+import coil3.disk.directory
+import coil3.memory.MemoryCache
+import com.t895.dnsnet.ui.image.AppImageFetcher
+import com.t895.dnsnet.ui.image.AppImageKeyer
 
 class DnsNetApplication : Application() {
     companion object {
@@ -20,5 +27,25 @@ class DnsNetApplication : Application() {
     override fun onCreate() {
         super.onCreate()
         application = this
+
+        SingletonImageLoader.setSafe {
+            ImageLoader.Builder(applicationContext)
+                .components {
+                    add(AppImageKeyer())
+                    add(AppImageFetcher.Factory())
+                }
+                .memoryCache {
+                    MemoryCache.Builder()
+                        .maxSizePercent(applicationContext, 0.25)
+                        .build()
+                }
+                .diskCache {
+                    DiskCache.Builder()
+                        .directory(applicationContext.cacheDir.resolve("image_cache"))
+                        .maxSizePercent(0.02)
+                        .build()
+                }
+                .build()
+        }
     }
 }

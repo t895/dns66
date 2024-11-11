@@ -124,11 +124,9 @@ fun AppsScreen(
                     enabled = enabled,
                     onCheckedChange = { _ -> onAppClick(it) },
                     startContent = {
-                        it.loadIcon(pm)
-                        val painter = rememberAsyncImagePainter(it.getIcon())
                         Image(
                             modifier = Modifier.fillMaxSize(),
-                            painter = painter,
+                            painter = rememberAsyncImagePainter(it),
                             contentDescription = it.label,
                         )
                     }
