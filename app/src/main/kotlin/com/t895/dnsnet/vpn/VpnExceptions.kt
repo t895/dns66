@@ -20,3 +20,8 @@ class VpnNetworkException : Exception {
     constructor(s: String?) : super(s)
     constructor(s: String?, t: Throwable?) : super(s, t)
 }
+
+class VpnLostConnectionException : Exception {
+    constructor(s: String?) : super(s)
+    constructor(s: String?, t: Throwable?) : super(s, t)
+}

@@ -180,11 +180,15 @@ class AdVpnThread(
                 break
             } catch (e: InterruptedException) {
                 break
-            } catch (e: VpnNetworkException) {
+            } catch (e: VpnLostConnectionException) {
                 // We want to filter out VpnNetworkException from out crash analytics as these
                 // are exceptions that we expect to happen from network errors
                 Log.w(TAG, "Network exception in vpn thread, ignoring and reconnecting", e)
                 // If an exception was thrown, show to the user and try again
+                notify(VpnStatus.RECONNECTING)
+            } catch (e: VpnNetworkException) {
+                // Same thing here, but show that there was an error
+                Log.w(TAG, "Network exception in vpn thread, ignoring and reconnecting", e)
                 notify(VpnStatus.RECONNECTING_NETWORK_ERROR)
             } catch (e: Exception) {
                 Log.e(TAG, "Network exception in vpn thread, reconnecting", e)
@@ -381,7 +385,7 @@ class AdVpnThread(
             if (e.cause is ErrnoException) {
                 val errnoExc = e.cause as ErrnoException
                 if (errnoExc.errno == OsConstants.ENETUNREACH || errnoExc.errno == OsConstants.EPERM) {
-                    throw VpnNetworkException("Cannot send message:", e)
+                    throw VpnLostConnectionException("Cannot send message:", e)
                 }
             }
             Log.w(TAG, "handleDnsRequest: Could not send packet to upstream", e)
