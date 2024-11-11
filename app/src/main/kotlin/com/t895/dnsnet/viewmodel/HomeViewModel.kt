@@ -12,7 +12,6 @@ import android.content.pm.ApplicationInfo
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import androidx.preference.PreferenceManager
 import com.t895.dnsnet.BuildConfig
 import com.t895.dnsnet.Configuration
 import com.t895.dnsnet.DnsNetApplication.Companion.applicationContext
@@ -20,6 +19,7 @@ import com.t895.dnsnet.DnsServer
 import com.t895.dnsnet.FileHelper
 import com.t895.dnsnet.Host
 import com.t895.dnsnet.HostState
+import com.t895.dnsnet.Preferences
 import com.t895.dnsnet.db.RuleDatabaseUpdateWorker
 import com.t895.dnsnet.ui.App
 import kotlinx.atomicfu.atomic
@@ -261,18 +261,14 @@ class HomeViewModel : ViewModel() {
     }
 
     fun onNotificationPermissionNotGranted() {
-        val denied = PreferenceManager.getDefaultSharedPreferences(applicationContext)
-            .getBoolean(NOTIFICATION_PERMISSION_DENIED, false)
-        if (!denied) {
+        if (!Preferences.NotificationPermissionDenied) {
             _showNotificationPermissionDialog.value = true
         }
     }
 
     fun onNotificationPermissionDenied() {
         onDismissNotificationPermission()
-        PreferenceManager.getDefaultSharedPreferences(applicationContext).edit()
-            .putBoolean(NOTIFICATION_PERMISSION_DENIED, true)
-            .apply()
+        Preferences.NotificationPermissionDenied = true
     }
 
     fun onDismissNotificationPermission() {
@@ -297,7 +293,5 @@ class HomeViewModel : ViewModel() {
 
     companion object {
         const val TAG = "HomeViewModel"
-
-        private const val NOTIFICATION_PERMISSION_DENIED = "NotificationPermissionDenied"
     }
 }

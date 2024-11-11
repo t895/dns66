@@ -35,6 +35,7 @@ import androidx.core.app.NotificationCompat
 import com.t895.dnsnet.FileHelper
 import com.t895.dnsnet.MainActivity
 import com.t895.dnsnet.NotificationChannels
+import com.t895.dnsnet.Preferences
 import com.t895.dnsnet.R
 import com.t895.dnsnet.vpn.VpnStatus.Companion.toVpnStatus
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -84,14 +85,12 @@ class AdVpnService : VpnService(), Handler.Callback {
         val logger = BlockLogger.load(logFilename)
 
         fun checkStartVpnOnBoot(context: Context) {
-            Log.i("BOOT", "Checking whether to start ad buster on boot")
+            Log.i("BOOT", "Checking whether to start DNSNet on boot")
             val config = FileHelper.loadCurrentSettings()
             if (!config.autoStart) {
                 return
             }
-            if (!context.getSharedPreferences("state", Context.MODE_PRIVATE)
-                    .getBoolean("isActive", false)
-            ) {
+            if (!Preferences.VpnIsActive) {
                 return
             }
 
@@ -206,9 +205,7 @@ class AdVpnService : VpnService(), Handler.Callback {
         }
 
         val start = {
-            getSharedPreferences("state", MODE_PRIVATE).edit()
-                .putBoolean("isActive", true)
-                .apply()
+            Preferences.VpnIsActive = true
             startVpn()
         }
 
@@ -222,9 +219,7 @@ class AdVpnService : VpnService(), Handler.Callback {
 
             Command.START -> start()
             Command.STOP -> {
-                getSharedPreferences("state", Context.MODE_PRIVATE).edit()
-                    .putBoolean("isActive", false)
-                    .apply()
+                Preferences.VpnIsActive = false
                 stopVpn()
             }
 
