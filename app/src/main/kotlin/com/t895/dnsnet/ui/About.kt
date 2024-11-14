@@ -131,9 +131,11 @@ fun AboutScreen(
                         )
                     }
                 },
+                windowInsets = topAppBarInsets,
                 scrollBehavior = scrollBehavior,
             )
         },
+        contentWindowInsets = scaffoldContentInsets,
     ) { innerPadding ->
         About(
             modifier = Modifier.padding(horizontal = 16.dp),
