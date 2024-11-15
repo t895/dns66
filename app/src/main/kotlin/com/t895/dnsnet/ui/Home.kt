@@ -97,6 +97,7 @@ import com.t895.dnsnet.ui.theme.TopLevelPopExit
 import com.t895.dnsnet.ui.theme.VpnFabSize
 import com.t895.dnsnet.viewmodel.HomeViewModel
 import com.t895.dnsnet.vpn.AdVpnService
+import com.t895.dnsnet.vpn.LoggedConnectionState
 import com.t895.dnsnet.vpn.VpnStatus
 
 enum class HomeDestination(
@@ -112,7 +113,8 @@ enum class HomeDestination(
 
 enum class TopLevelDestination(val route: String) {
     About("about"),
-    Home("home");
+    Home("home"),
+    BlockLog("blocklog");
 }
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalComposeUiApi::class)
@@ -356,6 +358,15 @@ fun App(
         composable(TopLevelDestination.About.route) {
             AboutScreen { navController.popBackStack() }
         }
+        composable(TopLevelDestination.BlockLog.route) {
+            val loggedConnections by vm.connectionsLogState.collectAsState()
+            BlockLogScreen(
+                onNavigateUp = { navController.popBackStack() },
+                loggedConnections = loggedConnections.map {
+                    LoggedConnectionState(it.key, it.value.allowed, it.value.attempts)
+                }.sortedByDescending { it.attempts },
+            )
+        }
     }
 }
 
@@ -568,6 +579,7 @@ fun HomeScreen(
                     var resumeOnStartup by remember { mutableStateOf(vm.config.autoStart) }
                     var watchConnection by remember { mutableStateOf(vm.config.watchDog) }
                     var ipv6Support by remember { mutableStateOf(vm.config.ipV6Support) }
+                    var blockLog by remember { mutableStateOf(vm.config.blockLogging) }
 
                     val showWatchdogWarningDialog by vm.showWatchdogWarningDialog.collectAsState()
                     val dismiss = {
@@ -598,6 +610,39 @@ fun HomeScreen(
                         )
                     }
 
+                    val showDisableBlockLogWarningDialog by vm.showDisableBlockLogWarningDialog.collectAsState()
+                    if (showDisableBlockLogWarningDialog) {
+                        AlertDialog(
+                            onDismissRequest = { vm.onDismissDisableBlockLogWarning() },
+                            confirmButton = {
+                                TextButton(
+                                    onClick = {
+                                        AdVpnService.logger.clear()
+                                        vm.config.blockLogging = false
+                                        blockLog = vm.config.blockLogging
+                                        FileHelper.writeSettings(vm.config)
+                                        vm.onDismissDisableBlockLogWarning()
+                                    }
+                                ) {
+                                    Text(text = stringResource(R.string.disable))
+                                }
+                            },
+                            dismissButton = {
+                                TextButton(onClick = { vm.onDismissDisableBlockLogWarning() }) {
+                                    Text(text = stringResource(R.string.close))
+                                }
+                            },
+                            title = {
+                                Text(text = stringResource(R.string.disable_block_log_warning))
+                            },
+                            text = {
+                                Text(
+                                    text = stringResource(R.string.disable_block_log_warning_description)
+                                )
+                            },
+                        )
+                    }
+
                     StartScreen(
                         contentPadding = contentPadding + PaddingValues(ListPadding) +
                                 PaddingValues(bottom = VpnFabSize + FabPadding),
@@ -624,6 +669,19 @@ fun HomeScreen(
                             vm.config.ipV6Support = !vm.config.ipV6Support
                             ipv6Support = vm.config.ipV6Support
                             FileHelper.writeSettings(vm.config)
+                        },
+                        blockLog = blockLog,
+                        onToggleBlockLog = {
+                            if (blockLog) {
+                                vm.onDisableBlockLogWarning()
+                            } else {
+                                vm.config.blockLogging = !vm.config.blockLogging
+                                blockLog = vm.config.blockLogging
+                                FileHelper.writeSettings(vm.config)
+                            }
+                        },
+                        onOpenBlockLog = {
+                            topLevelNavController.navigate(TopLevelDestination.BlockLog.route)
                         },
                         status = status,
                         onChangeVpnStatusClick = onTryToggleService,

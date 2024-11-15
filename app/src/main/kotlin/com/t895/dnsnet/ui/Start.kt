@@ -47,6 +47,9 @@ fun StartScreen(
     onWatchConnectionClick: () -> Unit,
     ipv6Support: Boolean,
     onIpv6SupportClick: () -> Unit,
+    blockLog: Boolean,
+    onToggleBlockLog: () -> Unit,
+    onOpenBlockLog: () -> Unit,
     status: VpnStatus,
     onChangeVpnStatusClick: () -> Unit,
 ) {
@@ -79,6 +82,17 @@ fun StartScreen(
                     checked = ipv6Support,
                     enabled = enabled,
                     onCheckedChange = { onIpv6SupportClick() },
+                )
+                SplitSwitchListItem(
+                    title = stringResource(id = R.string.block_log),
+                    details = stringResource(id = R.string.block_log_description),
+                    maxDetailLines = Int.MAX_VALUE,
+                    outlineColor = MaterialTheme.colorScheme.outline,
+                    checked = blockLog,
+                    switchEnabled = enabled,
+                    bodyEnabled = blockLog,
+                    onCheckedChange = { onToggleBlockLog() },
+                    onBodyClick = onOpenBlockLog,
                 )
             }
             Spacer(Modifier.padding(bottom = contentPadding.calculateBottomPadding()))
@@ -125,6 +139,9 @@ private fun StartScreenPreview() {
             onIpv6SupportClick = {},
             status = VpnStatus.STOPPED,
             onChangeVpnStatusClick = {},
+            blockLog = true,
+            onToggleBlockLog = {},
+            onOpenBlockLog = {},
         )
     }
 }

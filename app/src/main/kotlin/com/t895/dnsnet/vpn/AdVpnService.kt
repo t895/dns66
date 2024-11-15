@@ -79,8 +79,7 @@ class AdVpnService : VpnService(), Handler.Callback {
         private val _status = MutableStateFlow(VpnStatus.STOPPED)
         val status = _status.asStateFlow()
 
-        private const val logFilename = "connections.json"
-        val logger = BlockLogger.load(logFilename)
+        val logger: BlockLogger = BlockLogger.load()
 
         fun checkStartVpnOnBoot(context: Context) {
             logi("Checking whether to start DNSNet on boot")
@@ -161,7 +160,7 @@ class AdVpnService : VpnService(), Handler.Callback {
             .setSmallIcon(R.drawable.ic_state_deny)
             .setPriority(NotificationCompat.PRIORITY_MIN)
 
-    private fun getOpenAppIntent(context: Context): PendingIntent {
+    private fun getOpenAppIntent(): PendingIntent {
         val mainActivityIntent = Intent(applicationContext, MainActivity::class.java)
             .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
         return PendingIntent.getActivity(
@@ -177,7 +176,7 @@ class AdVpnService : VpnService(), Handler.Callback {
         NotificationChannels.onCreate(this)
 
         notificationBuilder
-            .setContentIntent(getOpenAppIntent(applicationContext))
+            .setContentIntent(getOpenAppIntent())
 
         val intent = Intent(this, AdVpnService::class.java)
             .putExtra("COMMAND", Command.PAUSE.ordinal)
@@ -242,7 +241,7 @@ class AdVpnService : VpnService(), Handler.Callback {
                     .setPriority(NotificationCompat.PRIORITY_LOW)
                     .setContentTitle(getString(R.string.notification_paused_title))
                     .addAction(0, getString(R.string.resume), pendingIntent)
-                    .setContentIntent(getOpenAppIntent(applicationContext))
+                    .setContentIntent(getOpenAppIntent())
                     .build()
             notify(NOTIFICATION_ID_STATE, notification)
         }
@@ -309,7 +308,7 @@ class AdVpnService : VpnService(), Handler.Callback {
         val connectivityManager = getSystemService(ConnectivityManager::class.java)
         connectivityManager.unregisterNetworkCallback(connectivityChangedCallback)
 
-        logger.save(logFilename)
+        logger.save()
 
         stopSelf()
     }

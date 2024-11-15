@@ -134,4 +134,13 @@
     <string name="open_settings">Open settings</string>
     <string name="close">Close</string>
     <string name="try_again">Try again</string>
+    <string name="blocked">Blocked</string>
+    <string name="allowed">Allowed</string>
+    <string name="blocked_connections_percent">%d%% Blocked</string>
+    <string name="block_log">Block log</string>
+    <string name="block_log_description">Record each connection to view and analyze</string>
+    <string name="disable_block_log_warning">Warning</string>
+    <string name="disable_block_log_warning_description">Once disabled, the existing block log will be deleted permanently.</string>
+    <string name="disable">Disable</string>
+    <string name="scroll_up">Scroll up</string>
 </resources>

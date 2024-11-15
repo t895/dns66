@@ -15,3 +15,6 @@ val DefaultFabSize = 56.dp
 val FabPadding = 16.dp
 
 val ListPadding = 16.dp
+
+val ScrollUpIndicatorPadding = 16.dp
+val ScrollUpIndicatorSize = 48.dp

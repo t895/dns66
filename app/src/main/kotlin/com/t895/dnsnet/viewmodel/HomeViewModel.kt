@@ -22,6 +22,8 @@ import com.t895.dnsnet.Preferences
 import com.t895.dnsnet.db.RuleDatabaseUpdateWorker
 import com.t895.dnsnet.logw
 import com.t895.dnsnet.ui.App
+import com.t895.dnsnet.vpn.AdVpnService
+import com.t895.dnsnet.vpn.LoggedConnection
 import kotlinx.atomicfu.atomic
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -69,8 +71,24 @@ class HomeViewModel : ViewModel() {
     private val _showDisablePrivateDnsDialog = MutableStateFlow(false)
     val showDisablePrivateDnsDialog = _showDisablePrivateDnsDialog.asStateFlow()
 
+    private val _connectionsLogState =
+        MutableStateFlow<Map<String, LoggedConnection>>(emptyMap())
+    val connectionsLogState = _connectionsLogState.asStateFlow()
+
+    private val _showDisableBlockLogWarningDialog = MutableStateFlow(false)
+    val showDisableBlockLogWarningDialog = _showDisableBlockLogWarningDialog.asStateFlow()
+
     init {
+        _connectionsLogState.value = AdVpnService.logger.connections
+        AdVpnService.logger.setOnConnectionListener {
+            _connectionsLogState.value = HashMap(it)
+        }
         populateAppList()
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        AdVpnService.logger.setOnConnectionListener(null)
     }
 
     fun onCheckForUpdateErrors() {
@@ -289,5 +307,13 @@ class HomeViewModel : ViewModel() {
 
     fun onDismissPrivateDnsEnabledWarning() {
         _showDisablePrivateDnsDialog.value = false
+    }
+
+    fun onDisableBlockLogWarning() {
+        _showDisableBlockLogWarningDialog.value = true
+    }
+
+    fun onDismissDisableBlockLogWarning() {
+        _showDisableBlockLogWarningDialog.value = false
     }
 }

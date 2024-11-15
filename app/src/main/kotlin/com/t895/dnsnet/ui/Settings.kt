@@ -53,6 +53,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -147,7 +148,7 @@ private fun StartContentContainer(
 }
 
 @Composable
-private fun ContentSetting(
+fun ContentSetting(
     modifier: Modifier = Modifier,
     title: String = "",
     details: String = "",
@@ -189,6 +190,8 @@ fun SplitContentSetting(
     enabled: Boolean = true,
     title: String = "",
     details: String = "",
+    maxDetailLines: Int = 1,
+    outlineColor: Color = MaterialTheme.colorScheme.outlineVariant,
     onBodyClick: () -> Unit,
     interactionSource: MutableInteractionSource? = remember { MutableInteractionSource() },
     startContent: @Composable (BoxScope.() -> Unit)? = null,
@@ -222,7 +225,7 @@ fun SplitContentSetting(
                 modifier = Modifier.weight(1f),
                 title = title,
                 details = details,
-                maxDetailLines = 1,
+                maxDetailLines = maxDetailLines,
             )
         }
         Spacer(modifier = Modifier.padding(horizontal = innerHorizontalPadding / 2))
@@ -230,7 +233,7 @@ fun SplitContentSetting(
             modifier = Modifier
                 .fillMaxHeight()
                 .padding(vertical = 8.dp),
-            color = MaterialTheme.colorScheme.outlineVariant,
+            color = outlineColor,
         )
         Spacer(modifier = Modifier.padding(horizontal = innerHorizontalPadding))
         Box(
@@ -349,10 +352,12 @@ private fun CheckboxListItemPreview() {
 fun SplitCheckboxListItem(
     checked: Boolean,
     title: String,
+    outlineColor: Color = MaterialTheme.colorScheme.outlineVariant,
     modifier: Modifier = Modifier,
     bodyEnabled: Boolean = true,
     checkboxEnabled: Boolean = true,
     details: String = "",
+    maxDetailLines: Int = 1,
     onBodyClick: () -> Unit,
     onCheckedChange: (Boolean) -> Unit,
     startContent: @Composable (BoxScope.() -> Unit)? = null,
@@ -361,6 +366,8 @@ fun SplitCheckboxListItem(
         modifier = modifier,
         title = title,
         details = details,
+        maxDetailLines = maxDetailLines,
+        outlineColor = outlineColor,
         onBodyClick = onBodyClick,
         enabled = bodyEnabled,
         startContent = startContent,
@@ -440,10 +447,12 @@ private fun SwitchListItemPreview() {
 fun SplitSwitchListItem(
     checked: Boolean,
     title: String,
+    outlineColor: Color = MaterialTheme.colorScheme.outlineVariant,
     modifier: Modifier = Modifier,
     bodyEnabled: Boolean = true,
     switchEnabled: Boolean = true,
     details: String = "",
+    maxDetailLines: Int = 1,
     onBodyClick: () -> Unit,
     onCheckedChange: (Boolean) -> Unit,
     startContent: @Composable (BoxScope.() -> Unit)? = null
@@ -452,6 +461,8 @@ fun SplitSwitchListItem(
         modifier = modifier,
         title = title,
         details = details,
+        maxDetailLines = maxDetailLines,
+        outlineColor = outlineColor,
         onBodyClick = onBodyClick,
         enabled = bodyEnabled,
         startContent = startContent,

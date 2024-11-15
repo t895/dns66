@@ -44,6 +44,7 @@ object FileHelper {
         try {
             applicationContext.openFileInput(filename)
         } catch (e: FileNotFoundException) {
+            loge("Failed to open file", e)
             null
         }
 

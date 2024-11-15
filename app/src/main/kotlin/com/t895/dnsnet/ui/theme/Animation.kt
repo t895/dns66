@@ -14,7 +14,9 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.slideIn
+import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOut
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 
@@ -49,3 +51,6 @@ val TopLevelExit = slideOut(
 val TopLevelPopExit = slideOut(
     targetOffset = positiveOffset,
 ) + fadeOut(animationSpec = TopLevelFadeExitSpec)
+
+val ShowScrollUpIndicator = slideInVertically { it }
+val HideScrollUpIndicator = slideOutVertically { it }
