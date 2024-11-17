@@ -13,9 +13,13 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.BoxScope
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.add
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowUpward
@@ -37,10 +41,15 @@ import com.t895.dnsnet.ui.theme.ShowScrollUpIndicator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
+val ScrollUpIndicatorWindowInsets: WindowInsets
+    @Composable get() = WindowInsets.systemBars
+        .add(WindowInsets.displayCutout)
+
 @Composable
 fun BoxScope.ScrollUpIndicator(
     enabled: Boolean = true,
     visible: Boolean,
+    windowInsets: WindowInsets = ScrollUpIndicatorWindowInsets,
     onClick: suspend CoroutineScope.() -> Unit,
 ) {
     val scope = rememberCoroutineScope()
@@ -54,7 +63,7 @@ fun BoxScope.ScrollUpIndicator(
         Box(
             modifier = Modifier
                 .padding(ScrollUpIndicatorPadding)
-                .systemBarsPadding()
+                .padding(windowInsets.asPaddingValues())
                 .size(48.dp)
                 .shadow(
                     elevation = 2.dp,
