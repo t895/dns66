@@ -9,6 +9,7 @@
 package com.t895.dnsnet.ui
 
 import android.os.Parcelable
+import androidx.annotation.StringRes
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -26,6 +27,7 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.selection.triStateToggleable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowUpward
@@ -101,6 +103,7 @@ fun BlockLog(
                 } else {
                     loggedConnections.sortedBy { it.name }
                 }
+
                 BlockLogSortType.Attempts -> if (sortState.ascending) {
                     loggedConnections.sortedByDescending { it.attempts }
                 } else {
@@ -251,15 +254,11 @@ fun BlockLog(
                                         val newFilters = filterState.filters.toMutableMap()
                                         val currentState = filterState.filters[it]
                                         when (currentState) {
-                                            FilterMode.Include -> {
+                                            FilterMode.Include ->
                                                 newFilters[it] = FilterMode.Exclude
-                                            }
-                                            FilterMode.Exclude -> {
-                                                newFilters.remove(it)
-                                            }
-                                            null -> {
-                                                newFilters[it] = FilterMode.Include
-                                            }
+
+                                            FilterMode.Exclude -> newFilters.remove(it)
+                                            null -> newFilters[it] = FilterMode.Include
                                         }
                                         filterState = BlockLogFilterState(newFilters)
                                     }
@@ -273,9 +272,32 @@ fun BlockLog(
     }
 }
 
-enum class BlockLogSortType {
-    Attempts,
-    Alphabetical,
+@Composable
+fun BlockLogListItem(
+    modifier: Modifier = Modifier,
+    text: String,
+    endContent: @Composable () -> Unit,
+) {
+    Row(
+        modifier = modifier
+            .fillMaxWidth()
+            .minimumInteractiveComponentSize()
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            modifier = Modifier.weight(1f),
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+        )
+
+        endContent()
+    }
+}
+
+enum class BlockLogSortType(@StringRes val labelRes: Int) {
+    Attempts(R.string.attempts),
+    Alphabetical(R.string.alphabetical),
 }
 
 @Parcelize
@@ -292,27 +314,15 @@ private fun BlockLogSortItem(
     type: BlockLogSortType,
     onClick: () -> Unit,
 ) {
-    val text = when (type) {
-        BlockLogSortType.Alphabetical -> stringResource(R.string.alphabetical)
-        BlockLogSortType.Attempts -> stringResource(R.string.attempts)
-    }
-    Row(
+    val text = stringResource(type.labelRes)
+    BlockLogListItem(
         modifier = modifier
             .clickable(
                 role = Role.Button,
                 onClick = onClick,
-            )
-            .fillMaxWidth()
-            .minimumInteractiveComponentSize()
-            .padding(horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            ),
+        text = text,
     ) {
-        Text(
-            modifier = Modifier.weight(1f),
-            text = text,
-            style = MaterialTheme.typography.labelMedium,
-        )
-
         if (selected) {
             val animatedRotation by animateFloatAsState(
                 targetValue = if (ascending) 0f else -180f,
@@ -327,8 +337,8 @@ private fun BlockLogSortItem(
     }
 }
 
-enum class BlockLogFilterType {
-    Blocked,
+enum class BlockLogFilterType(@StringRes val labelRes: Int) {
+    Blocked(R.string.blocked),
 }
 
 enum class FilterMode {
@@ -348,32 +358,21 @@ private fun BlockLogFilterItem(
     mode: FilterMode?,
     onClick: () -> Unit,
 ) {
-    val text = when (type) {
-        BlockLogFilterType.Blocked -> stringResource(R.string.blocked)
+    val state = when (mode) {
+        FilterMode.Include -> ToggleableState.On
+        FilterMode.Exclude -> ToggleableState.Indeterminate
+        null -> ToggleableState.Off
     }
-    Row(
+    BlockLogListItem(
         modifier = modifier
-            .clickable(
-                role = Role.Checkbox,
+            .triStateToggleable(
+                state = state,
                 onClick = onClick,
-            )
-            .fillMaxWidth()
-            .minimumInteractiveComponentSize()
-            .padding(horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically,
+            ),
+        text = stringResource(type.labelRes),
     ) {
-        Text(
-            modifier = Modifier.weight(1f),
-            text = text,
-            style = MaterialTheme.typography.labelMedium,
-        )
-
         TriStateCheckbox(
-            state = when (mode) {
-                FilterMode.Include -> ToggleableState.On
-                FilterMode.Exclude -> ToggleableState.Indeterminate
-                null -> ToggleableState.Off
-            },
+            state = state,
             onClick = onClick,
         )
     }
