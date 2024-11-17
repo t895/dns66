@@ -143,4 +143,7 @@
     <string name="disable_block_log_warning_description">Once disabled, the existing block log will be deleted permanently.</string>
     <string name="disable">Disable</string>
     <string name="scroll_up">Scroll up</string>
+    <string name="alphabetical">Alphabetical</string>
+    <string name="attempts">Attempts</string>
+    <string name="modify_list">Modify list</string>
 </resources>

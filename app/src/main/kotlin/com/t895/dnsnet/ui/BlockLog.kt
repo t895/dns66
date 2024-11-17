@@ -8,9 +8,12 @@
 
 package com.t895.dnsnet.ui
 
+import android.os.Parcelable
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -25,23 +28,35 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowUpward
+import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.TriStateCheckbox
+import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
@@ -51,8 +66,16 @@ import com.t895.dnsnet.R
 import com.t895.dnsnet.ui.theme.ListPadding
 import com.t895.dnsnet.ui.theme.ScrollUpIndicatorPadding
 import com.t895.dnsnet.ui.theme.ScrollUpIndicatorSize
-import com.t895.dnsnet.vpn.LoggedConnectionState
+import kotlinx.parcelize.Parcelize
 
+@Parcelize
+data class LoggedConnectionState(
+    val name: String,
+    val allowed: Boolean,
+    var attempts: Long,
+) : Parcelable
+
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun BlockLog(
     modifier: Modifier = Modifier,
@@ -64,6 +87,47 @@ fun BlockLog(
     val blockedString = stringResource(R.string.blocked)
     val allowedColor = MaterialTheme.colorScheme.onSurface
     val blockedColor = MaterialTheme.colorScheme.error
+
+    var showModifyListSheet by rememberSaveable { mutableStateOf(false) }
+
+    var sortState by rememberSaveable { mutableStateOf(BlockLogSortState()) }
+    var filterState by rememberSaveable { mutableStateOf(BlockLogFilterState()) }
+
+    val sortedList by remember {
+        derivedStateOf {
+            when (sortState.selectedType) {
+                BlockLogSortType.Alphabetical -> if (sortState.ascending) {
+                    loggedConnections.sortedByDescending { it.name }
+                } else {
+                    loggedConnections.sortedBy { it.name }
+                }
+                BlockLogSortType.Attempts -> if (sortState.ascending) {
+                    loggedConnections.sortedByDescending { it.attempts }
+                } else {
+                    loggedConnections.sortedBy { it.attempts }
+                }
+            }
+        }
+    }
+    val filteredList by remember {
+        derivedStateOf {
+            sortedList.filter {
+                var result = true
+                filterState.filters.forEach { (type, mode) ->
+                    when (type) {
+                        BlockLogFilterType.Blocked -> {
+                            result = when (mode) {
+                                FilterMode.Include -> !it.allowed
+                                FilterMode.Exclude -> it.allowed
+                            }
+                        }
+                    }
+                }
+                result
+            }
+        }
+    }
+
     LazyColumn(
         modifier = modifier,
         state = listState,
@@ -108,10 +172,21 @@ fun BlockLog(
                 )
             }
 
-            Spacer(Modifier.padding(vertical = 8.dp))
+            Spacer(Modifier.padding(vertical = 16.dp))
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center,
+            ) {
+                IconButton(onClick = { showModifyListSheet = true }) {
+                    Icon(
+                        imageVector = Icons.Default.FilterList,
+                        contentDescription = stringResource(R.string.modify_list),
+                    )
+                }
+            }
         }
 
-        items(loggedConnections) {
+        items(filteredList) {
             ContentSetting(
                 modifier = Modifier.animateItem(),
                 title = it.name,
@@ -124,6 +199,183 @@ fun BlockLog(
                 },
             )
         }
+    }
+
+    var currentModifyListPage by rememberSaveable { mutableIntStateOf(0) }
+    if (showModifyListSheet) {
+        ModalBottomSheet(
+            onDismissRequest = { showModifyListSheet = false }
+        ) {
+            MaterialHorizontalTabLayout(
+                initialPage = currentModifyListPage,
+                onPageChange = { currentModifyListPage = it },
+                pages = listOf(
+                    TabLayoutContent(
+                        tabContent = {
+                            Text("Sort")
+                        },
+                        pageContent = {
+                            BlockLogSortType.entries.forEach {
+                                BlockLogSortItem(
+                                    selected = sortState.selectedType == it,
+                                    ascending = sortState.ascending,
+                                    type = it,
+                                    onClick = {
+                                        sortState = if (sortState.selectedType == it) {
+                                            BlockLogSortState(
+                                                selectedType = it,
+                                                ascending = !sortState.ascending,
+                                            )
+                                        } else {
+                                            BlockLogSortState(
+                                                selectedType = it,
+                                                ascending = true,
+                                            )
+                                        }
+                                        println(sortState)
+                                    }
+                                )
+                            }
+                        },
+                    ),
+                    TabLayoutContent(
+                        tabContent = {
+                            Text("Filter")
+                        },
+                        pageContent = {
+                            BlockLogFilterType.entries.forEach {
+                                BlockLogFilterItem(
+                                    type = it,
+                                    mode = filterState.filters[it],
+                                    onClick = {
+                                        val newFilters = filterState.filters.toMutableMap()
+                                        val currentState = filterState.filters[it]
+                                        when (currentState) {
+                                            FilterMode.Include -> {
+                                                newFilters[it] = FilterMode.Exclude
+                                            }
+                                            FilterMode.Exclude -> {
+                                                newFilters.remove(it)
+                                            }
+                                            null -> {
+                                                newFilters[it] = FilterMode.Include
+                                            }
+                                        }
+                                        filterState = BlockLogFilterState(newFilters)
+                                    }
+                                )
+                            }
+                        },
+                    ),
+                )
+            )
+        }
+    }
+}
+
+enum class BlockLogSortType {
+    Attempts,
+    Alphabetical,
+}
+
+@Parcelize
+data class BlockLogSortState(
+    val selectedType: BlockLogSortType = BlockLogSortType.Attempts,
+    val ascending: Boolean = true,
+) : Parcelable
+
+@Composable
+private fun BlockLogSortItem(
+    modifier: Modifier = Modifier,
+    selected: Boolean,
+    ascending: Boolean,
+    type: BlockLogSortType,
+    onClick: () -> Unit,
+) {
+    val text = when (type) {
+        BlockLogSortType.Alphabetical -> stringResource(R.string.alphabetical)
+        BlockLogSortType.Attempts -> stringResource(R.string.attempts)
+    }
+    Row(
+        modifier = modifier
+            .clickable(
+                role = Role.Button,
+                onClick = onClick,
+            )
+            .fillMaxWidth()
+            .minimumInteractiveComponentSize()
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            modifier = Modifier.weight(1f),
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+        )
+
+        if (selected) {
+            val animatedRotation by animateFloatAsState(
+                targetValue = if (ascending) 0f else -180f,
+                label = "animatedRotation",
+            )
+            Icon(
+                modifier = Modifier.rotate(animatedRotation),
+                imageVector = Icons.Filled.ArrowUpward,
+                contentDescription = text,
+            )
+        }
+    }
+}
+
+enum class BlockLogFilterType {
+    Blocked,
+}
+
+enum class FilterMode {
+    Include,
+    Exclude,
+}
+
+@Parcelize
+data class BlockLogFilterState(
+    val filters: Map<BlockLogFilterType, FilterMode> = emptyMap()
+) : Parcelable
+
+@Composable
+private fun BlockLogFilterItem(
+    modifier: Modifier = Modifier,
+    type: BlockLogFilterType,
+    mode: FilterMode?,
+    onClick: () -> Unit,
+) {
+    val text = when (type) {
+        BlockLogFilterType.Blocked -> stringResource(R.string.blocked)
+    }
+    Row(
+        modifier = modifier
+            .clickable(
+                role = Role.Checkbox,
+                onClick = onClick,
+            )
+            .fillMaxWidth()
+            .minimumInteractiveComponentSize()
+            .padding(horizontal = 16.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            modifier = Modifier.weight(1f),
+            text = text,
+            style = MaterialTheme.typography.labelMedium,
+        )
+
+        TriStateCheckbox(
+            state = when (mode) {
+                FilterMode.Include -> ToggleableState.On
+                FilterMode.Exclude -> ToggleableState.Indeterminate
+                null -> ToggleableState.Off
+            },
+            onClick = onClick,
+        )
     }
 }
 

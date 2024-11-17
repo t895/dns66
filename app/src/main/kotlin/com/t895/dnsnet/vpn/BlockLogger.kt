@@ -17,12 +17,6 @@ data class LoggedConnection(
     fun attempt() = attempts++
 }
 
-data class LoggedConnectionState(
-    val name: String,
-    val allowed: Boolean,
-    var attempts: Long,
-)
-
 @Serializable
 data class BlockLogger(val connections: MutableMap<String, LoggedConnection> = HashMap()) {
     @Transient

@@ -97,7 +97,6 @@ import com.t895.dnsnet.ui.theme.TopLevelPopExit
 import com.t895.dnsnet.ui.theme.VpnFabSize
 import com.t895.dnsnet.viewmodel.HomeViewModel
 import com.t895.dnsnet.vpn.AdVpnService
-import com.t895.dnsnet.vpn.LoggedConnectionState
 import com.t895.dnsnet.vpn.VpnStatus
 
 enum class HomeDestination(
@@ -364,7 +363,7 @@ fun App(
                 onNavigateUp = { navController.popBackStack() },
                 loggedConnections = loggedConnections.map {
                     LoggedConnectionState(it.key, it.value.allowed, it.value.attempts)
-                }.sortedByDescending { it.attempts },
+                },
             )
         }
     }
