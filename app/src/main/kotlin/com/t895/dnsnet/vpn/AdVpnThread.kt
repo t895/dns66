@@ -38,6 +38,7 @@ import android.system.StructPollfd
 import com.t895.dnsnet.Configuration
 import com.t895.dnsnet.FileHelper
 import com.t895.dnsnet.MainActivity
+import com.t895.dnsnet.config
 import com.t895.dnsnet.logd
 import com.t895.dnsnet.loge
 import com.t895.dnsnet.logi
@@ -161,7 +162,7 @@ class AdVpnThread(
         // Load the block list
         try {
             dnsPacketProxy.initialize(upstreamDnsServers)
-            vpnWatchDog.initialize(FileHelper.loadCurrentSettings().watchDog)
+            vpnWatchDog.initialize(config.watchDog)
         } catch (e: InterruptedException) {
             return
         }
@@ -465,8 +466,6 @@ class AdVpnThread(
     @Throws(VpnNetworkException::class)
     private fun configure(): ParcelFileDescriptor? {
         logi("Configuring $this")
-
-        val config = FileHelper.loadCurrentSettings()
 
         // Get the current DNS servers before starting the VPN
         val dnsServers = getDnsServers(vpnService)

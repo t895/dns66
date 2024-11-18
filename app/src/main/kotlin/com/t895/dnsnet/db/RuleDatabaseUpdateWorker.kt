@@ -19,7 +19,7 @@ import android.net.Uri
 import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import com.t895.dnsnet.FileHelper
+import com.t895.dnsnet.Configuration
 import com.t895.dnsnet.Host
 import com.t895.dnsnet.MainActivity
 import com.t895.dnsnet.NotificationChannels
@@ -55,7 +55,7 @@ class RuleDatabaseUpdateWorker(
     private lateinit var notificationManager: NotificationManager
     private lateinit var notificationBuilder: NotificationCompat.Builder
 
-    private val config = FileHelper.loadCurrentSettings()
+    private val config = Configuration.load()
 
     init {
         logd("Begin")

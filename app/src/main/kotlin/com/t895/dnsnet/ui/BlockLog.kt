@@ -202,10 +202,13 @@ fun BlockLog(
                 title = it.name,
                 details = if (it.allowed) allowedString else blockedString,
                 endContent = {
-                    Text(
-                        text = it.attempts.toString(),
-                        color = if (it.allowed) allowedColor else blockedColor,
-                    )
+                    Row {
+                        Text(
+                            text = it.attempts.toString(),
+                            color = if (it.allowed) allowedColor else blockedColor,
+                        )
+
+                    }
                 },
             )
         }
@@ -285,19 +288,12 @@ fun BlockLogListItem(
     text: String,
     endContent: @Composable () -> Unit,
 ) {
-    Row(
+    ContentSetting(
         modifier = modifier
-            .fillMaxWidth()
             .minimumInteractiveComponentSize()
             .padding(horizontal = 16.dp),
-        verticalAlignment = Alignment.CenterVertically,
+        title = text,
     ) {
-        Text(
-            modifier = Modifier.weight(1f),
-            text = text,
-            style = MaterialTheme.typography.labelMedium,
-        )
-
         endContent()
     }
 }

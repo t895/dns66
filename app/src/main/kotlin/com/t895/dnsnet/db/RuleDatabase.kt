@@ -14,6 +14,7 @@ package com.t895.dnsnet.db
 import com.t895.dnsnet.FileHelper
 import com.t895.dnsnet.Host
 import com.t895.dnsnet.HostState
+import com.t895.dnsnet.config
 import com.t895.dnsnet.logd
 import com.t895.dnsnet.loge
 import com.t895.dnsnet.logi
@@ -121,8 +122,6 @@ class RuleDatabase private constructor() {
     @Synchronized
     @Throws(InterruptedException::class)
     fun initialize() {
-        val config = FileHelper.loadCurrentSettings()
-
         nextBlockedHosts = HashSet(blockedHosts.get().size)
 
         logi("Loading block list")

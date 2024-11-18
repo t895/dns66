@@ -17,7 +17,6 @@ import android.system.ErrnoException
 import android.system.Os
 import android.system.OsConstants
 import android.system.StructPollfd
-import android.widget.Toast
 import com.t895.dnsnet.DnsNetApplication.Companion.applicationContext
 import java.io.Closeable
 import java.io.File
@@ -28,7 +27,6 @@ import java.io.IOException
 import java.io.InputStream
 import java.io.InputStreamReader
 import java.io.OutputStream
-import java.io.OutputStreamWriter
 import java.io.UnsupportedEncodingException
 import java.net.URLEncoder
 
@@ -62,58 +60,6 @@ object FileHelper {
         // Create backup
         out.renameTo(applicationContext.getFileStreamPath("$filename.bak"))
         return applicationContext.openFileOutput(filename, Context.MODE_PRIVATE)
-    }
-
-    @Throws(IOException::class)
-    private fun readConfigFile(name: String): Configuration {
-        val stream = openRead(name)
-        return if (stream != null) {
-            Configuration.read(InputStreamReader(stream))
-        } else {
-            logd("Config file not found, creating new file.")
-            Configuration()
-        }
-    }
-
-    fun loadCurrentSettings(): Configuration =
-        try {
-            readConfigFile("settings.json")
-        } catch (e: Exception) {
-            Toast.makeText(
-                applicationContext,
-                applicationContext.getString(R.string.cannot_read_config, e.localizedMessage),
-                Toast.LENGTH_LONG
-            ).show()
-            loadPreviousSettings(applicationContext)
-        }
-
-    fun loadPreviousSettings(context: Context): Configuration =
-        try {
-            readConfigFile("settings.json.bak")
-        } catch (e: Exception) {
-            Toast.makeText(
-                context,
-                context.getString(R.string.cannot_restore_previous_config, e.localizedMessage),
-                Toast.LENGTH_LONG
-            ).show()
-            loadDefaultSettings()
-        }
-
-    fun loadDefaultSettings(): Configuration = Configuration.read(null)
-
-    fun writeSettings(config: Configuration) {
-        logd("writeSettings: Writing the settings file")
-        try {
-            OutputStreamWriter(openWrite("settings.json")).use {
-                config.write(it)
-            }
-        } catch (e: IOException) {
-            Toast.makeText(
-                applicationContext,
-                applicationContext.getString(R.string.cannot_write_config, e.localizedMessage),
-                Toast.LENGTH_SHORT
-            ).show()
-        }
     }
 
     /**

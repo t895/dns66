@@ -17,17 +17,19 @@ import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Parcel
 import android.os.Parcelable
+import android.widget.Toast
 import androidx.annotation.Keep
+import com.t895.dnsnet.DnsNetApplication.Companion.applicationContext
 import com.t895.dnsnet.HostState.Companion.toHostState
 import kotlinx.parcelize.Parceler
 import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.ExperimentalSerializationApi
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.SerializationException
-import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
+import kotlinx.serialization.json.decodeFromStream
+import kotlinx.serialization.json.encodeToStream
 import java.io.IOException
-import java.io.Reader
-import java.io.Writer
+import java.io.InputStream
 
 @Serializable
 data class Configuration(
@@ -44,23 +46,39 @@ data class Configuration(
     var blockLogging: Boolean = false,
 ) {
     companion object {
+        private const val DEFAULT_CONFIG_FILENAME = "settings.json"
+        private const val CONFIG_BACKUP_EXTENSION = ".bak"
+
         private const val VERSION = 1
 
         /* Default tweak level */
         private const val MINOR_VERSION = 0
 
-        @Throws(IOException::class)
-        fun read(reader: Reader?): Configuration {
-            val config = reader?.use {
-                val data = it.readText()
-                try {
-                    Json.decodeFromString<Configuration>(data)
-                } catch (e: Exception) {
-                    loge("Failed to decode config! - ${e.localizedMessage}")
-                    throw IOException()
-                }
-            } ?: Configuration()
+        private val json by lazy {
+            Json {
+                ignoreUnknownKeys = true
+            }
+        }
+
+        @OptIn(ExperimentalSerializationApi::class)
+        fun load(inputStream: InputStream): Configuration {
+            val config = try {
+                json.decodeFromStream<Configuration>(inputStream)
+            } catch (e: Exception) {
+                loge("Failed to decode config!", e)
+                Toast.makeText(
+                    applicationContext,
+                    applicationContext.getString(R.string.cannot_read_config),
+                    Toast.LENGTH_LONG
+                ).show()
+                loadBackup()
+            }
             if (config.version > VERSION) {
+                Toast.makeText(
+                    applicationContext,
+                    applicationContext.getString(R.string.cannot_read_config),
+                    Toast.LENGTH_LONG
+                ).show()
                 throw IOException("Unhandled file format version")
             }
 
@@ -70,6 +88,20 @@ data class Configuration(
 
             return config
         }
+
+        fun load(name: String = DEFAULT_CONFIG_FILENAME): Configuration {
+            val inputStream = FileHelper.openRead(name)
+            if (inputStream == null) {
+                logd("Config file not found, creating new file")
+                return Configuration()
+            }
+
+            return load(inputStream)
+        }
+
+        fun loadBackup(
+            name: String = "$DEFAULT_CONFIG_FILENAME$CONFIG_BACKUP_EXTENSION"
+        ): Configuration = load(name)
     }
 
     fun runUpdate(level: Int) {
@@ -128,19 +160,23 @@ data class Configuration(
         }
     }
 
-    @Throws(IOException::class)
-    fun write(writer: Writer?) {
-        val error = { e: Exception ->
-            loge("Failed to write config to disk! - ${e.localizedMessage}")
-            throw IOException()
+    @OptIn(ExperimentalSerializationApi::class)
+    fun save(name: String = DEFAULT_CONFIG_FILENAME) {
+        val outputStream = FileHelper.openWrite(name)
+        if (outputStream == null) {
+            loge("Failed to write config to disk!")
+            return
         }
+
         try {
-            val data = Json.encodeToString(this)
-            writer?.write(data)
-        } catch (e: SerializationException) {
-            error(e)
-        } catch (e: IllegalArgumentException) {
-            error(e)
+            json.encodeToStream(this, outputStream)
+        } catch (e: Exception) {
+            loge("Failed to write config to disk!", e)
+            Toast.makeText(
+                applicationContext,
+                applicationContext.getString(R.string.cannot_write_config, e.localizedMessage),
+                Toast.LENGTH_SHORT
+            ).show()
         }
     }
 }

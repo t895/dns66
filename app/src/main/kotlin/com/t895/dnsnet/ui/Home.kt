@@ -80,9 +80,9 @@ import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.t895.dnsnet.DnsServer
-import com.t895.dnsnet.FileHelper
 import com.t895.dnsnet.Host
 import com.t895.dnsnet.R
+import com.t895.dnsnet.config
 import com.t895.dnsnet.ui.theme.DefaultFabSize
 import com.t895.dnsnet.ui.theme.EmphasizedAccelerateEasing
 import com.t895.dnsnet.ui.theme.EmphasizedDecelerateEasing
@@ -580,16 +580,16 @@ fun HomeScreen(
                 popExitTransition = { HomeExitTransition },
             ) {
                 composable(HomeDestination.Start.route) {
-                    var resumeOnStartup by remember { mutableStateOf(vm.config.autoStart) }
-                    var watchConnection by remember { mutableStateOf(vm.config.watchDog) }
-                    var ipv6Support by remember { mutableStateOf(vm.config.ipV6Support) }
-                    var blockLog by remember { mutableStateOf(vm.config.blockLogging) }
+                    var resumeOnStartup by remember { mutableStateOf(config.autoStart) }
+                    var watchConnection by remember { mutableStateOf(config.watchDog) }
+                    var ipv6Support by remember { mutableStateOf(config.ipV6Support) }
+                    var blockLog by remember { mutableStateOf(config.blockLogging) }
 
                     val showWatchdogWarningDialog by vm.showWatchdogWarningDialog.collectAsState()
                     val dismiss = {
-                        vm.config.watchDog = !vm.config.watchDog
-                        watchConnection = vm.config.watchDog
-                        FileHelper.writeSettings(vm.config)
+                        config.watchDog = !config.watchDog
+                        watchConnection = config.watchDog
+                        config.save()
                         vm.onDismissWatchdogWarning()
                     }
                     if (showWatchdogWarningDialog) {
@@ -622,9 +622,9 @@ fun HomeScreen(
                                 TextButton(
                                     onClick = {
                                         AdVpnService.logger.clear()
-                                        vm.config.blockLogging = false
-                                        blockLog = vm.config.blockLogging
-                                        FileHelper.writeSettings(vm.config)
+                                        config.blockLogging = false
+                                        blockLog = config.blockLogging
+                                        config.save()
                                         vm.onDismissDisableBlockLogWarning()
                                     }
                                 ) {
@@ -654,15 +654,15 @@ fun HomeScreen(
                         enabled = canEditSettings,
                         resumeOnStartup = resumeOnStartup,
                         onResumeOnStartupClick = {
-                            vm.config.autoStart = !vm.config.autoStart
-                            resumeOnStartup = vm.config.autoStart
-                            FileHelper.writeSettings(vm.config)
+                            config.autoStart = !config.autoStart
+                            resumeOnStartup = config.autoStart
+                            config.save()
                         },
                         watchConnection = watchConnection,
                         onWatchConnectionClick = {
-                            vm.config.watchDog = !vm.config.watchDog
-                            watchConnection = vm.config.watchDog
-                            FileHelper.writeSettings(vm.config)
+                            config.watchDog = !config.watchDog
+                            watchConnection = config.watchDog
+                            config.save()
 
                             if (watchConnection) {
                                 vm.onEnableWatchdog()
@@ -670,18 +670,18 @@ fun HomeScreen(
                         },
                         ipv6Support = ipv6Support,
                         onIpv6SupportClick = {
-                            vm.config.ipV6Support = !vm.config.ipV6Support
-                            ipv6Support = vm.config.ipV6Support
-                            FileHelper.writeSettings(vm.config)
+                            config.ipV6Support = !config.ipV6Support
+                            ipv6Support = config.ipV6Support
+                            config.save()
                         },
                         blockLog = blockLog,
                         onToggleBlockLog = {
                             if (blockLog) {
                                 vm.onDisableBlockLogWarning()
                             } else {
-                                vm.config.blockLogging = !vm.config.blockLogging
-                                blockLog = vm.config.blockLogging
-                                FileHelper.writeSettings(vm.config)
+                                config.blockLogging = !config.blockLogging
+                                blockLog = config.blockLogging
+                                config.save()
                             }
                         },
                         onOpenBlockLog = {
@@ -692,8 +692,8 @@ fun HomeScreen(
                     )
                 }
                 composable(HomeDestination.Hosts.route) {
-                    var filterHosts by remember { mutableStateOf(vm.config.hosts.enabled) }
-                    var refreshDaily by remember { mutableStateOf(vm.config.hosts.automaticRefresh) }
+                    var filterHosts by remember { mutableStateOf(config.hosts.enabled) }
+                    var refreshDaily by remember { mutableStateOf(config.hosts.automaticRefresh) }
                     val hosts by vm.hosts.collectAsState()
                     HostsScreen(
                         contentPadding = contentPadding + PaddingValues(ListPadding) +
@@ -702,15 +702,15 @@ fun HomeScreen(
                         enabled = canEditSettings,
                         filterHosts = filterHosts,
                         onFilterHostsClick = {
-                            vm.config.hosts.enabled = !vm.config.hosts.enabled
-                            filterHosts = vm.config.hosts.enabled
-                            FileHelper.writeSettings(vm.config)
+                            config.hosts.enabled = !config.hosts.enabled
+                            filterHosts = config.hosts.enabled
+                            config.save()
                         },
                         refreshDaily = refreshDaily,
                         onRefreshDailyClick = {
-                            vm.config.hosts.automaticRefresh = !vm.config.hosts.automaticRefresh
-                            refreshDaily = vm.config.hosts.automaticRefresh
-                            FileHelper.writeSettings(vm.config)
+                            config.hosts.automaticRefresh = !config.hosts.automaticRefresh
+                            refreshDaily = config.hosts.automaticRefresh
+                            config.save()
                             onUpdateRefreshWork()
                         },
                         hosts = hosts,
@@ -726,8 +726,8 @@ fun HomeScreen(
                 composable(HomeDestination.Apps.route) {
                     val apps by vm.appList.collectAsState()
                     val isRefreshing by vm.appListRefreshing.collectAsState()
-                    var showSystemApps by remember { mutableStateOf(vm.config.appList.showSystemApps) }
-                    var allowlistDefault by remember { mutableStateOf(vm.config.appList.defaultMode) }
+                    var showSystemApps by remember { mutableStateOf(config.appList.showSystemApps) }
+                    var allowlistDefault by remember { mutableStateOf(config.appList.defaultMode) }
                     AppsScreen(
                         contentPadding = contentPadding + PaddingValues(ListPadding),
                         listState = appListState,
@@ -736,16 +736,16 @@ fun HomeScreen(
                         onRefresh = { vm.populateAppList() },
                         showSystemApps = showSystemApps,
                         onShowSystemAppsClick = {
-                            vm.config.appList.showSystemApps = !vm.config.appList.showSystemApps
-                            showSystemApps = vm.config.appList.showSystemApps
-                            FileHelper.writeSettings(vm.config)
+                            config.appList.showSystemApps = !config.appList.showSystemApps
+                            showSystemApps = config.appList.showSystemApps
+                            config.save()
                             vm.populateAppList()
                         },
                         bypassSelection = allowlistDefault,
                         onBypassSelection = { selection ->
-                            vm.config.appList.defaultMode = selection
+                            config.appList.defaultMode = selection
                             allowlistDefault = selection
-                            FileHelper.writeSettings(vm.config)
+                            config.save()
                             vm.populateAppList()
                         },
                         apps = apps,
@@ -755,7 +755,7 @@ fun HomeScreen(
                     )
                 }
                 composable(HomeDestination.DNS.route) {
-                    var customDnsServers by remember { mutableStateOf(vm.config.dnsServers.enabled) }
+                    var customDnsServers by remember { mutableStateOf(config.dnsServers.enabled) }
                     val servers by vm.dnsServers.collectAsState()
                     DnsScreen(
                         contentPadding = contentPadding + PaddingValues(ListPadding) +
@@ -765,9 +765,9 @@ fun HomeScreen(
                         servers = servers,
                         customDnsServers = customDnsServers,
                         onCustomDnsServersClick = {
-                            vm.config.dnsServers.enabled = !vm.config.dnsServers.enabled
-                            customDnsServers = vm.config.dnsServers.enabled
-                            FileHelper.writeSettings(vm.config)
+                            config.dnsServers.enabled = !config.dnsServers.enabled
+                            customDnsServers = config.dnsServers.enabled
+                            config.save()
                         },
                         onItemClick = { item ->
                             topLevelNavController.navigate(item)

@@ -12,13 +12,12 @@ import android.content.pm.ApplicationInfo
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.t895.dnsnet.BuildConfig
-import com.t895.dnsnet.Configuration
 import com.t895.dnsnet.DnsNetApplication.Companion.applicationContext
 import com.t895.dnsnet.DnsServer
-import com.t895.dnsnet.FileHelper
 import com.t895.dnsnet.Host
 import com.t895.dnsnet.HostState
 import com.t895.dnsnet.Preferences
+import com.t895.dnsnet.config
 import com.t895.dnsnet.db.RuleDatabaseUpdateWorker
 import com.t895.dnsnet.logw
 import com.t895.dnsnet.ui.App
@@ -44,8 +43,6 @@ class HomeViewModel : ViewModel() {
 
     private val _appList = MutableStateFlow<List<App>>(emptyList())
     val appList = _appList.asStateFlow()
-
-    var config: Configuration = FileHelper.loadCurrentSettings()
 
     private val _hosts = MutableStateFlow(config.hosts.items.toList())
     val hosts = _hosts.asStateFlow()
@@ -161,7 +158,7 @@ class HomeViewModel : ViewModel() {
     fun addHost(host: Host) {
         config.hosts.items.add(host)
         _hosts.value = config.hosts.items.toList()
-        FileHelper.writeSettings(config)
+        config.save()
     }
 
     fun removeHost(host: Host) {
@@ -171,7 +168,7 @@ class HomeViewModel : ViewModel() {
         }
         config.hosts.items.remove(host)
         _hosts.value = config.hosts.items.toList()
-        FileHelper.writeSettings(config)
+        config.save()
     }
 
     fun replaceHost(oldHost: Host, newHost: Host) {
@@ -183,7 +180,7 @@ class HomeViewModel : ViewModel() {
         config.hosts.items.removeAt(oldIndex)
         config.hosts.items.add(oldIndex, newHost)
         _hosts.value = config.hosts.items.toList()
-        FileHelper.writeSettings(config)
+        config.save()
     }
 
     fun cycleHost(host: Host) {
@@ -199,7 +196,7 @@ class HomeViewModel : ViewModel() {
     fun addDnsServer(server: DnsServer) {
         config.dnsServers.items.add(server)
         _dnsServers.value = config.dnsServers.items.toList()
-        FileHelper.writeSettings(config)
+        config.save()
     }
 
     fun removeDnsServer(server: DnsServer) {
@@ -209,7 +206,7 @@ class HomeViewModel : ViewModel() {
         }
         config.dnsServers.items.remove(server)
         _dnsServers.value = config.dnsServers.items.toList()
-        FileHelper.writeSettings(config)
+        config.save()
     }
 
     fun replaceDnsServer(
@@ -224,7 +221,7 @@ class HomeViewModel : ViewModel() {
         config.dnsServers.items.removeAt(oldIndex)
         config.dnsServers.items.add(oldIndex, newDnsServer)
         _dnsServers.value = config.dnsServers.items.toList()
-        FileHelper.writeSettings(config)
+        config.save()
     }
 
     fun toggleDnsServer(server: DnsServer) {
@@ -267,7 +264,7 @@ class HomeViewModel : ViewModel() {
             config.appList.notOnVpn.remove(newApp.info.packageName)
             config.appList.onVpn.add(newApp.info.packageName)
         }
-        FileHelper.writeSettings(config)
+        config.save()
     }
 
     fun onFilePermissionDenied() {

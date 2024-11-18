@@ -31,11 +31,11 @@ import android.os.Looper
 import android.os.Message
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
-import com.t895.dnsnet.FileHelper
 import com.t895.dnsnet.MainActivity
 import com.t895.dnsnet.NotificationChannels
 import com.t895.dnsnet.Preferences
 import com.t895.dnsnet.R
+import com.t895.dnsnet.config
 import com.t895.dnsnet.logi
 import com.t895.dnsnet.vpn.VpnStatus.Companion.toVpnStatus
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -83,7 +83,6 @@ class AdVpnService : VpnService(), Handler.Callback {
 
         fun checkStartVpnOnBoot(context: Context) {
             logi("Checking whether to start DNSNet on boot")
-            val config = FileHelper.loadCurrentSettings()
             if (!config.autoStart) {
                 return
             }
@@ -134,7 +133,7 @@ class AdVpnService : VpnService(), Handler.Callback {
         notify = { status ->
             handler.sendMessage(handler.obtainMessage(VPN_MSG_STATUS_UPDATE, status.ordinal, 0))
         },
-        log = if (FileHelper.loadCurrentSettings().blockLogging) {
+        log = if (config.blockLogging) {
             { connectionName, allowed ->
                 logger.newConnection(connectionName, allowed)
             }
@@ -251,9 +250,7 @@ class AdVpnService : VpnService(), Handler.Callback {
         val notificationTextId = newStatus.toTextId()
         notificationBuilder.setContentTitle(getString(notificationTextId))
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O ||
-            FileHelper.loadCurrentSettings().showNotification
-        ) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O || config.showNotification) {
             startForeground(NOTIFICATION_ID_STATE, notificationBuilder.build())
         }
         _status.value = newStatus

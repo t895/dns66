@@ -70,17 +70,16 @@ class MainActivity : AppCompatActivity() {
                     rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) {
                         it ?: return@rememberLauncherForActivityResult
                         try {
-                            vm.config = Configuration.read(
-                                InputStreamReader(contentResolver.openInputStream(it))
-                            )
+                            config = Configuration.load(contentResolver.openInputStream(it)!!)
                         } catch (e: Exception) {
+                            logd("Cannot read file", e)
                             Toast.makeText(
                                 this,
                                 "Cannot read file: ${e.message}",
                                 Toast.LENGTH_SHORT,
                             ).show()
                         }
-                        FileHelper.writeSettings(vm.config)
+                        config.save()
                         vm.onReloadSettings()
                         recreate()
                     }
@@ -90,7 +89,7 @@ class MainActivity : AppCompatActivity() {
                         uri ?: return@rememberLauncherForActivityResult
                         try {
                             OutputStreamWriter(contentResolver.openOutputStream(uri)).use {
-                                vm.config.write(it)
+                                config.save()
                             }
                         } catch (e: Exception) {
                             Toast.makeText(
@@ -120,8 +119,8 @@ class MainActivity : AppCompatActivity() {
                         vm = vm,
                         onRefresh = ::refresh,
                         onLoadDefaults = {
-                            vm.config = FileHelper.loadDefaultSettings()
-                            FileHelper.writeSettings(vm.config)
+                            config = Configuration()
+                            config.save()
                             vm.onReloadSettings()
                             recreate()
                         },
@@ -215,11 +214,11 @@ class MainActivity : AppCompatActivity() {
      * @return true if all host files exist or no host files were configured.
      */
     private fun areHostsFilesExistent(): Boolean {
-        if (!vm.config.hosts.enabled) {
+        if (!config.hosts.enabled) {
             return true
         }
 
-        for (item in vm.config.hosts.items) {
+        for (item in config.hosts.items) {
             if (item.state != HostState.IGNORE) {
                 try {
                     val reader = FileHelper.openItemFile(item) ?: return false
@@ -284,7 +283,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun updateRefreshWork() {
         val workManager = WorkManager.getInstance(this)
-        if (vm.config.hosts.automaticRefresh) {
+        if (config.hosts.automaticRefresh) {
             val constraints = Constraints.Builder()
                 .setRequiredNetworkType(NetworkType.UNMETERED)
                 .setRequiresDeviceIdle(true)

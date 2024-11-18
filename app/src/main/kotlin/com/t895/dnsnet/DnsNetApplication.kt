@@ -18,6 +18,8 @@ import coil3.memory.MemoryCache
 import com.t895.dnsnet.ui.image.AppImageFetcher
 import com.t895.dnsnet.ui.image.AppImageKeyer
 
+var config = Configuration.load()
+
 class DnsNetApplication : Application() {
     companion object {
         private lateinit var application: Application
