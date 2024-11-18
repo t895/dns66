@@ -9,6 +9,8 @@
 package com.t895.dnsnet.ui
 
 import android.os.Build
+import android.os.Parcel
+import android.os.Parcelable
 import androidx.annotation.StringRes
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.core.tween
@@ -69,7 +71,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.toRoute
 import androidx.window.core.layout.WindowWidthSizeClass
@@ -80,6 +81,7 @@ import com.t895.dnsnet.DnsServer
 import com.t895.dnsnet.Host
 import com.t895.dnsnet.R
 import com.t895.dnsnet.config
+import com.t895.dnsnet.ui.HomeDestinationIcon.Companion.toHomeDestinationIcon
 import com.t895.dnsnet.ui.theme.DefaultFabSize
 import com.t895.dnsnet.ui.theme.EmphasizedAccelerateEasing
 import com.t895.dnsnet.ui.theme.EmphasizedDecelerateEasing
@@ -95,22 +97,71 @@ import com.t895.dnsnet.ui.theme.VpnFabSize
 import com.t895.dnsnet.viewmodel.HomeViewModel
 import com.t895.dnsnet.vpn.AdVpnService
 import com.t895.dnsnet.vpn.VpnStatus
+import kotlinx.parcelize.Parceler
+import kotlinx.parcelize.Parcelize
+import kotlinx.serialization.Serializable
 
-enum class HomeDestination(
-    val route: String,
-    val icon: ImageVector,
-    @StringRes val labelResId: Int,
-) {
-    Start("start", Icons.Default.VpnKey, R.string.start_tab),
-    Hosts("hosts", Icons.AutoMirrored.Filled.DriveFileMove, R.string.hosts_tab),
-    Apps("apps", Icons.Default.Android, R.string.allowlist_tab),
-    DNS("dns", Icons.Default.Dns, R.string.dns_tab),
+@Serializable
+enum class HomeDestinationIcon(val icon: ImageVector) {
+    Start(Icons.Default.VpnKey),
+    Hosts(Icons.AutoMirrored.Filled.DriveFileMove),
+    Apps(Icons.Default.Android),
+    DNS(Icons.Default.Dns);
+
+    companion object {
+        fun Int.toHomeDestinationIcon(): HomeDestinationIcon =
+            HomeDestinationIcon.entries.firstOrNull { it.ordinal == this } ?: Start
+    }
 }
 
-enum class TopLevelDestination(val route: String) {
-    About("about"),
-    Home("home"),
-    BlockLog("blocklog");
+@Parcelize
+@Serializable
+open class HomeDestination(
+    val iconEnum: HomeDestinationIcon,
+    @StringRes val labelResId: Int,
+) : Parcelable {
+    companion object : Parceler<HomeDestination> {
+        override fun HomeDestination.write(parcel: Parcel, flags: Int) {
+            parcel.apply {
+                writeInt(iconEnum.ordinal)
+                writeInt(labelResId)
+            }
+        }
+
+        override fun create(parcel: Parcel): HomeDestination =
+            HomeDestination(
+                parcel.readInt().toHomeDestinationIcon(),
+                parcel.readInt(),
+            )
+    }
+}
+
+object HomeDestinations {
+    val entries = listOf(Start, Hosts, Apps, DNS)
+
+    @Serializable
+    data object Start : HomeDestination(HomeDestinationIcon.Start, R.string.start_tab)
+
+    @Serializable
+    data object Hosts : HomeDestination(HomeDestinationIcon.Hosts, R.string.hosts_tab)
+
+    @Serializable
+    data object Apps : HomeDestination(HomeDestinationIcon.Apps, R.string.allowlist_tab)
+
+    @Serializable
+    data object DNS : HomeDestination(HomeDestinationIcon.DNS, R.string.dns_tab)
+}
+
+@Serializable
+open class TopLevelDestination {
+    @Serializable
+    data object About : TopLevelDestination()
+
+    @Serializable
+    data object Home : TopLevelDestination()
+
+    @Serializable
+    data object BlockLog : TopLevelDestination()
 }
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalComposeUiApi::class)
@@ -280,13 +331,13 @@ fun App(
     NavHost(
         modifier = Modifier.background(MaterialTheme.colorScheme.surface),
         navController = navController,
-        startDestination = TopLevelDestination.Home.route,
+        startDestination = TopLevelDestination.Home,
         enterTransition = { TopLevelEnter },
         exitTransition = { TopLevelExit },
         popEnterTransition = { TopLevelPopEnter },
         popExitTransition = { TopLevelPopExit },
     ) {
-        composable(TopLevelDestination.Home.route) {
+        composable<TopLevelDestination.Home> {
             HomeScreen(
                 vm = vm,
                 topLevelNavController = navController,
@@ -390,10 +441,10 @@ fun App(
                 },
             )
         }
-        composable(TopLevelDestination.About.route) {
+        composable<TopLevelDestination.About> {
             AboutScreen { navController.popBackStack() }
         }
-        composable(TopLevelDestination.BlockLog.route) {
+        composable<TopLevelDestination.BlockLog> {
             val loggedConnections by vm.connectionsLogState.collectAsState()
             BlockLogScreen(
                 onNavigateUp = { navController.popBackStack() },
@@ -440,21 +491,14 @@ fun HomeScreen(
     onUpdateRefreshWork: () -> Unit,
 ) {
     val navController = rememberNavController()
-    val backstackState by navController.currentBackStackEntryAsState()
-    var savedRoute by rememberSaveable { mutableStateOf(HomeDestination.Start.route) }
-    val selectedRoute by remember {
-        derivedStateOf {
-            val currentState = backstackState?.destination?.route
-            if (currentState != null && currentState != savedRoute) {
-                savedRoute = currentState
-            }
-            currentState ?: savedRoute
-        }
+    var currentDestination: HomeDestination by rememberSaveable {
+        mutableStateOf(HomeDestinations.Start)
     }
 
     val setDestination = { newHomeDestination: HomeDestination ->
-        if (selectedRoute != newHomeDestination.route) {
-            navController.navigate(newHomeDestination.route) {
+        if (currentDestination != newHomeDestination) {
+            currentDestination = newHomeDestination
+            navController.navigate(newHomeDestination) {
                 // Pops all destinations on the backstack
                 popUpTo(0) {
                     saveState = true
@@ -478,14 +522,14 @@ fun HomeScreen(
         (displayCutout.getRight(localDensity, layoutDirection) / localDensity.density).dp
     NavigationSuiteScaffold(
         navigationSuiteItems = {
-            HomeDestination.entries.forEach {
+            HomeDestinations.entries.forEach {
                 item(
                     modifier = Modifier.padding(start = startCutoutInset),
-                    selected = it.route == selectedRoute,
+                    selected = it == currentDestination,
                     onClick = { setDestination(it) },
                     icon = {
                         Icon(
-                            imageVector = it.icon,
+                            imageVector = it.iconEnum.icon,
                             contentDescription = stringResource(it.labelResId),
                         )
                     },
@@ -493,7 +537,7 @@ fun HomeScreen(
                         // For whatever reason, UIAutomator cannot find tags on navigation
                         // items unless one is set in this label scope.
                         Text(
-                            modifier = Modifier.testTag("homeNavigation:${it.route}"),
+                            modifier = Modifier.testTag("homeNavigation:${it}"),
                             text = stringResource(it.labelResId),
                         )
                     },
@@ -566,7 +610,7 @@ fun HomeScreen(
                                 item(stringResource(R.string.action_export), true, onExport)
                                 item(stringResource(R.string.action_logcat), true, onShareLogcat)
                                 item(stringResource(R.string.action_about), true) {
-                                    topLevelNavController.navigate(TopLevelDestination.About.route)
+                                    topLevelNavController.navigate(TopLevelDestination.About)
                                 }
                             }
                         }
@@ -576,17 +620,17 @@ fun HomeScreen(
             },
             floatingActionButton = {
                 AnimatedVisibility(
-                    visible = (selectedRoute == HomeDestination.Hosts.route ||
-                            selectedRoute == HomeDestination.DNS.route) && canEditSettings,
+                    visible = (currentDestination == HomeDestinations.Hosts ||
+                            currentDestination == HomeDestinations.DNS) && canEditSettings,
                     enter = scaleIn(animationSpec = tween(easing = EmphasizedDecelerateEasing)),
                     exit = scaleOut(animationSpec = tween(easing = EmphasizedAccelerateEasing)),
                 ) {
                     FloatingActionButton(
                         modifier = Modifier.padding(end = endCutoutInset),
                         onClick = {
-                            if (selectedRoute == HomeDestination.Hosts.route) {
+                            if (currentDestination == HomeDestinations.Hosts) {
                                 topLevelNavController.navigate(Host())
-                            } else if (selectedRoute == HomeDestination.DNS.route) {
+                            } else if (currentDestination == HomeDestinations.DNS) {
                                 topLevelNavController.navigate(DnsServer())
                             }
                         },
@@ -607,13 +651,13 @@ fun HomeScreen(
             val dnsListState = rememberLazyListState()
             NavHost(
                 navController = navController,
-                startDestination = HomeDestination.Start.route,
+                startDestination = HomeDestinations.Start,
                 enterTransition = { HomeEnterTransition },
                 exitTransition = { HomeExitTransition },
                 popEnterTransition = { HomeEnterTransition },
                 popExitTransition = { HomeExitTransition },
             ) {
-                composable(HomeDestination.Start.route) {
+                composable<HomeDestinations.Start> {
                     var resumeOnStartup by remember { mutableStateOf(config.autoStart) }
                     var watchConnection by remember { mutableStateOf(config.watchDog) }
                     var ipv6Support by remember { mutableStateOf(config.ipV6Support) }
@@ -703,13 +747,13 @@ fun HomeScreen(
                             }
                         },
                         onOpenBlockLog = {
-                            topLevelNavController.navigate(TopLevelDestination.BlockLog.route)
+                            topLevelNavController.navigate(TopLevelDestination.BlockLog)
                         },
                         status = status,
                         onChangeVpnStatusClick = onTryToggleService,
                     )
                 }
-                composable(HomeDestination.Hosts.route) {
+                composable<HomeDestinations.Hosts> {
                     var filterHosts by remember { mutableStateOf(config.hosts.enabled) }
                     var refreshDaily by remember { mutableStateOf(config.hosts.automaticRefresh) }
                     val hosts by vm.hosts.collectAsState()
@@ -741,7 +785,7 @@ fun HomeScreen(
                     )
                 }
 
-                composable(HomeDestination.Apps.route) {
+                composable<HomeDestinations.Apps> {
                     val apps by vm.appList.collectAsState()
                     val isRefreshing by vm.appListRefreshing.collectAsState()
                     var showSystemApps by remember { mutableStateOf(config.appList.showSystemApps) }
@@ -772,7 +816,7 @@ fun HomeScreen(
                         },
                     )
                 }
-                composable(HomeDestination.DNS.route) {
+                composable<HomeDestinations.DNS> {
                     var customDnsServers by remember { mutableStateOf(config.dnsServers.enabled) }
                     val servers by vm.dnsServers.collectAsState()
                     DnsScreen(
