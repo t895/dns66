@@ -149,4 +149,5 @@
     <string name="last_connected">Last connected</string>
     <string name="reset">Reset</string>
     <string name="reset_settings_warning_description">This will permanently delete your current settings.</string>
+    <string name="permanently_delete_warning_description">This will permanently delete %s</string>
 </resources>

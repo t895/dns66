@@ -78,6 +78,12 @@ class HomeViewModel : ViewModel() {
     private val _showResetSettingsWarningDialog = MutableStateFlow(false)
     val showResetSettingsWarningDialog = _showResetSettingsWarningDialog.asStateFlow()
 
+    private val _showDeleteDnsServerWarningDialog = MutableStateFlow(false)
+    val showDeleteDnsServerWarningDialog = _showDeleteDnsServerWarningDialog.asStateFlow()
+
+    private val _showDeleteHostWarningDialog = MutableStateFlow(false)
+    val showDeleteHostWarningDialog = _showDeleteHostWarningDialog.asStateFlow()
+
     init {
         _connectionsLogState.value = AdVpnService.logger.connections
         AdVpnService.logger.setOnConnectionListener {
@@ -327,5 +333,21 @@ class HomeViewModel : ViewModel() {
 
     fun onDismissResetSettingsDialog() {
         _showResetSettingsWarningDialog.value = false
+    }
+
+    fun onDeleteDnsServerWarning() {
+        _showDeleteDnsServerWarningDialog.value = true
+    }
+
+    fun onDismissDeleteDnsServerWarning() {
+        _showDeleteDnsServerWarningDialog.value = false
+    }
+
+    fun onDeleteHostWarning() {
+        _showDeleteHostWarningDialog.value = true
+    }
+
+    fun onDismissDeleteHostWarning() {
+        _showDeleteHostWarningDialog.value = false
     }
 }

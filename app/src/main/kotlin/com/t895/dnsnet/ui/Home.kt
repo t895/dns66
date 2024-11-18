@@ -300,6 +300,31 @@ fun App(
         }
         composable<Host> { backstackEntry ->
             val host = backstackEntry.toRoute<Host>()
+
+            val showDeleteHostWarningDialog by vm.showDeleteHostWarningDialog.collectAsState()
+            if (showDeleteHostWarningDialog) {
+                BasicDialog(
+                    title = stringResource(R.string.warning),
+                    text = stringResource(
+                        R.string.permanently_delete_warning_description,
+                        host.title,
+                    ),
+                    primaryButton = DialogButton(
+                        text = stringResource(R.string.action_delete),
+                        onClick = {
+                            vm.removeHost(host)
+                            vm.onDismissDeleteHostWarning()
+                            navController.popBackStack()
+                        },
+                    ),
+                    secondaryButton = DialogButton(
+                        text = stringResource(android.R.string.cancel),
+                        onClick = { vm.onDismissDeleteHostWarning() },
+                    ),
+                    onDismissRequest = { vm.onDismissDeleteHostWarning() },
+                )
+            }
+
             EditHostScreen(
                 host = host,
                 onNavigateUp = { navController.navigateUp() },
@@ -314,16 +339,39 @@ fun App(
                 onDelete = if (host.title.isEmpty()) {
                     null
                 } else {
-                    {
-                        vm.removeHost(host)
-                        navController.popBackStack()
-                    }
+                    { vm.onDeleteHostWarning() }
                 },
                 onUriPermissionAcquireFailed = { vm.onFilePermissionDenied() },
             )
         }
         composable<DnsServer> { backstackEntry ->
             val server = backstackEntry.toRoute<DnsServer>()
+
+            val showDeleteDnsServerWarningDialog by
+            vm.showDeleteDnsServerWarningDialog.collectAsState()
+            if (showDeleteDnsServerWarningDialog) {
+                BasicDialog(
+                    title = stringResource(R.string.warning),
+                    text = stringResource(
+                        R.string.permanently_delete_warning_description,
+                        server.title
+                    ),
+                    primaryButton = DialogButton(
+                        text = stringResource(R.string.action_delete),
+                        onClick = {
+                            vm.removeDnsServer(server)
+                            vm.onDismissDeleteDnsServerWarning()
+                            navController.popBackStack()
+                        },
+                    ),
+                    secondaryButton = DialogButton(
+                        text = stringResource(android.R.string.cancel),
+                        onClick = { vm.onDismissDeleteDnsServerWarning() },
+                    ),
+                    onDismissRequest = { vm.onDismissDeleteDnsServerWarning() },
+                )
+            }
+
             EditDnsScreen(
                 server = server,
                 onNavigateUp = { navController.navigateUp() },
@@ -338,10 +386,7 @@ fun App(
                 onDelete = if (server.title.isEmpty()) {
                     null
                 } else {
-                    {
-                        vm.removeDnsServer(server)
-                        navController.popBackStack()
-                    }
+                    { vm.onDeleteDnsServerWarning() }
                 },
             )
         }
