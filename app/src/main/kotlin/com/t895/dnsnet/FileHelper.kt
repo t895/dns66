@@ -15,8 +15,6 @@ import android.content.Context
 import android.net.Uri
 import android.system.ErrnoException
 import android.system.Os
-import android.system.OsConstants
-import android.system.StructPollfd
 import com.t895.dnsnet.DnsNetApplication.Companion.applicationContext
 import java.io.Closeable
 import java.io.File
@@ -100,34 +98,6 @@ object FileHelper {
                 )
             } else {
                 FileReader(itemFile)
-            }
-        }
-    }
-
-    /**
-     * Wrapper around [Os.poll] that automatically restarts on EINTR
-     * While post-Lollipop devices handle that themselves, we need to do this for Lollipop.
-     *
-     * @param fds     Descriptors and events to wait on
-     * @param timeout Timeout. Should be -1 for infinite, as we do not lower the timeout when
-     *                retrying due to an interrupt
-     * @return The number of fds that have events
-     * @throws ErrnoException See [Os.poll]
-     */
-    @Throws(ErrnoException::class, InterruptedException::class)
-    fun poll(fds: Array<StructPollfd?>, timeout: Int): Int {
-        while (true) {
-            if (Thread.interrupted()) {
-                throw InterruptedException()
-            }
-
-            return try {
-                Os.poll(fds, timeout)
-            } catch (e: ErrnoException) {
-                if (e.errno == OsConstants.EINTR) {
-                    continue
-                }
-                throw e
             }
         }
     }

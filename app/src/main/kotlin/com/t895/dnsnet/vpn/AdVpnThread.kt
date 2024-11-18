@@ -292,7 +292,7 @@ class AdVpnThread(
         }
 
         logd("doOne: Polling ${polls.size} file descriptors")
-        val result = FileHelper.poll(polls, vpnWatchDog.pollTimeout)
+        val result = Os.poll(polls, vpnWatchDog.pollTimeout)
         if (result == 0) {
             vpnWatchDog.handleTimeout()
             return true
