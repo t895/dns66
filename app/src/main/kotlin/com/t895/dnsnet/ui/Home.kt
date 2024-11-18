@@ -16,7 +16,6 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
@@ -31,7 +30,6 @@ import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.VpnKey
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
@@ -41,7 +39,6 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
@@ -143,168 +140,139 @@ fun App(
 
         val showNotificationPermissionDialog by vm.showNotificationPermissionDialog.collectAsState()
         if (showNotificationPermissionDialog) {
-            AlertDialog(
+            BasicDialog(
                 modifier = Modifier
                     .semantics { testTagsAsResourceId = true }
                     .testTag("notificationPermissionDialog"),
+                title = stringResource(R.string.notification_permission),
+                text = stringResource(R.string.notification_permission_description),
+                primaryButton = DialogButton(
+                    text = stringResource(android.R.string.ok),
+                    onClick = {
+                        notificationPermissionState.launchPermissionRequest()
+                        vm.onDismissNotificationPermission()
+                    },
+                ),
+                secondaryButton = DialogButton(
+                    modifier = Modifier.testTag("notificationPermissionDialog:cancel"),
+                    text = stringResource(android.R.string.cancel),
+                    onClick = { vm.onNotificationPermissionDenied() },
+                ),
                 onDismissRequest = {},
-                confirmButton = {
-                    TextButton(
-                        onClick = {
-                            notificationPermissionState.launchPermissionRequest()
-                            vm.onDismissNotificationPermission()
-                        }
-                    ) {
-                        Text(text = stringResource(android.R.string.ok))
-                    }
-                },
-                dismissButton = {
-                    TextButton(
-                        modifier = Modifier.testTag("notificationPermissionDialog:cancel"),
-                        onClick = {
-                            vm.onNotificationPermissionDenied()
-                        }
-                    ) {
-                        Text(text = stringResource(android.R.string.cancel))
-                    }
-                },
-                title = { Text(text = stringResource(R.string.notification_permission)) },
-                text = { Text(text = stringResource(R.string.notification_permission_description)) },
             )
         }
     }
 
     val showUpdateIncompleteDialog by vm.showUpdateIncompleteDialog.collectAsState()
     if (showUpdateIncompleteDialog) {
-        AlertDialog(
+        val messageText = StringBuilder(stringResource(R.string.update_incomplete_description))
+        val errorText = remember {
+            if (vm.errors != null) {
+                messageText.append("\n")
+            }
+            vm.errors?.forEach {
+                messageText.append("$it\n")
+            }
+            messageText.toString()
+        }
+        BasicDialog(
+            title = stringResource(R.string.update_incomplete),
+            text = errorText,
+            primaryButton = DialogButton(
+                text = stringResource(android.R.string.ok),
+                onClick = { vm.onDismissUpdateIncomplete() },
+            ),
             onDismissRequest = { vm.onDismissUpdateIncomplete() },
-            confirmButton = {
-                TextButton(onClick = { vm.onDismissUpdateIncomplete() }) {
-                    Text(text = stringResource(android.R.string.ok))
-                }
-            },
-            title = {
-                Text(text = stringResource(R.string.update_incomplete))
-            },
-            text = {
-                Column {
-                    Text(text = stringResource(R.string.update_incomplete_description))
-                    vm.errors?.forEach {
-                        Text(text = it)
-                    }
-                }
-            },
         )
     }
 
     val showHostsFilesNotFoundDialog by vm.showHostsFilesNotFoundDialog.collectAsState()
     if (showHostsFilesNotFoundDialog) {
-        AlertDialog(
+        BasicDialog(
+            title = stringResource(R.string.missing_hosts_files_title),
+            text = stringResource(R.string.missing_hosts_files_message),
+            primaryButton = DialogButton(
+                text = stringResource(R.string.button_yes),
+                onClick = {
+                    onStartWithoutHostsCheck()
+                    vm.onDismissHostsFilesNotFound()
+                },
+            ),
+            secondaryButton = DialogButton(
+                text = stringResource(R.string.button_no),
+                onClick = { vm.onDismissHostsFilesNotFound() },
+            ),
             onDismissRequest = { vm.onDismissHostsFilesNotFound() },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onStartWithoutHostsCheck()
-                        vm.onDismissHostsFilesNotFound()
-                    },
-                ) {
-                    Text(text = stringResource(R.string.button_yes))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { vm.onDismissHostsFilesNotFound() }) {
-                    Text(text = stringResource(R.string.button_no))
-                }
-            },
-            title = {
-                Text(text = stringResource(R.string.missing_hosts_files_title))
-            },
-            text = {
-                Text(text = stringResource(R.string.missing_hosts_files_message))
-            },
         )
     }
 
     val showFilePermissionDeniedDialog by vm.showFilePermissionDeniedDialog.collectAsState()
     if (showFilePermissionDeniedDialog) {
-        AlertDialog(
+        BasicDialog(
+            title = stringResource(R.string.permission_denied),
+            text = stringResource(R.string.persistable_uri_permission_failed),
+            primaryButton = DialogButton(
+                text = stringResource(android.R.string.ok),
+                onClick = { vm.onDismissFilePermissionDenied() },
+            ),
             onDismissRequest = { vm.onDismissFilePermissionDenied() },
-            confirmButton = {
-                TextButton(onClick = { vm.onDismissFilePermissionDenied() }) {
-                    Text(text = stringResource(android.R.string.ok))
-                }
-            },
-            title = {
-                Text(text = stringResource(R.string.permission_denied))
-            },
-            text = {
-                Text(text = stringResource(R.string.persistable_uri_permission_failed))
-            },
         )
     }
 
     val showVpnConfigurationFailureDialog by vm.showVpnConfigurationFailureDialog.collectAsState()
     if (showVpnConfigurationFailureDialog) {
-        AlertDialog(
+        BasicDialog(
+            title = stringResource(R.string.could_not_start_vpn),
+            text = stringResource(R.string.could_not_start_vpn_description),
+            primaryButton = DialogButton(
+                text = stringResource(android.R.string.ok),
+                onClick = { vm.onDismissVpnConfigurationFailure() },
+            ),
             onDismissRequest = { vm.onDismissVpnConfigurationFailure() },
-            confirmButton = {
-                TextButton(onClick = { vm.onDismissVpnConfigurationFailure() }) {
-                    Text(text = stringResource(android.R.string.ok))
-                }
-            },
-            title = { Text(text = stringResource(R.string.could_not_start_vpn)) },
-            text = { Text(text = stringResource(R.string.could_not_start_vpn_description)) },
         )
     }
 
     val showDisablePrivateDnsDialog by vm.showDisablePrivateDnsDialog.collectAsState()
     if (showDisablePrivateDnsDialog) {
-        AlertDialog(
+        BasicDialog(
+            title = stringResource(R.string.private_dns_warning),
+            text = stringResource(R.string.private_dns_warning_description),
+            primaryButton = DialogButton(
+                text = stringResource(R.string.open_settings),
+                onClick = onOpenNetworkSettings,
+            ),
+            secondaryButton = DialogButton(
+                text = stringResource(R.string.close),
+                onClick = { vm.onDismissPrivateDnsEnabledWarning() },
+            ),
+            tertiaryButton = DialogButton(
+                text = stringResource(R.string.try_again),
+                onClick = {
+                    vm.onDismissPrivateDnsEnabledWarning()
+                    onTryToggleService()
+                },
+            ),
             onDismissRequest = {},
-            confirmButton = {
-                TextButton(onClick = onOpenNetworkSettings) {
-                    Text(text = stringResource(R.string.open_settings))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { vm.onDismissPrivateDnsEnabledWarning() }) {
-                    Text(text = stringResource(R.string.close))
-                }
-                TextButton(
-                    onClick = {
-                        vm.onDismissPrivateDnsEnabledWarning()
-                        onTryToggleService()
-                    },
-                ) {
-                    Text(text = stringResource(R.string.try_again))
-                }
-            },
-            title = { Text(text = stringResource(R.string.private_dns_warning)) },
-            text = { Text(text = stringResource(R.string.private_dns_warning_description)) },
         )
     }
 
     val showResetSettingsWarningDialog by vm.showResetSettingsWarningDialog.collectAsState()
     if (showResetSettingsWarningDialog) {
-        AlertDialog(
+        BasicDialog(
+            title = stringResource(R.string.warning),
+            text = stringResource(R.string.reset_settings_warning_description),
+            primaryButton = DialogButton(
+                text = stringResource(R.string.reset),
+                onClick = {
+                    onLoadDefaults()
+                    vm.onDismissResetSettingsDialog()
+                },
+            ),
+            secondaryButton = DialogButton(
+                text = stringResource(R.string.button_cancel),
+                onClick = { vm.onDismissResetSettingsDialog() },
+            ),
             onDismissRequest = { vm.onDismissResetSettingsDialog() },
-            confirmButton = {
-                TextButton(
-                    onClick = {
-                        onLoadDefaults()
-                        vm.onDismissResetSettingsDialog()
-                    }
-                ) {
-                    Text(text = stringResource(R.string.reset))
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { vm.onDismissResetSettingsDialog() }) {
-                    Text(text = stringResource(R.string.button_cancel))
-                }
-            },
-            title = { Text(text = stringResource(R.string.warning)) },
-            text = { Text(text = stringResource(R.string.reset_settings_warning_description)) },
         )
     }
 
@@ -323,7 +291,6 @@ fun App(
                 vm = vm,
                 topLevelNavController = navController,
                 onRefresh = onRefresh,
-                onLoadDefaults = onLoadDefaults,
                 onImport = onImport,
                 onExport = onExport,
                 onShareLogcat = onShareLogcat,
@@ -421,7 +388,6 @@ fun HomeScreen(
     vm: HomeViewModel,
     topLevelNavController: NavHostController,
     onRefresh: () -> Unit,
-    onLoadDefaults: () -> Unit,
     onImport: () -> Unit,
     onExport: () -> Unit,
     onShareLogcat: () -> Unit,
@@ -616,57 +582,41 @@ fun HomeScreen(
                         vm.onDismissWatchdogWarning()
                     }
                     if (showWatchdogWarningDialog) {
-                        AlertDialog(
+                        BasicDialog(
+                            title = stringResource(R.string.unstable_feature),
+                            text = stringResource(R.string.unstable_watchdog_message),
+                            primaryButton = DialogButton(
+                                text = stringResource(R.string.button_continue),
+                                onClick = { vm.onDismissWatchdogWarning() },
+                            ),
+                            secondaryButton = DialogButton(
+                                text = stringResource(R.string.button_cancel),
+                                onClick = dismiss,
+                            ),
                             onDismissRequest = dismiss,
-                            confirmButton = {
-                                TextButton(onClick = { vm.onDismissWatchdogWarning() }) {
-                                    Text(text = stringResource(R.string.button_continue))
-                                }
-                            },
-                            dismissButton = {
-                                TextButton(onClick = dismiss) {
-                                    Text(text = stringResource(R.string.button_cancel))
-                                }
-                            },
-                            title = {
-                                Text(text = stringResource(R.string.unstable_feature))
-                            },
-                            text = {
-                                Text(text = stringResource(R.string.unstable_watchdog_message))
-                            },
                         )
                     }
 
                     val showDisableBlockLogWarningDialog by vm.showDisableBlockLogWarningDialog.collectAsState()
                     if (showDisableBlockLogWarningDialog) {
-                        AlertDialog(
+                        BasicDialog(
+                            title = stringResource(R.string.warning),
+                            text = stringResource(R.string.disable_block_log_warning_description),
+                            primaryButton = DialogButton(
+                                text = stringResource(R.string.disable),
+                                onClick = {
+                                    AdVpnService.logger.clear()
+                                    config.blockLogging = false
+                                    blockLog = config.blockLogging
+                                    config.save()
+                                    vm.onDismissDisableBlockLogWarning()
+                                },
+                            ),
+                            secondaryButton = DialogButton(
+                                text = stringResource(R.string.close),
+                                onClick = { vm.onDismissDisableBlockLogWarning() },
+                            ),
                             onDismissRequest = { vm.onDismissDisableBlockLogWarning() },
-                            confirmButton = {
-                                TextButton(
-                                    onClick = {
-                                        AdVpnService.logger.clear()
-                                        config.blockLogging = false
-                                        blockLog = config.blockLogging
-                                        config.save()
-                                        vm.onDismissDisableBlockLogWarning()
-                                    }
-                                ) {
-                                    Text(text = stringResource(R.string.disable))
-                                }
-                            },
-                            dismissButton = {
-                                TextButton(onClick = { vm.onDismissDisableBlockLogWarning() }) {
-                                    Text(text = stringResource(R.string.close))
-                                }
-                            },
-                            title = {
-                                Text(text = stringResource(R.string.warning))
-                            },
-                            text = {
-                                Text(
-                                    text = stringResource(R.string.disable_block_log_warning_description)
-                                )
-                            },
                         )
                     }
 
