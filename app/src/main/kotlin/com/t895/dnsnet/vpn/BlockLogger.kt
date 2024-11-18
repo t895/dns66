@@ -8,13 +8,21 @@ import kotlinx.serialization.Transient
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
+import java.util.Calendar
+
+private val now: Long
+    get() = Calendar.getInstance().timeInMillis
 
 @Serializable
 data class LoggedConnection(
-    val allowed: Boolean,
-    var attempts: Long,
+    val allowed: Boolean = true,
+    var attempts: Long = 0,
+    var lastAttemptTime: Long = 0,
 ) {
-    fun attempt() = attempts++
+    fun attempt() {
+        attempts++
+        lastAttemptTime = now
+    }
 }
 
 @Serializable
@@ -31,12 +39,12 @@ data class BlockLogger(val connections: MutableMap<String, LoggedConnection> = H
         if (connection != null) {
             if (connection.allowed != allowed) {
                 connections.remove(name)
-                connections[name] = LoggedConnection(allowed, 1)
+                connections[name] = LoggedConnection(allowed, 1, now)
             } else {
                 connection.attempt()
             }
         } else {
-            connections[name] = LoggedConnection(allowed, 1)
+            connections[name] = LoggedConnection(allowed, 1, now)
         }
         onConnection?.invoke(connections)
     }
@@ -50,7 +58,7 @@ data class BlockLogger(val connections: MutableMap<String, LoggedConnection> = H
         }
 
         try {
-            Json.encodeToStream(this, outputStream)
+            json.encodeToStream(this, outputStream)
         } catch (e: Exception) {
             loge("Failed to write connection history", e)
         }
@@ -64,12 +72,18 @@ data class BlockLogger(val connections: MutableMap<String, LoggedConnection> = H
     companion object {
         private const val DEFAULT_LOG_FILENAME = "connections.json"
 
+        private val json by lazy {
+            Json {
+                ignoreUnknownKeys = true
+            }
+        }
+
         @OptIn(ExperimentalSerializationApi::class)
         fun load(name: String = DEFAULT_LOG_FILENAME): BlockLogger {
             val inputStream =
                 FileHelper.openRead(name) ?: return BlockLogger()
             return try {
-                Json.decodeFromStream<BlockLogger>(inputStream)
+                json.decodeFromStream<BlockLogger>(inputStream)
             } catch (e: Exception) {
                 loge("Failed to load connection history", e)
                 BlockLogger()

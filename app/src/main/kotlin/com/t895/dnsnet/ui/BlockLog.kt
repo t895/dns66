@@ -75,6 +75,7 @@ data class LoggedConnectionState(
     val name: String,
     val allowed: Boolean,
     var attempts: Long,
+    var lastAttemptTime: Long,
 ) : Parcelable
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -102,6 +103,12 @@ fun BlockLog(
                     loggedConnections.sortedByDescending { it.name }
                 } else {
                     loggedConnections.sortedBy { it.name }
+                }
+
+                BlockLogSortType.LastConnected -> if (sortState.ascending) {
+                    loggedConnections.sortedByDescending { it.lastAttemptTime }
+                } else {
+                    loggedConnections.sortedBy { it.lastAttemptTime }
                 }
 
                 BlockLogSortType.Attempts -> if (sortState.ascending) {
@@ -297,6 +304,7 @@ fun BlockLogListItem(
 
 enum class BlockLogSortType(@StringRes val labelRes: Int) {
     Attempts(R.string.attempts),
+    LastConnected(R.string.last_connected),
     Alphabetical(R.string.alphabetical),
 }
 
@@ -435,8 +443,8 @@ fun BlockLogScreenPreview() {
         modifier = Modifier,
         onNavigateUp = {},
         loggedConnections = listOf(
-            LoggedConnectionState("some.blocked.server", false, 100),
-            LoggedConnectionState("some.allowed.server", true, 100),
+            LoggedConnectionState("some.blocked.server", false, 100, 0),
+            LoggedConnectionState("some.allowed.server", true, 100, 0),
         ),
     )
 }

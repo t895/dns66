@@ -362,7 +362,12 @@ fun App(
             BlockLogScreen(
                 onNavigateUp = { navController.popBackStack() },
                 loggedConnections = loggedConnections.map {
-                    LoggedConnectionState(it.key, it.value.allowed, it.value.attempts)
+                    LoggedConnectionState(
+                        it.key,
+                        it.value.allowed,
+                        it.value.attempts,
+                        it.value.lastAttemptTime,
+                    )
                 },
             )
         }

@@ -146,4 +146,5 @@
     <string name="alphabetical">Alphabetical</string>
     <string name="attempts">Attempts</string>
     <string name="modify_list">Modify list</string>
+    <string name="last_connected">Last connected</string>
 </resources>
