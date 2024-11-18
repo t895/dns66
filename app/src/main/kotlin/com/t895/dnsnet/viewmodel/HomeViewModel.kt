@@ -75,6 +75,9 @@ class HomeViewModel : ViewModel() {
     private val _showDisableBlockLogWarningDialog = MutableStateFlow(false)
     val showDisableBlockLogWarningDialog = _showDisableBlockLogWarningDialog.asStateFlow()
 
+    private val _showResetSettingsWarningDialog = MutableStateFlow(false)
+    val showResetSettingsWarningDialog = _showResetSettingsWarningDialog.asStateFlow()
+
     init {
         _connectionsLogState.value = AdVpnService.logger.connections
         AdVpnService.logger.setOnConnectionListener {
@@ -316,5 +319,13 @@ class HomeViewModel : ViewModel() {
 
     fun onDismissDisableBlockLogWarning() {
         _showDisableBlockLogWarningDialog.value = false
+    }
+
+    fun onResetSettingsWarning() {
+        _showResetSettingsWarningDialog.value = true
+    }
+
+    fun onDismissResetSettingsDialog() {
+        _showResetSettingsWarningDialog.value = false
     }
 }

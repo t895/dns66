@@ -284,6 +284,30 @@ fun App(
         )
     }
 
+    val showResetSettingsWarningDialog by vm.showResetSettingsWarningDialog.collectAsState()
+    if (showResetSettingsWarningDialog) {
+        AlertDialog(
+            onDismissRequest = { vm.onDismissResetSettingsDialog() },
+            confirmButton = {
+                TextButton(
+                    onClick = {
+                        onLoadDefaults()
+                        vm.onDismissResetSettingsDialog()
+                    }
+                ) {
+                    Text(text = stringResource(R.string.reset))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { vm.onDismissResetSettingsDialog() }) {
+                    Text(text = stringResource(R.string.button_cancel))
+                }
+            },
+            title = { Text(text = stringResource(R.string.warning)) },
+            text = { Text(text = stringResource(R.string.reset_settings_warning_description)) },
+        )
+    }
+
     val navController = rememberNavController()
     NavHost(
         modifier = Modifier.background(MaterialTheme.colorScheme.surface),
@@ -522,8 +546,7 @@ fun HomeScreen(
                                 item(
                                     stringResource(R.string.load_defaults),
                                     canEditSettings,
-                                    onLoadDefaults
-                                )
+                                ) { vm.onResetSettingsWarning() }
                                 item(
                                     stringResource(R.string.action_import),
                                     canEditSettings,
@@ -637,7 +660,7 @@ fun HomeScreen(
                                 }
                             },
                             title = {
-                                Text(text = stringResource(R.string.disable_block_log_warning))
+                                Text(text = stringResource(R.string.warning))
                             },
                             text = {
                                 Text(
