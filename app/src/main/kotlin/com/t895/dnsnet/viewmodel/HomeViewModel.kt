@@ -234,6 +234,10 @@ class HomeViewModel : ViewModel() {
         populateAppList()
         _hosts.value = config.hosts.items
         _dnsServers.value = config.dnsServers.items
+
+        if (!config.blockLogging) {
+            AdVpnService.logger.clear()
+        }
     }
 
     fun onToggleApp(app: App) {
