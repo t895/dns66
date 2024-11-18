@@ -15,7 +15,6 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -64,6 +63,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.t895.dnsnet.NumberFormatterCompat
 import com.t895.dnsnet.R
 import com.t895.dnsnet.ui.theme.ListPadding
 import com.t895.dnsnet.ui.theme.ScrollUpIndicatorPadding
@@ -182,9 +182,10 @@ fun BlockLog(
                 )
             }
 
-            Spacer(Modifier.padding(vertical = 16.dp))
             Box(
-                modifier = Modifier.fillMaxWidth(),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(vertical = 8.dp),
                 contentAlignment = Alignment.Center,
             ) {
                 IconButton(onClick = { showModifyListSheet = true }) {
@@ -203,11 +204,13 @@ fun BlockLog(
                 details = if (it.allowed) allowedString else blockedString,
                 endContent = {
                     Row {
+                        val abbreviatedAttempts = remember {
+                            NumberFormatterCompat.formatCompact(it.attempts)
+                        }
                         Text(
-                            text = it.attempts.toString(),
+                            text = abbreviatedAttempts,
                             color = if (it.allowed) allowedColor else blockedColor,
                         )
-
                     }
                 },
             )
