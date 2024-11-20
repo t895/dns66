@@ -29,9 +29,12 @@ import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.selection.triStateToggleable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.FilterList
+import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -54,6 +57,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.rotate
+import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -72,7 +76,7 @@ import kotlinx.parcelize.Parcelize
 
 @Parcelize
 data class LoggedConnectionState(
-    val name: String,
+    val hostname: String,
     val allowed: Boolean,
     var attempts: Long,
     var lastAttemptTime: Long,
@@ -83,8 +87,10 @@ data class LoggedConnectionState(
 fun BlockLog(
     modifier: Modifier = Modifier,
     listState: LazyListState,
+    canEditSettings: Boolean,
     contentPadding: PaddingValues,
     loggedConnections: List<LoggedConnectionState>,
+    onCreateException: (LoggedConnectionState) -> Unit,
 ) {
     val allowedString = stringResource(R.string.allowed)
     val blockedString = stringResource(R.string.blocked)
@@ -96,13 +102,13 @@ fun BlockLog(
     var sortState by rememberSaveable { mutableStateOf(BlockLogSortState()) }
     var filterState by rememberSaveable { mutableStateOf(BlockLogFilterState()) }
 
-    val sortedList by remember {
+    val adjustedList by remember {
         derivedStateOf {
-            when (sortState.selectedType) {
+            val sortedList = when (sortState.selectedType) {
                 BlockLogSortType.Alphabetical -> if (sortState.ascending) {
-                    loggedConnections.sortedByDescending { it.name }
+                    loggedConnections.sortedByDescending { it.hostname }
                 } else {
-                    loggedConnections.sortedBy { it.name }
+                    loggedConnections.sortedBy { it.hostname }
                 }
 
                 BlockLogSortType.LastConnected -> if (sortState.ascending) {
@@ -117,10 +123,7 @@ fun BlockLog(
                     loggedConnections.sortedBy { it.attempts }
                 }
             }
-        }
-    }
-    val filteredList by remember {
-        derivedStateOf {
+
             sortedList.filter {
                 var result = true
                 filterState.filters.forEach { (type, mode) ->
@@ -197,20 +200,43 @@ fun BlockLog(
             }
         }
 
-        items(filteredList) {
+        items(adjustedList) {
             ContentSetting(
                 modifier = Modifier.animateItem(),
-                title = it.name,
+                title = it.hostname,
                 details = if (it.allowed) allowedString else blockedString,
                 endContent = {
-                    Row {
-                        val abbreviatedAttempts = remember {
-                            NumberFormatterCompat.formatCompact(it.attempts)
-                        }
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        val abbreviatedAttempts = NumberFormatterCompat.formatCompact(it.attempts)
                         Text(
                             text = abbreviatedAttempts,
                             color = if (it.allowed) allowedColor else blockedColor,
                         )
+
+                        Box(contentAlignment = Alignment.Center) {
+                            var showMenu by rememberSaveable { mutableStateOf(false) }
+                            IconButton(onClick = { showMenu = true }) {
+                                Icon(
+                                    imageVector = Icons.Default.MoreVert,
+                                    contentDescription = stringResource(R.string.modify_list),
+                                )
+                            }
+
+                            DropdownMenu(
+                                expanded = showMenu,
+                                onDismissRequest = { showMenu = false },
+                            ) {
+                                MenuItem(
+                                    text = stringResource(R.string.create_exception),
+                                    painter = rememberVectorPainter(Icons.Default.Add),
+                                    enabled = canEditSettings,
+                                    onClick = {
+                                        showMenu = false
+                                        onCreateException(it)
+                                    },
+                                )
+                            }
+                        }
                     }
                 },
             )
@@ -389,9 +415,11 @@ private fun BlockLogFilterItem(
 @Composable
 fun BlockLogScreen(
     modifier: Modifier = Modifier,
+    canEditSettings: Boolean,
     onNavigateUp: () -> Unit,
     listState: LazyListState = rememberLazyListState(),
     loggedConnections: List<LoggedConnectionState>,
+    onCreateException: (LoggedConnectionState) -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Box(modifier = Modifier.fillMaxSize()) {
@@ -419,7 +447,9 @@ fun BlockLogScreen(
             BlockLog(
                 contentPadding = contentPadding,
                 listState = listState,
+                canEditSettings = canEditSettings,
                 loggedConnections = loggedConnections,
+                onCreateException = onCreateException,
             )
         }
 
@@ -440,10 +470,12 @@ fun BlockLogScreen(
 fun BlockLogScreenPreview() {
     BlockLogScreen(
         modifier = Modifier,
+        canEditSettings = true,
         onNavigateUp = {},
         loggedConnections = listOf(
             LoggedConnectionState("some.blocked.server", false, 100, 0),
             LoggedConnectionState("some.allowed.server", true, 100, 0),
         ),
+        onCreateException = {},
     )
 }

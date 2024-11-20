@@ -68,6 +68,7 @@ import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -79,6 +80,9 @@ import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
 import com.t895.dnsnet.DnsServer
 import com.t895.dnsnet.Host
+import com.t895.dnsnet.HostException
+import com.t895.dnsnet.HostFile
+import com.t895.dnsnet.HostState
 import com.t895.dnsnet.R
 import com.t895.dnsnet.config
 import com.t895.dnsnet.ui.HomeDestinationIcon.Companion.toHomeDestinationIcon
@@ -328,6 +332,10 @@ fun App(
     }
 
     val navController = rememberNavController()
+    val status by AdVpnService.status.collectAsState()
+    val canEditSettings by remember {
+        derivedStateOf { status == VpnStatus.STOPPED }
+    }
     NavHost(
         modifier = Modifier.background(MaterialTheme.colorScheme.surface),
         navController = navController,
@@ -341,6 +349,8 @@ fun App(
             HomeScreen(
                 vm = vm,
                 topLevelNavController = navController,
+                status = status,
+                canEditSettings = canEditSettings,
                 onRefresh = onRefresh,
                 onImport = onImport,
                 onExport = onExport,
@@ -349,50 +359,20 @@ fun App(
                 onUpdateRefreshWork = onUpdateRefreshWork,
             )
         }
-        composable<Host> { backstackEntry ->
-            val host = backstackEntry.toRoute<Host>()
-
-            val showDeleteHostWarningDialog by vm.showDeleteHostWarningDialog.collectAsState()
-            if (showDeleteHostWarningDialog) {
-                BasicDialog(
-                    title = stringResource(R.string.warning),
-                    text = stringResource(
-                        R.string.permanently_delete_warning_description,
-                        host.title,
-                    ),
-                    primaryButton = DialogButton(
-                        text = stringResource(R.string.action_delete),
-                        onClick = {
-                            vm.removeHost(host)
-                            vm.onDismissDeleteHostWarning()
-                            navController.popBackStack()
-                        },
-                    ),
-                    secondaryButton = DialogButton(
-                        text = stringResource(android.R.string.cancel),
-                        onClick = { vm.onDismissDeleteHostWarning() },
-                    ),
-                    onDismissRequest = { vm.onDismissDeleteHostWarning() },
-                )
-            }
-
-            EditHostScreen(
+        composable<HostFile> { backstackEntry ->
+            val host = backstackEntry.toRoute<HostFile>()
+            EditHostDestination(
                 host = host,
-                onNavigateUp = { navController.navigateUp() },
-                onSave = { hostToSave ->
-                    if (host.title.isEmpty()) {
-                        vm.addHost(hostToSave)
-                    } else {
-                        vm.replaceHost(host, hostToSave)
-                    }
-                    navController.popBackStack()
-                },
-                onDelete = if (host.title.isEmpty()) {
-                    null
-                } else {
-                    { vm.onDeleteHostWarning() }
-                },
-                onUriPermissionAcquireFailed = { vm.onFilePermissionDenied() },
+                vm = vm,
+                navController = navController,
+            )
+        }
+        composable<HostException> { backstackEntry ->
+            val host = backstackEntry.toRoute<HostException>()
+            EditHostDestination(
+                host = host,
+                vm = vm,
+                navController = navController,
             )
         }
         composable<DnsServer> { backstackEntry ->
@@ -447,6 +427,7 @@ fun App(
         composable<TopLevelDestination.BlockLog> {
             val loggedConnections by vm.connectionsLogState.collectAsState()
             BlockLogScreen(
+                canEditSettings = canEditSettings,
                 onNavigateUp = { navController.popBackStack() },
                 loggedConnections = loggedConnections.map {
                     LoggedConnectionState(
@@ -456,9 +437,79 @@ fun App(
                         it.value.lastAttemptTime,
                     )
                 },
+                onCreateException = {
+                    navController.navigate(
+                        HostException(
+                            title = "",
+                            data = it.hostname,
+                            state = if (it.allowed) {
+                                HostState.DENY
+                            } else {
+                                HostState.ALLOW
+                            },
+                        )
+                    )
+                },
             )
         }
     }
+}
+
+@Composable
+fun EditHostDestination(
+    host: Host,
+    vm: HomeViewModel,
+    navController: NavController,
+) {
+    val showDeleteHostWarningDialog by vm.showDeleteHostWarningDialog.collectAsState()
+    if (showDeleteHostWarningDialog) {
+        BasicDialog(
+            title = stringResource(R.string.warning),
+            text = stringResource(
+                R.string.permanently_delete_warning_description,
+                host.title,
+            ),
+            primaryButton = DialogButton(
+                text = stringResource(R.string.action_delete),
+                onClick = {
+                    vm.removeHost(host)
+                    vm.onDismissDeleteHostWarning()
+                    navController.popBackStack()
+                },
+            ),
+            secondaryButton = DialogButton(
+                text = stringResource(android.R.string.cancel),
+                onClick = { vm.onDismissDeleteHostWarning() },
+            ),
+            onDismissRequest = { vm.onDismissDeleteHostWarning() },
+        )
+    }
+
+    EditHostScreen(
+        host = host,
+        onNavigateUp = { navController.navigateUp() },
+        onSave = { hostToSave ->
+            if (host.title.isEmpty()) {
+                vm.addHost(hostToSave)
+                if (host is HostException) {
+                    vm.removeBlockLogEntry(host.data)
+                }
+            } else {
+                vm.replaceHost(host, hostToSave)
+            }
+            navController.popBackStack()
+        },
+        onDelete = if (host.title.isEmpty()) {
+            null
+        } else {
+            { vm.onDeleteHostWarning() }
+        },
+        onUriPermissionAcquireFailed = if (host is HostFile) {
+            { vm.onFilePermissionDenied() }
+        } else {
+            null
+        },
+    )
 }
 
 @Preview
@@ -483,6 +534,8 @@ fun HomeScreen(
     modifier: Modifier = Modifier,
     vm: HomeViewModel,
     topLevelNavController: NavHostController,
+    status: VpnStatus,
+    canEditSettings: Boolean,
     onRefresh: () -> Unit,
     onImport: () -> Unit,
     onExport: () -> Unit,
@@ -550,10 +603,6 @@ fun HomeScreen(
             NavigationSuiteType.NavigationRail
         },
     ) {
-        val status by AdVpnService.status.collectAsState()
-        val canEditSettings by remember {
-            derivedStateOf { status == VpnStatus.STOPPED }
-        }
         Scaffold(
             contentWindowInsets = navigationSuiteScaffoldContentInsets,
             modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -629,7 +678,7 @@ fun HomeScreen(
                         modifier = Modifier.padding(end = endCutoutInset),
                         onClick = {
                             if (currentDestination == HomeDestinations.Hosts) {
-                                topLevelNavController.navigate(Host())
+                                topLevelNavController.navigate(HostFile())
                             } else if (currentDestination == HomeDestinations.DNS) {
                                 topLevelNavController.navigate(DnsServer())
                             }

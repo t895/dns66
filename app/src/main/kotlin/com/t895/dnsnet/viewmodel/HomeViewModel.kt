@@ -15,6 +15,8 @@ import com.t895.dnsnet.BuildConfig
 import com.t895.dnsnet.DnsNetApplication.Companion.applicationContext
 import com.t895.dnsnet.DnsServer
 import com.t895.dnsnet.Host
+import com.t895.dnsnet.HostException
+import com.t895.dnsnet.HostFile
 import com.t895.dnsnet.HostState
 import com.t895.dnsnet.Preferences
 import com.t895.dnsnet.config
@@ -44,7 +46,7 @@ class HomeViewModel : ViewModel() {
     private val _appList = MutableStateFlow<List<App>>(emptyList())
     val appList = _appList.asStateFlow()
 
-    private val _hosts = MutableStateFlow(config.hosts.items.toList())
+    private val _hosts = MutableStateFlow(config.hosts.getAllHosts())
     val hosts = _hosts.asStateFlow()
 
     private val _dnsServers = MutableStateFlow(config.dnsServers.items.toList())
@@ -164,23 +166,54 @@ class HomeViewModel : ViewModel() {
         _showWatchdogWarningDialog.value = false
     }
 
-    fun addHost(host: Host) {
-        config.hosts.items.add(host)
-        _hosts.value = config.hosts.items.toList()
+    private fun updateHostsList() {
+        _hosts.value = config.hosts.getAllHosts()
         config.save()
     }
 
-    fun removeHost(host: Host) {
+    private fun addHostFile(host: HostFile) {
+        config.hosts.items.add(host)
+        updateHostsList()
+    }
+
+    private fun addHostException(host: HostException) {
+        config.hosts.exceptions.add(host)
+        updateHostsList()
+    }
+
+    fun addHost(host: Host) {
+        when (host) {
+            is HostFile -> addHostFile(host)
+            is HostException -> addHostException(host)
+        }
+    }
+
+    private fun removeHostFile(host: HostFile) {
         if (!config.hosts.items.contains(host)) {
             logw("Tried to remove host that does not exist in config! - $host")
             return
         }
         config.hosts.items.remove(host)
-        _hosts.value = config.hosts.items.toList()
-        config.save()
+        updateHostsList()
     }
 
-    fun replaceHost(oldHost: Host, newHost: Host) {
+    private fun removeHostException(host: HostException) {
+        if (!config.hosts.exceptions.contains(host)) {
+            logw("Tried to remove host that does not exist in config! - $host")
+            return
+        }
+        config.hosts.exceptions.remove(host)
+        updateHostsList()
+    }
+
+    fun removeHost(host: Host) {
+        when (host) {
+            is HostFile -> removeHostFile(host)
+            is HostException -> removeHostException(host)
+        }
+    }
+
+    private fun replaceHostFile(oldHost: HostFile, newHost: HostFile) {
         if (!config.hosts.items.contains(oldHost)) {
             logw("Tried to replace host that does not exist in config! - $oldHost")
             return
@@ -188,18 +221,58 @@ class HomeViewModel : ViewModel() {
         val oldIndex = config.hosts.items.indexOf(oldHost)
         config.hosts.items.removeAt(oldIndex)
         config.hosts.items.add(oldIndex, newHost)
-        _hosts.value = config.hosts.items.toList()
-        config.save()
+        updateHostsList()
     }
 
-    fun cycleHost(host: Host) {
+    private fun replaceHostException(oldHost: HostException, newHost: HostException) {
+        if (!config.hosts.exceptions.contains(oldHost)) {
+            logw("Tried to replace host that does not exist in config! - $oldHost")
+            return
+        }
+        val oldIndex = config.hosts.exceptions.indexOf(oldHost)
+        config.hosts.exceptions.removeAt(oldIndex)
+        config.hosts.exceptions.add(oldIndex, newHost)
+        updateHostsList()
+    }
+
+    fun replaceHost(oldHost: Host, newHost: Host) {
+        if (oldHost is HostFile && newHost is HostFile) {
+            replaceHostFile(oldHost, newHost)
+        } else if (oldHost is HostException && newHost is HostException) {
+            replaceHostException(oldHost, newHost)
+        }
+    }
+
+    private fun cycleHostFile(host: HostFile) {
         val newHost = host.copy()
         newHost.state = when (newHost.state) {
             HostState.IGNORE -> HostState.DENY
             HostState.DENY -> HostState.ALLOW
             HostState.ALLOW -> HostState.IGNORE
         }
-        replaceHost(host, newHost)
+        replaceHostFile(host, newHost)
+    }
+
+    private fun cycleHostException(host: HostException) {
+        val newHost = host.copy()
+        newHost.state = when (newHost.state) {
+            HostState.IGNORE -> HostState.DENY
+            HostState.DENY -> HostState.ALLOW
+            HostState.ALLOW -> HostState.IGNORE
+        }
+        replaceHostException(host, newHost)
+    }
+
+    fun cycleHost(host: Host) {
+        when (host) {
+            is HostFile -> cycleHostFile(host)
+            is HostException -> cycleHostException(host)
+        }
+    }
+
+    fun removeBlockLogEntry(hostname: String) {
+        AdVpnService.logger.connections.remove(hostname)
+        _connectionsLogState.value = HashMap(AdVpnService.logger.connections)
     }
 
     fun addDnsServer(server: DnsServer) {

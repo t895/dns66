@@ -82,7 +82,6 @@
     <string name="do_not_use_dns_server">Disattivato</string>
     <string name="use_dns_server">Attivato</string>
     <string name="activity_edit_dns_server">Modifica server DNS</string>
-    <string name="activity_edit_filter">Modifica filtro</string>
     <string name="notification_paused_text">Tocca per riattivare.</string>
     <string name="notification_action_pause">Pause</string>
     <string name="allowlist_on_vpn">Nessuna app</string>

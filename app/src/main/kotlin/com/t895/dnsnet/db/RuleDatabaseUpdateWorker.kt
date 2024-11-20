@@ -127,7 +127,7 @@ class RuleDatabaseUpdateWorker(
      */
     private fun isGarbage(uri: Uri): Boolean {
         for (item in config.hosts.items) {
-            if (Uri.parse(item.location) == uri) {
+            if (Uri.parse(item.data) == uri) {
                 return false
             }
         }

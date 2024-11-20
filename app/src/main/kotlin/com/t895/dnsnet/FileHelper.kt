@@ -66,12 +66,12 @@ object FileHelper {
      * @param item    A configuration item.
      * @return File or null, if that item is not downloadable.
      */
-    fun getItemFile(item: Host): File? =
+    fun getItemFile(item: HostFile): File? =
         if (item.isDownloadable()) {
             try {
                 File(
                     applicationContext.getExternalFilesDir(null),
-                    URLEncoder.encode(item.location, "UTF-8"),
+                    URLEncoder.encode(item.data, "UTF-8"),
                 )
             } catch (e: UnsupportedEncodingException) {
                 e.printStackTrace()
@@ -82,10 +82,10 @@ object FileHelper {
         }
 
     @Throws(FileNotFoundException::class)
-    fun openItemFile(host: Host): InputStreamReader? {
-        return if (host.location.startsWith("content://")) {
+    fun openItemFile(host: HostFile): InputStreamReader? {
+        return if (host.data.startsWith("content://")) {
             try {
-                InputStreamReader(applicationContext.contentResolver.openInputStream(Uri.parse(host.location)))
+                InputStreamReader(applicationContext.contentResolver.openInputStream(Uri.parse(host.data)))
             } catch (e: SecurityException) {
                 logd("openItemFile: Cannot open", e)
                 throw FileNotFoundException(e.message)

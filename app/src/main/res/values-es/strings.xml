@@ -81,7 +81,6 @@
     <string name="do_not_use_dns_server">Apagado</string>
     <string name="use_dns_server">Encendido</string>
     <string name="activity_edit_dns_server">Editar servidor DNS</string>
-    <string name="activity_edit_filter">Editar Filtro</string>
     <string name="notification_paused_text">Toca para continuar.</string>
     <string name="notification_action_pause">Pausar</string>
     <string name="allowlist_on_vpn">Sin aplicaciones</string>

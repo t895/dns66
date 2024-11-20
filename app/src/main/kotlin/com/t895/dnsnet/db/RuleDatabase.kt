@@ -13,6 +13,8 @@ package com.t895.dnsnet.db
 
 import com.t895.dnsnet.FileHelper
 import com.t895.dnsnet.Host
+import com.t895.dnsnet.HostException
+import com.t895.dnsnet.HostFile
 import com.t895.dnsnet.HostState
 import com.t895.dnsnet.config
 import com.t895.dnsnet.logd
@@ -129,11 +131,27 @@ class RuleDatabase private constructor() {
         if (!config.hosts.enabled) {
             logd("loadBlockedHosts: Not loading, disabled.")
         } else {
-            for (item in config.hosts.items) {
+            val sortedHostItems = config.hosts.items
+                .mapNotNull {
+                    if (it.state != HostState.IGNORE) {
+                        it
+                    } else {
+                        null
+                    }
+                }
+                .sortedBy { it.state.ordinal }
+            for (item in sortedHostItems) {
                 if (Thread.interrupted()) {
                     throw InterruptedException("Interrupted")
                 }
                 loadItem(item)
+            }
+
+            for (exception in config.hosts.exceptions) {
+                if (Thread.interrupted()) {
+                    throw InterruptedException("Interrupted")
+                }
+                addHostException(exception)
             }
         }
 
@@ -148,7 +166,7 @@ class RuleDatabase private constructor() {
      * @throws InterruptedException If the thread was interrupted.
      */
     @Throws(InterruptedException::class)
-    private fun loadItem(item: Host) {
+    private fun loadItem(item: HostFile) {
         if (item.state == HostState.IGNORE) {
             return
         }
@@ -156,12 +174,12 @@ class RuleDatabase private constructor() {
         val reader = try {
             FileHelper.openItemFile(item)
         } catch (e: FileNotFoundException) {
-            logd("loadItem: File not found: ${item.location}")
+            logd("loadItem: File not found: ${item.data}")
             return
         }
 
         if (reader == null) {
-            addHost(item, item.location)
+            addHost(item, item.data)
         } else {
             loadReader(item, reader)
         }
@@ -186,6 +204,18 @@ class RuleDatabase private constructor() {
         }
     }
 
+    private fun addHostException(exception: HostException) {
+        when (exception.state) {
+            HostState.ALLOW -> nextBlockedHosts?.remove(exception.data) ?: logd(
+                "addHost: nextBlockedHosts was null when attempting to remove host!"
+            )
+            HostState.DENY -> nextBlockedHosts?.add(exception.data) ?: logd(
+                "addHost: nextBlockedHosts was null when attempting to add host!"
+            )
+            else -> return
+        }
+    }
+
     /**
      * Load a single file
      *
@@ -197,7 +227,7 @@ class RuleDatabase private constructor() {
     fun loadReader(item: Host, reader: Reader): Boolean {
         var count = 0
         try {
-            logd("loadBlockedHosts: Reading: ${item.location}")
+            logd("loadBlockedHosts: Reading: ${item.data}")
             BufferedReader(reader).use {
                 var line = it.readLine()
                 while (line != null) {
@@ -215,16 +245,16 @@ class RuleDatabase private constructor() {
                 }
             }
 
-            logd("loadBlockedHosts: Loaded $count hosts from ${item.location}")
+            logd("loadBlockedHosts: Loaded $count hosts from ${item.data}")
             return true
         } catch (e: IOException) {
             loge(
-                "loadBlockedHosts: Error while reading ${item.location} after $count items",
+                "loadBlockedHosts: Error while reading ${item.data} after $count items",
                 e
             )
             return false
         } finally {
-            FileHelper.closeOrWarn(reader, "loadBlockedHosts: Error closing ${item.location}")
+            FileHelper.closeOrWarn(reader, "loadBlockedHosts: Error closing ${item.data}")
         }
     }
 }

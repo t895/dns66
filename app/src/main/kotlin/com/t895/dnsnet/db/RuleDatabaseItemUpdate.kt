@@ -15,7 +15,7 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import com.t895.dnsnet.FileHelper
-import com.t895.dnsnet.Host
+import com.t895.dnsnet.HostFile
 import com.t895.dnsnet.R
 import com.t895.dnsnet.SingleWriterMultipleReaderFile
 import com.t895.dnsnet.logd
@@ -38,7 +38,7 @@ import javax.net.ssl.HttpsURLConnection
 class RuleDatabaseItemUpdate(
     private val context: Context,
     private val worker: RuleDatabaseUpdateWorker,
-    private val item: Host,
+    private val item: HostFile,
 ) {
     companion object {
         private const val CONNECT_TIMEOUT_MILLIS = 3000
@@ -50,7 +50,7 @@ class RuleDatabaseItemUpdate(
 
     fun shouldDownload(): Boolean {
         // Not sure if that is slow or not
-        if (item.location.startsWith("content://")) {
+        if (item.data.startsWith("content://")) {
             return true
         }
 
@@ -60,9 +60,9 @@ class RuleDatabaseItemUpdate(
         }
 
         try {
-            url = URL(item.location)
+            url = URL(item.data)
         } catch (e: MalformedURLException) {
-            worker.addError(item, context.getString(R.string.invalid_url_s, item.location))
+            worker.addError(item, context.getString(R.string.invalid_url_s, item.data))
             return false
         }
 
@@ -73,16 +73,16 @@ class RuleDatabaseItemUpdate(
      * Runs the item download, and marks it as done when finished.getLocalizedMessage
      */
     fun run() {
-        if (item.location.startsWith("content://")) {
+        if (item.data.startsWith("content://")) {
             try {
-                val uri = parseUri(item.location)
+                val uri = parseUri(item.data)
                 context.contentResolver.takePersistableUriPermission(
                     uri,
                     Intent.FLAG_GRANT_READ_URI_PERMISSION
                 )
 
                 context.contentResolver.openInputStream(uri)?.close()
-                logd("run: Permission requested for ${item.location}")
+                logd("run: Permission requested for ${item.data}")
             } catch (e: SecurityException) {
                 logd("doInBackground: Error taking permission: $e")
                 worker.addError(item, context.getString(R.string.permission_denied))
@@ -181,7 +181,7 @@ class RuleDatabaseItemUpdate(
             logd(
                 """
                     validateResponse: ${item.title}: Skipping
-                    Server responded with ${connection.responseCode} for ${item.location}"
+                    Server responded with ${connection.responseCode} for ${item.data}"
                 """.trimIndent()
             )
 

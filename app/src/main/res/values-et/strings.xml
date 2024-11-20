@@ -81,7 +81,6 @@
     <string name="do_not_use_dns_server">Väljas</string>
     <string name="use_dns_server">Sees</string>
     <string name="activity_edit_dns_server">Muuda DNS-serverit</string>
-    <string name="activity_edit_filter">Muuda filtrit</string>
     <string name="notification_paused_text">Koputa jätkamiseks.</string>
     <string name="notification_action_pause">Paus</string>
     <string name="allowlist_on_vpn">Mitte ühtegi rakendust</string>

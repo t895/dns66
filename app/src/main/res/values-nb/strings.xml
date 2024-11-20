@@ -81,7 +81,6 @@
     <string name="do_not_use_dns_server">Av</string>
     <string name="use_dns_server">På</string>
     <string name="activity_edit_dns_server">Rediger DNS-tjeneren</string>
-    <string name="activity_edit_filter">Rediger filteret</string>
     <string name="notification_paused_text">Trykk for å fortsette.</string>
     <string name="notification_action_pause">Pause</string>
     <string name="allowlist_on_vpn">Ingen apper</string>

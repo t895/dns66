@@ -60,6 +60,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.t895.dnsnet.DnsNetApplication.Companion.applicationContext
 import com.t895.dnsnet.Host
+import com.t895.dnsnet.HostException
+import com.t895.dnsnet.HostFile
 import com.t895.dnsnet.HostState
 import com.t895.dnsnet.HostState.Companion.toHostState
 import com.t895.dnsnet.R
@@ -173,7 +175,7 @@ fun HostsScreen(
                     onHostClick(it)
                 },
                 title = it.title,
-                details = it.location,
+                details = it.data,
                 endContent = {
                     IconButton(
                         enabled = enabled,
@@ -194,21 +196,21 @@ fun HostsScreen(
 @Composable
 private fun HostsScreenPreview() {
     val items = buildList {
-        val item1 = Host()
+        val item1 = HostFile()
         item1.title = "StevenBlack's hosts file"
-        item1.location = "https://url.to.hosts.file.com/"
+        item1.data = "https://url.to.hosts.file.com/"
         item1.state = HostState.IGNORE
         add(item1)
 
-        val item2 = Host()
+        val item2 = HostFile()
         item2.title = "StevenBlack's hosts file"
-        item2.location = "https://url.to.hosts.file.com/"
+        item2.data = "https://url.to.hosts.file.com/"
         item2.state = HostState.DENY
         add(item2)
 
-        val item3 = Host()
+        val item3 = HostFile()
         item3.title = "StevenBlack's hosts file"
-        item3.location = "https://url.to.hosts.file.com/"
+        item3.data = "https://url.to.hosts.file.com/"
         item3.state = HostState.ALLOW
         add(item3)
     }
@@ -235,10 +237,10 @@ fun EditHost(
     titleText: String,
     titleTextError: Boolean,
     onTitleTextChanged: (String) -> Unit,
-    locationText: String,
-    locationTextError: Boolean,
-    onLocationTextChanged: (String) -> Unit,
-    onOpenHostsDirectoryClick: () -> Unit,
+    dataText: String,
+    dataTextError: Boolean,
+    onDataTextChanged: (String) -> Unit,
+    onOpenHostsDirectoryClick: (() -> Unit)?,
     state: HostState,
     onStateChanged: (HostState) -> Unit,
 ) {
@@ -266,19 +268,23 @@ fun EditHost(
             label = {
                 Text(text = stringResource(id = R.string.location))
             },
-            value = locationText,
-            onValueChange = onLocationTextChanged,
-            trailingIcon = {
-                IconButton(onClick = onOpenHostsDirectoryClick) {
-                    Icon(
-                        imageVector = Icons.Default.AttachFile,
-                        contentDescription = stringResource(R.string.action_use_file),
-                    )
+            value = dataText,
+            onValueChange = onDataTextChanged,
+            trailingIcon = if (onOpenHostsDirectoryClick != null) {
+                {
+                    IconButton(onClick = onOpenHostsDirectoryClick) {
+                        Icon(
+                            imageVector = Icons.Default.AttachFile,
+                            contentDescription = stringResource(R.string.action_use_file),
+                        )
+                    }
                 }
+            } else {
+                null
             },
-            isError = locationTextError,
+            isError = dataTextError,
             supportingText = {
-                if (locationTextError) {
+                if (dataTextError) {
                     Text(text = stringResource(R.string.input_blank_error))
                 }
             },
@@ -345,9 +351,9 @@ private fun EditHostPreview() {
             titleText = titleText,
             titleTextError = false,
             onTitleTextChanged = { titleText = it },
-            locationText = locationText,
-            locationTextError = false,
-            onLocationTextChanged = { locationText = it },
+            dataText = locationText,
+            dataTextError = false,
+            onDataTextChanged = { locationText = it },
             onOpenHostsDirectoryClick = {},
             state = state,
             onStateChanged = { state = it },
@@ -363,21 +369,21 @@ fun EditHostScreen(
     onNavigateUp: () -> Unit,
     onSave: (Host) -> Unit,
     onDelete: (() -> Unit)? = null,
-    onUriPermissionAcquireFailed: () -> Unit,
+    onUriPermissionAcquireFailed: (() -> Unit)? = null,
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     var titleInput by rememberSaveable { mutableStateOf(host.title) }
     var titleInputError by rememberSaveable { mutableStateOf(false) }
-    var locationInput by rememberSaveable { mutableStateOf(host.location) }
-    var locationInputError by rememberSaveable { mutableStateOf(false) }
+    var dataInput by rememberSaveable { mutableStateOf(host.data) }
+    var dataInputError by rememberSaveable { mutableStateOf(false) }
     var stateInput by rememberSaveable { mutableStateOf(host.state) }
 
     if (titleInput.isNotBlank()) {
         titleInputError = false
     }
-    if (locationInput.isNotBlank()) {
-        locationInputError = false
+    if (dataInput.isNotBlank()) {
+        dataInputError = false
     }
 
     val locationLauncher =
@@ -390,12 +396,13 @@ fun EditHostScreen(
                     Intent.FLAG_GRANT_READ_URI_PERMISSION,
                 )
             } catch (e: SecurityException) {
-                onUriPermissionAcquireFailed()
+                onUriPermissionAcquireFailed?.invoke()
                 return@rememberLauncherForActivityResult
             }
 
-            locationInput = it.toString()
+            dataInput = it.toString()
         }
+
     Scaffold(
         contentWindowInsets = scaffoldContentInsets,
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
@@ -403,7 +410,26 @@ fun EditHostScreen(
             TopAppBar(
                 windowInsets = topAppBarInsets,
                 title = {
-                    Text(text = stringResource(R.string.activity_edit_filter))
+                    val text = when (host) {
+                        is HostFile -> {
+                            if (host.data.isEmpty()) {
+                                stringResource(R.string.add_hosts_file)
+                            } else {
+                                stringResource(R.string.edit_hosts_file)
+                            }
+                        }
+
+                        is HostException -> {
+                            if (host.title.isEmpty()) {
+                                stringResource(R.string.add_host_exception)
+                            } else {
+                                stringResource(R.string.edit_host_exception)
+                            }
+                        }
+
+                        else -> ""
+                    }
+                    Text(text = text)
                 },
                 navigationIcon = {
                     IconButton(onClick = onNavigateUp) {
@@ -426,12 +452,16 @@ fun EditHostScreen(
                     IconButton(
                         onClick = {
                             titleInputError = titleInput.isBlank()
-                            locationInputError = locationInput.isBlank()
-                            if (titleInputError || locationInputError) {
+                            dataInputError = dataInput.isBlank()
+                            if (titleInputError || dataInputError) {
                                 return@IconButton
                             }
 
-                            onSave(Host(titleInput, locationInput, stateInput))
+                            when (host) {
+                                is HostFile -> onSave(HostFile(titleInput, dataInput, stateInput))
+                                is HostException ->
+                                    onSave(HostException(titleInput, dataInput, stateInput))
+                            }
                         }
                     ) {
                         Icon(
@@ -452,10 +482,14 @@ fun EditHostScreen(
             titleText = titleInput,
             titleTextError = titleInputError,
             onTitleTextChanged = { titleInput = it },
-            locationText = locationInput,
-            locationTextError = locationInputError,
-            onLocationTextChanged = { locationInput = it },
-            onOpenHostsDirectoryClick = { locationLauncher.launch(arrayOf("*/*")) },
+            dataText = dataInput,
+            dataTextError = dataInputError,
+            onDataTextChanged = { dataInput = it },
+            onOpenHostsDirectoryClick = if (host is HostFile) {
+                { locationLauncher.launch(arrayOf("*/*")) }
+            } else {
+                null
+            },
             state = stateInput,
             onStateChanged = { stateInput = it },
         )
@@ -467,11 +501,10 @@ fun EditHostScreen(
 private fun EditHostScreenPreview() {
     DnsNetTheme {
         EditHostScreen(
-            host = Host(),
+            host = HostFile(),
             onNavigateUp = {},
             onSave = {},
             onDelete = {},
-            onUriPermissionAcquireFailed = {},
         )
     }
 }

@@ -24,6 +24,7 @@ import com.t895.dnsnet.HostState.Companion.toHostState
 import kotlinx.parcelize.Parceler
 import kotlinx.parcelize.Parcelize
 import kotlinx.serialization.ExperimentalSerializationApi
+import kotlinx.serialization.SerialName
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
@@ -113,9 +114,9 @@ data class Configuration(
 
     fun updateURL(oldURL: String, newURL: String?, newState: HostState) =
         hosts.items.forEach {
-            if (it.location == oldURL) {
+            if (it.data == oldURL) {
                 if (newURL != null) {
-                    it.location = newURL
+                    it.data = newURL
                 }
 
                 it.state = newState
@@ -141,20 +142,20 @@ data class Configuration(
     fun addURL(index: Int, title: String, location: String, state: HostState) =
         hosts.items.add(
             index = index,
-            element = Host(
+            element = HostFile(
                 title = title,
-                location = location,
+                data = location,
                 state = state,
             ),
         )
 
     fun removeURL(oldURL: String) =
-        hosts.items.removeAll { it.location == oldURL }
+        hosts.items.removeAll { it.data == oldURL }
 
     fun disableURL(oldURL: String) {
         logd(String.format("disableURL: Disabling %s", oldURL))
         hosts.items.forEach {
-            if (it.location == oldURL) {
+            if (it.data == oldURL) {
                 it.state = HostState.IGNORE
             }
         }
@@ -280,27 +281,58 @@ data class DnsServer(
     var enabled: Boolean = false,
 ) : Parcelable
 
+interface Host : Parcelable {
+    var title: String
+    var data: String
+    var state: HostState
+}
+
 @Parcelize
 @Serializable
-data class Host(
-    var title: String = "",
-    var location: String = "",
-    var state: HostState = HostState.IGNORE,
-) : Parcelable {
+data class HostFile(
+    override var title: String = "",
+    @SerialName("location") override var data: String = "",
+    override var state: HostState = HostState.IGNORE,
+) : Host {
     fun isDownloadable(): Boolean =
-        location.startsWith("https://") || location.startsWith("http://")
+        data.startsWith("https://") || data.startsWith("http://")
 
-    companion object : Parceler<Host> {
-        override fun Host.write(parcel: Parcel, flags: Int) {
+    companion object : Parceler<HostFile> {
+        override fun HostFile.write(parcel: Parcel, flags: Int) {
             parcel.apply {
                 writeString(title)
-                writeString(location)
+                writeString(data)
                 writeInt(state.ordinal)
             }
         }
 
-        override fun create(parcel: Parcel): Host =
-            Host(
+        override fun create(parcel: Parcel): HostFile =
+            HostFile(
+                parcel.readString() ?: "",
+                parcel.readString() ?: "",
+                parcel.readInt().toHostState(),
+            )
+    }
+}
+
+@Parcelize
+@Serializable
+data class HostException(
+    override var title: String = "",
+    @SerialName("hostname") override var data: String = "",
+    override var state: HostState = HostState.IGNORE,
+): Host {
+    companion object : Parceler<HostException> {
+        override fun HostException.write(parcel: Parcel, flags: Int) {
+            parcel.apply {
+                writeString(title)
+                writeString(data)
+                writeInt(state.ordinal)
+            }
+        }
+
+        override fun create(parcel: Parcel): HostException =
+            HostException(
                 parcel.readString() ?: "",
                 parcel.readString() ?: "",
                 parcel.readInt().toHostState(),
@@ -312,23 +344,26 @@ data class Host(
 data class Hosts(
     var enabled: Boolean = true,
     var automaticRefresh: Boolean = false,
-    var items: MutableList<Host> = defaultHosts.toMutableList(),
+    var items: MutableList<HostFile> = defaultHosts.toMutableList(),
+    var exceptions: MutableList<HostException> = mutableListOf(),
 ) {
+    fun getAllHosts(): List<Host> = items + exceptions
+
     companion object {
         val defaultHosts = listOf(
-            Host(
+            HostFile(
                 title = "StevenBlack's unified hosts file (adware + malware)",
-                location = "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts",
+                data = "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts",
                 state = HostState.DENY,
             ),
-            Host(
+            HostFile(
                 title = "Adaway hosts file",
-                location = "https://adaway.org/hosts.txt",
+                data = "https://adaway.org/hosts.txt",
                 state = HostState.IGNORE,
             ),
-            Host(
+            HostFile(
                 title = "Dan Pollock's hosts file",
-                location = "https://someonewhocares.org/hosts/hosts",
+                data = "https://someonewhocares.org/hosts/hosts",
                 state = HostState.IGNORE,
             ),
         )

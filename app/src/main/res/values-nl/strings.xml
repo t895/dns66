@@ -81,7 +81,6 @@
     <string name="do_not_use_dns_server">Uit</string>
     <string name="use_dns_server">Aan</string>
     <string name="activity_edit_dns_server">DNS-server bewerken</string>
-    <string name="activity_edit_filter">Filter</string>
     <string name="notification_paused_text">Tik om te hervatten.</string>
     <string name="notification_action_pause">Pauzeren</string>
     <string name="allowlist_on_vpn">Geen apps</string>

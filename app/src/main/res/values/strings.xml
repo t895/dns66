@@ -89,7 +89,6 @@
     <string name="use_dns_server">On</string>
     <string name="switch_onboot_description">Start DNSNet when the device is turned on if it was active when the device was turned off.</string>
     <string name="activity_edit_dns_server">Edit DNS server</string>
-    <string name="activity_edit_filter">Edit Filter</string>
     <string name="notification_paused_title">DNSNet paused</string>
     <string name="notification_paused_text">Tap to resume.</string>
     <string name="notification_action_pause">Pause</string>
@@ -150,4 +149,9 @@
     <string name="reset">Reset</string>
     <string name="reset_settings_warning_description">This will permanently delete your current settings.</string>
     <string name="permanently_delete_warning_description">This will permanently delete %s</string>
+    <string name="create_exception">Create exception</string>
+    <string name="add_hosts_file">Add hosts file</string>
+    <string name="edit_hosts_file">Edit hosts file</string>
+    <string name="add_host_exception">Add host exception</string>
+    <string name="edit_host_exception">Edit host exception</string>
 </resources>

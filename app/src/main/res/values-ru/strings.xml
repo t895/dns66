@@ -13,7 +13,6 @@
     <string name="expand_bar_closed">Закрыта</string>
     <string name="action_stop">Остановить</string>
     <string name="action_start">Запустить</string>
-    <string name="activity_edit_filter">Изменить Фильтр</string>
     <string name="activity_edit_dns_server">Изменить сервер DNS</string>
     <string name="persistable_uri_permission_failed">Невозможно использовать запрошенный файл: Не разрешено настойчиво использовать запрошенный файл</string>
     <string name="updating_hostfiles">Обновление хост файлов</string>

@@ -82,7 +82,6 @@
     <string name="do_not_use_dns_server">Desligado</string>
     <string name="use_dns_server">Ligado</string>
     <string name="activity_edit_dns_server">Editar o servidor DNS</string>
-    <string name="activity_edit_filter">Editar o filtro</string>
     <string name="notification_paused_text">Toque para retomar.</string>
     <string name="notification_action_pause">Pausar</string>
     <string name="allowlist_on_vpn">Não há Apps</string>
