@@ -16,6 +16,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -218,6 +219,8 @@ fun BlockLog(
                             text = abbreviatedAttempts,
                             color = if (it.allowed) allowedColor else blockedColor,
                         )
+
+                        Spacer(Modifier.padding(horizontal = 4.dp))
 
                         Box(contentAlignment = Alignment.Center) {
                             var showMenu by rememberSaveable { mutableStateOf(false) }
