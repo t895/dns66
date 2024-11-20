@@ -11,6 +11,7 @@ package com.t895.dnsnet.ui
 import android.os.Parcelable
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -69,6 +70,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.t895.dnsnet.NumberFormatterCompat
 import com.t895.dnsnet.R
+import com.t895.dnsnet.ui.theme.EmphasizedDecelerateEasing
 import com.t895.dnsnet.ui.theme.ListPadding
 import com.t895.dnsnet.ui.theme.ScrollUpIndicatorPadding
 import com.t895.dnsnet.ui.theme.ScrollUpIndicatorSize
@@ -153,6 +155,10 @@ fun BlockLog(
                 blockedConnections.toFloat() / loggedConnections.size.toFloat()
             val blockedRatioAnimated by animateFloatAsState(
                 targetValue = blockedConnectionsPercent,
+                animationSpec = tween(
+                    durationMillis = 500,
+                    easing = EmphasizedDecelerateEasing,
+                ),
                 label = "blockedRatioAnimated",
             )
             val size = 256.dp
