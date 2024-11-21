@@ -44,12 +44,12 @@ import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -428,7 +428,7 @@ fun EditHostScreen(
     onDelete: (() -> Unit)? = null,
     onUriPermissionAcquireFailed: (() -> Unit)? = null,
 ) {
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
 
     var titleInput by rememberSaveable { mutableStateOf(host.title) }
     var titleInputError by rememberSaveable { mutableStateOf(false) }
@@ -464,7 +464,7 @@ fun EditHostScreen(
         contentWindowInsets = scaffoldContentInsets,
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
-            TopAppBar(
+            LargeTopAppBar(
                 windowInsets = topAppBarInsets,
                 title = {
                     val text = when (host) {

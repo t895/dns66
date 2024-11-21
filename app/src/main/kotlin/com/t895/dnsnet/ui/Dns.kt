@@ -28,11 +28,11 @@ import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -205,12 +205,12 @@ fun EditDnsScreen(
         locationInputError = false
     }
 
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
         contentWindowInsets = scaffoldContentInsets,
         modifier = modifier,
         topBar = {
-            TopAppBar(
+            LargeTopAppBar(
                 windowInsets = topAppBarInsets,
                 title = {
                     Text(text = stringResource(R.string.activity_edit_dns_server))
