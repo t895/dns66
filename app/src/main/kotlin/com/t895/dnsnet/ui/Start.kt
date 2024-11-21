@@ -13,7 +13,6 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -44,7 +43,6 @@ import com.t895.dnsnet.ui.theme.DnsNetTheme
 import com.t895.dnsnet.ui.theme.FabPadding
 import com.t895.dnsnet.vpn.VpnStatus
 
-@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun StartScreen(
     modifier: Modifier = Modifier,
@@ -114,6 +112,7 @@ fun StartScreen(
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilledTonalSettingsButton(
+                    enabled = enabled,
                     title = stringResource(R.string.action_import),
                     description = stringResource(R.string.import_description),
                     icon = Icons.Default.Download,
@@ -132,6 +131,7 @@ fun StartScreen(
                     onClick = onShareLogcat,
                 )
                 FilledTonalSettingsButton(
+                    enabled = enabled,
                     title = stringResource(R.string.load_defaults),
                     description = stringResource(R.string.load_defaults_description),
                     icon = Icons.Default.History,

@@ -54,6 +54,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
@@ -753,6 +754,7 @@ private fun ListSettingsContainerPreview() {
 @Composable
 fun FilledTonalSettingsButton(
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     title: String,
     description: String,
     icon: ImageVector,
@@ -763,10 +765,12 @@ fun FilledTonalSettingsButton(
             .wrapContentHeight()
             .clip(CardDefaults.shape),
         onClick = onClick,
+        enabled = enabled,
         color = MaterialTheme.colorScheme.surfaceVariant,
     ) {
         Row(
             modifier = Modifier
+                .alpha(if (enabled) 1f else 0.6f)
                 .fillMaxWidth()
                 .padding(horizontal = 24.dp, vertical = 16.dp),
             verticalAlignment = Alignment.CenterVertically,
@@ -799,6 +803,7 @@ private fun FilledTonalSettingsButtonPreview() {
             title = "Some submenu",
             description = "Submenu description",
             icon = Icons.Default.Person,
+            enabled = true,
             onClick = {},
         )
     }
