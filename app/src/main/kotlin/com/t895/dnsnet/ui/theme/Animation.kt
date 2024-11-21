@@ -10,13 +10,16 @@ package com.t895.dnsnet.ui.theme
 
 import androidx.compose.animation.core.CubicBezierEasing
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandHorizontally
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
+import androidx.compose.animation.shrinkHorizontally
 import androidx.compose.animation.slideIn
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOut
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 
@@ -54,3 +57,14 @@ val TopLevelPopExit = slideOut(
 
 val ShowScrollUpIndicator = slideInVertically { it }
 val HideScrollUpIndicator = slideOutVertically { it }
+
+val ShowRefreshHostFilesSpinner = fadeIn() + expandHorizontally(
+    animationSpec = tween(250),
+    expandFrom = Alignment.Start,
+    clip = false,
+)
+val HideRefreshHostFilesSpinner = fadeOut() + shrinkHorizontally(
+    animationSpec = tween(250),
+    shrinkTowards = Alignment.Start,
+    clip = false,
+)

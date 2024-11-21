@@ -11,14 +11,20 @@ package com.t895.dnsnet.ui
 import android.content.Intent
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
@@ -30,10 +36,12 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AttachFile
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Save
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
@@ -66,6 +74,9 @@ import com.t895.dnsnet.HostState
 import com.t895.dnsnet.HostState.Companion.toHostState
 import com.t895.dnsnet.R
 import com.t895.dnsnet.ui.theme.DnsNetTheme
+import com.t895.dnsnet.ui.theme.EmphasizedAccelerateEasing
+import com.t895.dnsnet.ui.theme.HideRefreshHostFilesSpinner
+import com.t895.dnsnet.ui.theme.ShowRefreshHostFilesSpinner
 
 @Composable
 private fun IconText(
@@ -103,6 +114,8 @@ fun HostsScreen(
     hosts: List<Host>,
     onHostClick: (Host) -> Unit,
     onHostStateChanged: (Host) -> Unit,
+    isRefreshingHosts: Boolean,
+    onRefreshHosts: () -> Unit,
 ) {
     val itemStateStrings = stringArrayResource(R.array.item_states)
     val getStateString = { state: HostState ->
@@ -158,6 +171,48 @@ fun HostsScreen(
                     onCheckedChange = { onRefreshDailyClick() },
                 )
             }
+
+            Spacer(modifier = Modifier.padding(vertical = 4.dp))
+
+            Box(
+                modifier = Modifier.fillMaxWidth(),
+                contentAlignment = Alignment.Center,
+            ) {
+                Row(
+                    modifier = Modifier.animateContentSize(
+                        animationSpec = tween(
+                            durationMillis = 1,
+                            easing = EmphasizedAccelerateEasing,
+                        )
+                    ),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    FilledTonalButton(
+                        onClick = {
+                            if (!isRefreshingHosts) {
+                                onRefreshHosts()
+                            }
+                        },
+                    ) {
+                        Text(text = stringResource(R.string.action_refresh))
+                    }
+
+                    AnimatedVisibility(
+                        visible = isRefreshingHosts,
+                        enter = ShowRefreshHostFilesSpinner,
+                        exit = HideRefreshHostFilesSpinner,
+                    ) {
+                        Row(
+                            modifier = Modifier.wrapContentSize(),
+                            verticalAlignment = Alignment.CenterVertically,
+                        ) {
+                            Spacer(modifier = Modifier.padding(horizontal = 8.dp))
+                            CircularProgressIndicator(modifier = Modifier.size(24.dp))
+                        }
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.padding(vertical = 4.dp))
         }
 
@@ -226,6 +281,8 @@ private fun HostsScreenPreview() {
             hosts = items,
             onHostClick = {},
             onHostStateChanged = {},
+            isRefreshingHosts = false,
+            onRefreshHosts = {},
         )
     }
 }

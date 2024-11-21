@@ -10,8 +10,10 @@ package com.t895.dnsnet.ui
 
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.calculateEndPadding
@@ -21,6 +23,12 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.BugReport
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Info
+import androidx.compose.material.icons.filled.Upload
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
@@ -29,12 +37,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowWidthSizeClass
 import com.t895.dnsnet.R
 import com.t895.dnsnet.ui.theme.DnsNetTheme
 import com.t895.dnsnet.ui.theme.FabPadding
 import com.t895.dnsnet.vpn.VpnStatus
 
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun StartScreen(
     modifier: Modifier = Modifier,
@@ -50,6 +60,11 @@ fun StartScreen(
     blockLog: Boolean,
     onToggleBlockLog: () -> Unit,
     onOpenBlockLog: () -> Unit,
+    onImport: () -> Unit,
+    onExport: () -> Unit,
+    onShareLogcat: () -> Unit,
+    onResetSettings: () -> Unit,
+    onOpenAbout: () -> Unit,
     status: VpnStatus,
     onChangeVpnStatusClick: () -> Unit,
 ) {
@@ -95,6 +110,41 @@ fun StartScreen(
                     onBodyClick = onOpenBlockLog,
                 )
             }
+            Spacer(Modifier.padding(vertical = 4.dp))
+
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                FilledTonalSettingsButton(
+                    title = stringResource(R.string.action_import),
+                    description = stringResource(R.string.import_description),
+                    icon = Icons.Default.Download,
+                    onClick = onImport,
+                )
+                FilledTonalSettingsButton(
+                    title = stringResource(R.string.action_export),
+                    description = stringResource(R.string.export_description),
+                    icon = Icons.Default.Upload,
+                    onClick = onExport,
+                )
+                FilledTonalSettingsButton(
+                    title = stringResource(R.string.action_logcat),
+                    description = stringResource(R.string.logcat_description),
+                    icon = Icons.Default.BugReport,
+                    onClick = onShareLogcat,
+                )
+                FilledTonalSettingsButton(
+                    title = stringResource(R.string.load_defaults),
+                    description = stringResource(R.string.load_defaults_description),
+                    icon = Icons.Default.History,
+                    onClick = onResetSettings,
+                )
+                FilledTonalSettingsButton(
+                    title = stringResource(R.string.action_about),
+                    description = stringResource(R.string.about_description),
+                    icon = Icons.Default.Info,
+                    onClick = onOpenAbout,
+                )
+            }
+
             Spacer(Modifier.padding(bottom = contentPadding.calculateBottomPadding()))
         }
 
@@ -142,6 +192,11 @@ private fun StartScreenPreview() {
             blockLog = true,
             onToggleBlockLog = {},
             onOpenBlockLog = {},
+            onImport = {},
+            onExport = {},
+            onShareLogcat = {},
+            onResetSettings = {},
+            onOpenAbout = {},
         )
     }
 }

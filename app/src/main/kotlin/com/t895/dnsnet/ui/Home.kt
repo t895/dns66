@@ -17,7 +17,6 @@ import androidx.compose.animation.core.tween
 import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
@@ -29,20 +28,14 @@ import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Android
 import androidx.compose.material.icons.filled.Dns
-import androidx.compose.material.icons.filled.MoreVert
-import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.VpnKey
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
-import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
@@ -58,7 +51,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
@@ -85,6 +77,7 @@ import com.t895.dnsnet.HostFile
 import com.t895.dnsnet.HostState
 import com.t895.dnsnet.R
 import com.t895.dnsnet.config
+import com.t895.dnsnet.db.RuleDatabaseUpdateWorker
 import com.t895.dnsnet.ui.HomeDestinationIcon.Companion.toHomeDestinationIcon
 import com.t895.dnsnet.ui.theme.DefaultFabSize
 import com.t895.dnsnet.ui.theme.EmphasizedAccelerateEasing
@@ -172,7 +165,7 @@ open class TopLevelDestination {
 @Composable
 fun App(
     vm: HomeViewModel = viewModel(),
-    onRefresh: () -> Unit,
+    onRefreshHosts: () -> Unit,
     onLoadDefaults: () -> Unit,
     onImport: () -> Unit,
     onExport: () -> Unit,
@@ -351,7 +344,7 @@ fun App(
                 topLevelNavController = navController,
                 status = status,
                 canEditSettings = canEditSettings,
-                onRefresh = onRefresh,
+                onRefreshHosts = onRefreshHosts,
                 onImport = onImport,
                 onExport = onExport,
                 onShareLogcat = onShareLogcat,
@@ -516,7 +509,7 @@ fun EditHostDestination(
 @Composable
 fun AppPreview() {
     App(
-        onRefresh = {},
+        onRefreshHosts = {},
         onLoadDefaults = {},
         onImport = {},
         onExport = {},
@@ -536,7 +529,7 @@ fun HomeScreen(
     topLevelNavController: NavHostController,
     status: VpnStatus,
     canEditSettings: Boolean,
-    onRefresh: () -> Unit,
+    onRefreshHosts: () -> Unit,
     onImport: () -> Unit,
     onExport: () -> Unit,
     onShareLogcat: () -> Unit,
@@ -564,7 +557,6 @@ fun HomeScreen(
     }
 
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
-    val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
 
     val displayCutout = WindowInsets.displayCutout
     val localDensity = LocalDensity.current
@@ -605,68 +597,6 @@ fun HomeScreen(
     ) {
         Scaffold(
             contentWindowInsets = navigationSuiteScaffoldContentInsets,
-            modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
-            topBar = {
-                TopAppBar(
-                    windowInsets = navigationSuiteScaffoldTopAppBarInsets,
-                    title = {
-                        Text(text = stringResource(R.string.app_name))
-                    },
-                    actions = {
-                        IconButton(onClick = onRefresh) {
-                            Icon(
-                                imageVector = Icons.Default.Refresh,
-                                contentDescription = stringResource(R.string.action_refresh),
-                            )
-                        }
-
-                        Box {
-                            var expanded by rememberSaveable { mutableStateOf(false) }
-                            IconButton(
-                                onClick = { expanded = true },
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.MoreVert,
-                                    contentDescription = stringResource(R.string.more_options),
-                                )
-                            }
-
-                            DropdownMenu(
-                                expanded = expanded,
-                                onDismissRequest = { expanded = false },
-                            ) {
-                                val item =
-                                    @Composable { text: String, enabled: Boolean, onClick: () -> Unit ->
-                                        MenuItem(
-                                            text = text,
-                                            enabled = enabled,
-                                            onClick = {
-                                                expanded = false
-                                                onClick()
-                                            }
-                                        )
-                                    }
-
-                                item(
-                                    stringResource(R.string.load_defaults),
-                                    canEditSettings,
-                                ) { vm.onResetSettingsWarning() }
-                                item(
-                                    stringResource(R.string.action_import),
-                                    canEditSettings,
-                                    onImport
-                                )
-                                item(stringResource(R.string.action_export), true, onExport)
-                                item(stringResource(R.string.action_logcat), true, onShareLogcat)
-                                item(stringResource(R.string.action_about), true) {
-                                    topLevelNavController.navigate(TopLevelDestination.About)
-                                }
-                            }
-                        }
-                    },
-                    scrollBehavior = scrollBehavior,
-                )
-            },
             floatingActionButton = {
                 AnimatedVisibility(
                     visible = (currentDestination == HomeDestinations.Hosts ||
@@ -798,6 +728,11 @@ fun HomeScreen(
                         onOpenBlockLog = {
                             topLevelNavController.navigate(TopLevelDestination.BlockLog)
                         },
+                        onImport = onImport,
+                        onExport = onExport,
+                        onShareLogcat = onShareLogcat,
+                        onResetSettings = { vm.onResetSettingsWarning() },
+                        onOpenAbout = { topLevelNavController.navigate(TopLevelDestination.About) },
                         status = status,
                         onChangeVpnStatusClick = onTryToggleService,
                     )
@@ -806,6 +741,7 @@ fun HomeScreen(
                     var filterHosts by remember { mutableStateOf(config.hosts.enabled) }
                     var refreshDaily by remember { mutableStateOf(config.hosts.automaticRefresh) }
                     val hosts by vm.hosts.collectAsState()
+                    val isRefreshingHosts by RuleDatabaseUpdateWorker.isRefreshing.collectAsState()
                     HostsScreen(
                         contentPadding = contentPadding + PaddingValues(ListPadding) +
                                 PaddingValues(bottom = DefaultFabSize + FabPadding),
@@ -831,6 +767,8 @@ fun HomeScreen(
                         onHostStateChanged = { host ->
                             vm.cycleHost(host)
                         },
+                        isRefreshingHosts = isRefreshingHosts,
+                        onRefreshHosts = onRefreshHosts,
                     )
                 }
 

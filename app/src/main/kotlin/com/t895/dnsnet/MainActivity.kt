@@ -117,7 +117,7 @@ class MainActivity : AppCompatActivity() {
                 ) {
                     App(
                         vm = vm,
-                        onRefresh = ::refresh,
+                        onRefreshHosts = ::refresh,
                         onLoadDefaults = {
                             config = Configuration()
                             config.save()

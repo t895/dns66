@@ -33,6 +33,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.TimeoutCancellationException
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
 
@@ -46,6 +48,9 @@ class RuleDatabaseUpdateWorker(
         const val PERIODIC_TAG = "RuleDatabaseUpdatePeriodicWorker"
 
         var lastErrors by atomic<MutableList<String>?>(null)
+
+        private val _isRefreshing = MutableStateFlow(false)
+        val isRefreshing = _isRefreshing.asStateFlow()
     }
 
     private val errors = ArrayList<String>()
@@ -65,6 +70,7 @@ class RuleDatabaseUpdateWorker(
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
         logd("doWork: Begin")
+        _isRefreshing.value = true
         val start = System.currentTimeMillis()
         val jobs = mutableListOf<Deferred<Unit>>()
         config.hosts.items.forEach {
@@ -188,6 +194,7 @@ class RuleDatabaseUpdateWorker(
                 .setAutoCancel(true)
             notificationManager.notify(UPDATE_NOTIFICATION_ID, notificationBuilder.build())
         }
+        _isRefreshing.value = false
     }
 
     /**

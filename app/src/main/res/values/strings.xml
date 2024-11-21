@@ -7,9 +7,13 @@
     <string name="hosts_tab">Hosts</string>
     <string name="dns_tab">DNS</string>
     <string name="action_export">Export settings</string>
+    <string name="export_description">Create a backup copy of your configuration</string>
     <string name="action_import">Import settings</string>
+    <string name="import_description">Load a backup settings file</string>
     <string name="load_defaults">Load default settings</string>
+    <string name="load_defaults_description">Resets all settings back to their default values</string>
     <string name="action_about">About</string>
+    <string name="about_description">Information about DNSNet</string>
     <string name="info_app_license">This program is free software: you can redistribute it and/or modify it under the terms of the GNU General Public License as published by the Free Software Foundation, either version 3 of the License, or (at your option) any later version.</string>
     <string name="info_app_copyright" translatable="false">©2024 Charles Lombardo</string>
     <string name="switch_onboot">Resume on system start-up</string>
@@ -98,6 +102,7 @@
     <string name="ipv6_support_description">Disable this if your network does not use IPv6 or you cannot start the service.</string>
     <string name="ipv6_support">IPv6 support</string>
     <string name="action_logcat">Logcat</string>
+    <string name="logcat_description">Share the app log when you need to report an issue</string>
     <string name="notifications_running">Running service</string>
     <string name="notifications_running_desc">Notifications to interact with running service</string>
     <string name="notifications_update">Status</string>

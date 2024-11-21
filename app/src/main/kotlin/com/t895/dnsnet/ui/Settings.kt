@@ -13,6 +13,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.expandVertically
 import androidx.compose.animation.shrinkVertically
 import androidx.compose.foundation.background
+import androidx.compose.foundation.basicMarquee
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
@@ -33,6 +34,7 @@ import androidx.compose.foundation.selection.toggleable
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Person
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.Checkbox
@@ -40,6 +42,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.RadioButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.VerticalDivider
 import androidx.compose.material3.minimumInteractiveComponentSize
@@ -54,6 +57,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
@@ -743,5 +747,59 @@ private fun ListSettingsContainerPreview() {
                 )
             }
         }
+    }
+}
+
+@Composable
+fun FilledTonalSettingsButton(
+    modifier: Modifier = Modifier,
+    title: String,
+    description: String,
+    icon: ImageVector,
+    onClick: () -> Unit,
+) {
+    Surface(
+        modifier = modifier
+            .wrapContentHeight()
+            .clip(CardDefaults.shape),
+        onClick = onClick,
+        color = MaterialTheme.colorScheme.surfaceVariant,
+    ) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 24.dp, vertical = 16.dp),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(imageVector = icon, contentDescription = null)
+            Spacer(Modifier.padding(horizontal = 8.dp))
+            Column {
+                Text(
+                    modifier = Modifier.basicMarquee(),
+                    text = title,
+                    style = MaterialTheme.typography.labelLarge,
+                    maxLines = 1,
+                )
+                Text(
+                    modifier = Modifier.basicMarquee(),
+                    text = description,
+                    style = MaterialTheme.typography.labelSmall,
+                    maxLines = 1,
+                )
+            }
+        }
+    }
+}
+
+@Preview
+@Composable
+private fun FilledTonalSettingsButtonPreview() {
+    DnsNetTheme {
+        FilledTonalSettingsButton(
+            title = "Some submenu",
+            description = "Submenu description",
+            icon = Icons.Default.Person,
+            onClick = {},
+        )
     }
 }
