@@ -188,6 +188,7 @@ fun HostsScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     FilledTonalButton(
+                        enabled = enabled,
                         onClick = {
                             if (!isRefreshingHosts) {
                                 onRefreshHosts()
