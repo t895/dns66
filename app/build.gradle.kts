@@ -10,11 +10,11 @@ plugins {
 }
 
 android {
-    namespace = "com.t895.dnsnet"
+    namespace = "dev.clombardo.dnsnet"
     compileSdk = 35
 
     defaultConfig {
-        applicationId = "com.t895.dnsnet"
+        applicationId = "dev.clombardo.dnsnet"
         minSdk = 24
         targetSdk = 35
         versionCode = 13

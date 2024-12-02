@@ -7,7 +7,7 @@ plugins {
 }
 
 android {
-    namespace = "com.t895.baselineprofile"
+    namespace = "dev.clombardo.baselineprofile"
     compileSdk = 34
 
     compileOptions {
