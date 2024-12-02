@@ -57,11 +57,11 @@ class BaselineProfileGenerator {
             device.wait(Until.hasObject(By.res("notificationPermissionDialog")), 5_000)
             device.findObject(By.res("notificationPermissionDialog:cancel"))?.click()
 
-            val hosts = By.res("homeNavigation:hosts")
+            val hosts = By.res("homeNavigation:Hosts")
             device.wait(Until.hasObject(hosts), 5_000)
             device.findObject(hosts).click()
 
-            val apps = By.res("homeNavigation:apps")
+            val apps = By.res("homeNavigation:Apps")
             device.findObject(apps).click()
 
             val showSystemApps = By.res("apps:showSystemApps")
@@ -74,7 +74,7 @@ class BaselineProfileGenerator {
             val appList = device.findObject(By.scrollable(true))
             appList?.fling(Direction.DOWN)
 
-            val dns = By.res("homeNavigation:dns")
+            val dns = By.res("homeNavigation:DNS")
             device.findObject(dns).click()
         }
     }
