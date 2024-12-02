@@ -42,16 +42,15 @@ import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
 import dev.clombardo.dnsnet.db.RuleDatabaseUpdateWorker
+import dev.clombardo.dnsnet.ui.App
 import dev.clombardo.dnsnet.ui.theme.DnsNetTheme
 import dev.clombardo.dnsnet.viewmodel.HomeViewModel
 import dev.clombardo.dnsnet.vpn.AdVpnService
 import dev.clombardo.dnsnet.vpn.Command
 import dev.clombardo.dnsnet.vpn.VpnStatus
-import dev.clombardo.dnsnet.ui.App
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStreamReader
-import java.io.OutputStreamWriter
 import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
@@ -88,8 +87,8 @@ class MainActivity : AppCompatActivity() {
                     rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("*/*")) { uri ->
                         uri ?: return@rememberLauncherForActivityResult
                         try {
-                            OutputStreamWriter(contentResolver.openOutputStream(uri)).use {
-                                config.save()
+                            contentResolver.openOutputStream(uri).use {
+                                config.save(it!!)
                             }
                         } catch (e: Exception) {
                             Toast.makeText(

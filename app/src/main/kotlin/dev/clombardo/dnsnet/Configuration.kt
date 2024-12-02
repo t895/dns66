@@ -31,6 +31,7 @@ import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
 import java.io.IOException
 import java.io.InputStream
+import java.io.OutputStream
 
 @Serializable
 data class Configuration(
@@ -165,11 +166,15 @@ data class Configuration(
         }
     }
 
-    @OptIn(ExperimentalSerializationApi::class)
     fun save(name: String = DEFAULT_CONFIG_FILENAME) {
+        val outputStream = FileHelper.openWrite(name)
+        save(outputStream)
+    }
+
+    @OptIn(ExperimentalSerializationApi::class)
+    fun save(writer: OutputStream) {
         try {
-            val outputStream = FileHelper.openWrite(name)
-            json.encodeToStream(this, outputStream)
+            json.encodeToStream(this, writer)
         } catch (e: Exception) {
             loge("Failed to write config to disk!", e)
             Toast.makeText(
