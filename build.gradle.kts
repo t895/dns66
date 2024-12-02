@@ -11,7 +11,7 @@ plugins {
     id("org.jetbrains.kotlin.plugin.parcelize") version kotlinVersion apply false
     id("org.jetbrains.kotlin.plugin.serialization") version kotlinVersion apply false
 
-    id("org.jetbrains.kotlinx.atomicfu") version "0.26.0" apply false
+    id("org.jetbrains.kotlinx.atomicfu") version "0.26.1" apply false
 
     id("androidx.baselineprofile") version "1.3.3" apply false
 
