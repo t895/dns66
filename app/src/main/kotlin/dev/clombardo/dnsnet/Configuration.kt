@@ -167,13 +167,8 @@ data class Configuration(
 
     @OptIn(ExperimentalSerializationApi::class)
     fun save(name: String = DEFAULT_CONFIG_FILENAME) {
-        val outputStream = FileHelper.openWrite(name)
-        if (outputStream == null) {
-            loge("Failed to write config to disk!")
-            return
-        }
-
         try {
+            val outputStream = FileHelper.openWrite(name)
             json.encodeToStream(this, outputStream)
         } catch (e: Exception) {
             loge("Failed to write config to disk!", e)
