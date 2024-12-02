@@ -31,7 +31,6 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
@@ -59,7 +58,6 @@ fun AppsScreen(
     apps: List<App> = emptyList(),
     onAppClick: (App) -> Unit,
 ) {
-    val pm = LocalContext.current.packageManager
     val pullToRefreshState = rememberPullToRefreshState()
     PullToRefreshBox(
         modifier = modifier,
