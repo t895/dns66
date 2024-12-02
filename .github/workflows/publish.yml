@@ -33,7 +33,8 @@ jobs:
           export STORE_FILE_PATH=${HOME}/keyfile.jks
           ./gradlew :app:assembleRelease
           ./gradlew :app:buildApksRelease
+          ./gradlew :app:bundleRelease
      - name: Release
        uses: ncipollo/release-action@v1
        with:
-         artifacts: "./**/*.apk,./**/*.apks"
+         artifacts: "./**/*.apk,./**/*.apks,./**/*.aab"
