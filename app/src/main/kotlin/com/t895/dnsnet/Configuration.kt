@@ -53,7 +53,7 @@ data class Configuration(
         private const val VERSION = 1
 
         /* Default tweak level */
-        private const val MINOR_VERSION = 0
+        private const val MINOR_VERSION = 1
 
         private val json by lazy {
             Json {
@@ -106,9 +106,13 @@ data class Configuration(
     }
 
     fun runUpdate(level: Int) {
-        // Uncomment this block to set up db updates
-        // when (level) {
-        // }
+        when (level) {
+            1 -> {
+                // This is always enabled after v0.2.3
+                hosts.enabled = true
+                logi("Updated to config v1.1 successfully")
+            }
+        }
         minorVersion = level
     }
 
@@ -352,7 +356,7 @@ data class Hosts(
     companion object {
         val defaultHosts = listOf(
             HostFile(
-                title = "StevenBlack's unified hosts file (adware + malware)",
+                title = "StevenBlack's unified hosts file",
                 data = "https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts",
                 state = HostState.DENY,
             ),

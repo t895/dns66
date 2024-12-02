@@ -85,7 +85,7 @@
     <string name="automatic_refresh_description">Daily updates occur when charging, idle, and on an unmetered network.</string>
     <string name="watchdog">Watch connection</string>
     <string name="watchdog_description">Check the connection in increasingly longer intervals and reconnect if it stopped working</string>
-    <string name="legend_host_intro">Entries are processed in order. If multiple entries contain the same host, the last entry is applied. The actions are:</string>
+    <string name="legend_host_intro">Blocked entries are added first. Then the allowed entries create exceptions. You can control this with the following options:</string>
     <string name="legend_host_ignore">Ignore this entry</string>
     <string name="legend_host_allow">Allow access to hosts in this entry</string>
     <string name="legend_host_deny">Deny access to hosts in this entry</string>
@@ -159,4 +159,6 @@
     <string name="edit_hosts_file">Edit hosts file</string>
     <string name="add_host_exception">Add host exception</string>
     <string name="edit_host_exception">Edit host exception</string>
+    <string name="start_title">General DNSNet configuration</string>
+    <string name="hosts_title">Filter hosts with files and exceptions</string>
 </resources>

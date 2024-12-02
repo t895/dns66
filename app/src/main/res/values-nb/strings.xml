@@ -74,7 +74,6 @@
     <string name="automatic_refresh_description">Daglige oppdateringer skjer når enheten lader, ikke brukes, og er på et ikke-datamengdebegrenset nettverk.</string>
     <string name="watchdog">Overvåk tilkoblingen</string>
     <string name="watchdog_description">Sjekk tilkoblingen med stadig lengre intervaller, og koble til på nytt dersom den sluttet å fungere.</string>
-    <string name="legend_host_intro">Oppføringer behandles i rekkefølge. Dersom flere oppføringer inneholder den samme verten, brukes den siste oppføringen. Handlingene er:</string>
     <string name="legend_host_ignore">Ignorer denne oppføringen</string>
     <string name="legend_host_allow">Gi tilgang til vertene i denne oppføringen</string>
     <string name="legend_host_deny">Nekt tilgang til vertene i denne oppføringen</string>

@@ -75,7 +75,7 @@ fun StartScreen(
                 .verticalScroll(listState),
         ) {
             Spacer(Modifier.padding(top = contentPadding.calculateTopPadding()))
-            ListSettingsContainer {
+            ListSettingsContainer(title = stringResource(R.string.start_title)) {
                 SwitchListItem(
                     title = stringResource(id = R.string.switch_onboot),
                     details = stringResource(id = R.string.switch_onboot_description),

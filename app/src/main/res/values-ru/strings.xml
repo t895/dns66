@@ -36,7 +36,6 @@
     <string name="expand_bar_toggle_expand">Открыть панель детали</string>
     <string name="dns_tab">DNS</string>
     <string name="legend_host_deny">Запретить доступ к хостам в этой записи</string>
-    <string name="legend_host_intro">Записи обрабатываются по очереди. Если несколько записей содержат один и тот же узел, применяется последняя запись. Действия:</string>
     <string name="action_export">Экспортировать настройки</string>
     <string name="action_import">Импортировать настройки</string>
     <string name="load_defaults">Загрузить настройки по умолчанию</string>

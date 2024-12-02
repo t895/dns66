@@ -75,7 +75,6 @@
     <string name="automatic_refresh_description">As atualizações diárias ocorrem ao carregar o celular, enquanto inativo e usando uma rede fixa</string>
     <string name="watchdog">Observar a conexão</string>
     <string name="watchdog_description">Verifique a conexão em intervalos cada vez mais longos, e reconecte, se parar de funcionar</string>
-    <string name="legend_host_intro">As entradas são processadas em ordem. Se várias entradas contêm o mesmo host, a última entrada é aplicada. As ações são:</string>
     <string name="legend_host_ignore">Ignorar esta entrada</string>
     <string name="legend_host_allow">Permitir o acesso ao host nesta entrada</string>
     <string name="legend_host_deny">Negar o acesso ao host nesta entrada</string>

@@ -79,7 +79,6 @@
     <string name="automatic_refresh_description">Les mises à jour quotidiennes ont lieu lorsque le téléphone se recharge, est inactif et sur un réseau illimité.</string>
     <string name="watchdog">Surveiller la connexion</string>
     <string name="watchdog_description">Surveille la connexion à intervalles de plus en plus grands et se reconnecte si elle a cessé de fonctionner</string>
-    <string name="legend_host_intro">Les entrées sont traitées dans l\'ordre. Si plusieurs entrées contiennent le même hôte, la dernière entrée est appliquée. Les actions sont :</string>
     <string name="legend_host_ignore">Ignorer cette entrée</string>
     <string name="legend_host_allow">Permettre l\'accès aux hôtes de cette entrée</string>
     <string name="legend_host_deny">Refuser l\'accès aux hôtes de cette entrée</string>

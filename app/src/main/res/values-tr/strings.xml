@@ -77,7 +77,6 @@
     <string name="automatic_refresh_description">Günlük güncelleme; şarj olurken, boşta ve sınırsız bir ağda (örn: wifi açıkken) gerçekleşir.</string>
     <string name="watchdog">Bağlantıyı izle</string>
     <string name="watchdog_description">Bağlantıyı aralıklarla kontrol edin ve çalışmayı bıraktıysa yeniden bağlanın</string>
-    <string name="legend_host_intro">Maddelerdeki işlemler sırayla uygulanır. Birden fazla aynı adres için işlem varsa son maddedeki işlem uygulanır. Bu aksiyonlar:</string>
     <string name="legend_host_ignore">Bu maddeyi yoksay</string>
     <string name="legend_host_allow">Bu maddedeki adreslere erişim izni ver</string>
     <string name="legend_host_deny">Bu maddedeki adreslere erişimi engelle</string>

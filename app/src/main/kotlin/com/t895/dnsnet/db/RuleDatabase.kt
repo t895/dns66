@@ -128,31 +128,28 @@ class RuleDatabase private constructor() {
 
         logi("Loading block list")
 
-        if (!config.hosts.enabled) {
-            logd("loadBlockedHosts: Not loading, disabled.")
-        } else {
-            val sortedHostItems = config.hosts.items
-                .mapNotNull {
-                    if (it.state != HostState.IGNORE) {
-                        it
-                    } else {
-                        null
-                    }
+        val sortedHostItems = config.hosts.items
+            .mapNotNull {
+                if (it.state != HostState.IGNORE) {
+                    it
+                } else {
+                    null
                 }
-                .sortedBy { it.state.ordinal }
-            for (item in sortedHostItems) {
-                if (Thread.interrupted()) {
-                    throw InterruptedException("Interrupted")
-                }
-                loadItem(item)
             }
+            .sortedBy { it.state.ordinal }
 
-            for (exception in config.hosts.exceptions) {
-                if (Thread.interrupted()) {
-                    throw InterruptedException("Interrupted")
-                }
-                addHostException(exception)
+        for (item in sortedHostItems) {
+            if (Thread.interrupted()) {
+                throw InterruptedException("Interrupted")
             }
+            loadItem(item)
+        }
+
+        for (exception in config.hosts.exceptions) {
+            if (Thread.interrupted()) {
+                throw InterruptedException("Interrupted")
+            }
+            addHostException(exception)
         }
 
         blockedHosts.set(nextBlockedHosts)

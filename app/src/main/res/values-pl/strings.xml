@@ -74,7 +74,6 @@
     <string name="automatic_refresh_description">Codzienne aktualizuje pliki hosts.</string>
     <string name="watchdog">Monitoruj połączenie</string>
     <string name="watchdog_description">Sprawdza połączenie z internetem w określonych odstępach czasu i ponownie je podłącza jeśli przestanie działać</string>
-    <string name="legend_host_intro">Wpisy są przetwarzane w kolejności. Jeśli wiele wpisów zawiera ten sam hosts, zostanie zastosowany ostatni wpis. Dostępne działania:</string>
     <string name="legend_host_ignore">Zignoruj ten wpis</string>
     <string name="legend_host_allow">Zezwala na dostęp do hosts w tym wpisie</string>
     <string name="legend_host_deny">Odmawia dostępu do hosts w tym wpisie</string>

@@ -74,7 +74,6 @@
     <string name="automatic_refresh_description">Las actualizaciones diarias se producen al cargar el dispositivo, en reposo y con una red wifi.</string>
     <string name="watchdog">Ver la conexión</string>
     <string name="watchdog_description">Compruebe la conexión en intervalos cada vez más largos y vuelva a conectar si dejó de funcionar</string>
-    <string name="legend_host_intro">Las entradas se procesan en orden. Si varias entradas contienen el mismo host, se aplica la última entrada. Las acciones son:</string>
     <string name="legend_host_ignore">Ignorar esta entrada</string>
     <string name="legend_host_allow">Permitir acceso a los archivos host en esta entrada</string>
     <string name="legend_host_deny">Denegar el acceso a los archivos host en esta entrada</string>

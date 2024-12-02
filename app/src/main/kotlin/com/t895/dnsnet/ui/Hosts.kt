@@ -107,8 +107,6 @@ fun HostsScreen(
     contentPadding: PaddingValues = PaddingValues(),
     listState: LazyListState = rememberLazyListState(),
     enabled: Boolean,
-    filterHosts: Boolean,
-    onFilterHostsClick: () -> Unit,
     refreshDaily: Boolean,
     onRefreshDailyClick: () -> Unit,
     hosts: List<Host>,
@@ -131,19 +129,13 @@ fun HostsScreen(
         state = listState,
     ) {
         item {
-            ListSettingsContainer {
-                SwitchListItem(
-                    title = stringResource(id = R.string.enable_hosts),
-                    checked = filterHosts,
-                    enabled = enabled,
-                    onCheckedChange = { onFilterHostsClick() },
-                )
-
+            ListSettingsContainer(title = stringResource(R.string.hosts_title)) {
                 Column(
                     modifier = Modifier.padding(horizontal = 8.dp),
                     horizontalAlignment = Alignment.Start,
                     verticalArrangement = Arrangement.spacedBy(8.dp),
                 ) {
+                    Spacer(Modifier.padding(top = 2.dp))
                     Text(
                         text = stringResource(id = R.string.legend_host_intro),
                         style = MaterialTheme.typography.bodyMedium,
@@ -275,8 +267,6 @@ private fun HostsScreenPreview() {
         HostsScreen(
             modifier = Modifier.background(MaterialTheme.colorScheme.surface),
             enabled = true,
-            filterHosts = false,
-            onFilterHostsClick = {},
             refreshDaily = false,
             onRefreshDailyClick = {},
             hosts = items,

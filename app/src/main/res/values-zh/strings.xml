@@ -56,7 +56,6 @@
     <string name="legend_host_allow">允许访问此条目中的 hosts</string>
     <string name="legend_host_deny">禁止访问此条目中的 hosts</string>
     <string name="legend_host_ignore">忽略此条目</string>
-    <string name="legend_host_intro">条目会被依次处理. 若多个条目中包含同一条 hosts,  则仅应用最后一个条目. 可用规则如下:</string>
     <string name="location_dns">DNS 服务器的 IP 地址 ( IPv4 或 IPv6)</string>
     <string name="missing_hosts_files_message">某些已被配置 (未忽略) 的 hosts 文件不存在. 使用‘刷新’功能来下载 hosts 文件. 你仍要继续吗？</string>
     <string name="missing_hosts_files_title">hosts 文件不存在</string>

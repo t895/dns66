@@ -74,7 +74,6 @@
     <string name="automatic_refresh_description">Igapäevased uuendused toimuvad siis, kui seade laeb, on ebaaktiivne ja ühendatud mahupiiranguta võrku.</string>
     <string name="watchdog">Jälgi ühendust</string>
     <string name="watchdog_description">Kontrolli ühendust pidevalt pikenevate intervallidega ja taasühenda, kui see lakkas töötamast</string>
-    <string name="legend_host_intro">Üksuseid töödeldakse järjekorras. Kui mitu üksust sisaldavad sama hosti, rakendatakse viimast. Tegevused on:</string>
     <string name="legend_host_ignore">Ignoreeri seda üksust</string>
     <string name="legend_host_allow">Luba sellel üksusel hostidele ligipääs</string>
     <string name="legend_host_deny">Keela sellel üksusel hostidele ligipääs</string>

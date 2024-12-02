@@ -29,7 +29,6 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Android
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.VpnKey
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -521,7 +520,6 @@ fun AppPreview() {
     )
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
     modifier: Modifier = Modifier,
@@ -566,6 +564,7 @@ fun HomeScreen(
     val endCutoutInset =
         (displayCutout.getRight(localDensity, layoutDirection) / localDensity.density).dp
     NavigationSuiteScaffold(
+        modifier = modifier,
         navigationSuiteItems = {
             HomeDestinations.entries.forEach {
                 item(
@@ -738,7 +737,6 @@ fun HomeScreen(
                     )
                 }
                 composable<HomeDestinations.Hosts> {
-                    var filterHosts by remember { mutableStateOf(config.hosts.enabled) }
                     var refreshDaily by remember { mutableStateOf(config.hosts.automaticRefresh) }
                     val hosts by vm.hosts.collectAsState()
                     val isRefreshingHosts by RuleDatabaseUpdateWorker.isRefreshing.collectAsState()
@@ -747,12 +745,6 @@ fun HomeScreen(
                                 PaddingValues(bottom = DefaultFabSize + FabPadding),
                         listState = hostsListState,
                         enabled = canEditSettings,
-                        filterHosts = filterHosts,
-                        onFilterHostsClick = {
-                            config.hosts.enabled = !config.hosts.enabled
-                            filterHosts = config.hosts.enabled
-                            config.save()
-                        },
                         refreshDaily = refreshDaily,
                         onRefreshDailyClick = {
                             config.hosts.automaticRefresh = !config.hosts.automaticRefresh

@@ -75,7 +75,6 @@
     <string name="automatic_refresh_description">L\'aggiornamento quotidiano avviene quando il terminale è in carica, inattivo e connesso ad una rete a traffico illimitato.</string>
     <string name="watchdog">Verifica la connessione</string>
     <string name="watchdog_description">Verifica la connessione ad intervalli incrementali e si riconnette nel caso abbia smesso di funzionare.</string>
-    <string name="legend_host_intro">Gli elementi sono gestiti in ordine. Se righe differenti contengono gli stessi host, viene applicato l\'ultimo elemento. Le azioni sono:</string>
     <string name="legend_host_ignore">Ignora questo elemento</string>
     <string name="legend_host_allow">Permetti accesso agli host in questo elemento</string>
     <string name="legend_host_deny">Nega accesso agli host in questo elemento</string>

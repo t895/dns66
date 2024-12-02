@@ -77,7 +77,6 @@
     <string name="automatic_refresh_description">日次の更新は、充電中、アイドル、およびネットワークが従量課金ではない場合に行います。</string>
     <string name="watchdog">接続を監視</string>
     <string name="watchdog_description">より長い間隔で接続を確認し、動作が停止した場合は再接続します</string>
-    <string name="legend_host_intro">エントリは順番に処理されます。 複数のエントリに同じホストが含まれている場合、最後のエントリが適用されます。 操作は:</string>
     <string name="legend_host_ignore">このエントリを無視する</string>
     <string name="legend_host_allow">このエントリのホストにアクセスを許可する</string>
     <string name="legend_host_deny">このエントリのホストにアクセスを拒否する</string>

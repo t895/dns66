@@ -75,7 +75,6 @@
     <string name="automatic_refresh_description">Päivitykset tehdään kun laite on latauksessa, jouten ja rajoittamattomassa verkossa.</string>
     <string name="watchdog">Vahdi yhteyttä</string>
     <string name="watchdog_description">Tarkkaile yhteyttä kasvavin väliajoin ja yhdistä uudelleen, jos yhteys lakkaa toimimasta.</string>
-    <string name="legend_host_intro">Kohdat prosessoidaan järjestyksessä. Jos useammat kohdat sisältävät saman verkkotunnuksen, käytetään jälkimmäistä kohtaa. Toiminnot ovat:</string>
     <string name="legend_host_ignore">Ohita tämä kohta</string>
     <string name="legend_host_allow">Salli pääsy tämän kohdan verkkotunnuksiin</string>
     <string name="legend_host_deny">Evää pääsy tämän kohdan verkkotunnuksiin</string>
