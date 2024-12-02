@@ -111,12 +111,13 @@ private fun Modifier.roundedToggleable(
 @Composable
 fun SettingInfo(
     modifier: Modifier = Modifier,
+    enabled: Boolean,
     title: String,
     details: String = "",
     maxDetailLines: Int = Int.MAX_VALUE,
 ) {
     Column(
-        modifier = modifier,
+        modifier = modifier.alpha(if (enabled) 1f else 0.6f),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.Start,
     ) {
@@ -155,6 +156,7 @@ private fun StartContentContainer(
 @Composable
 fun ContentSetting(
     modifier: Modifier = Modifier,
+    enabled: Boolean = true,
     title: String = "",
     details: String = "",
     startContent: @Composable (BoxScope.() -> Unit)? = null,
@@ -174,6 +176,7 @@ fun ContentSetting(
 
         SettingInfo(
             modifier = Modifier.weight(1f),
+            enabled = enabled,
             title = title,
             details = details,
         )
@@ -228,6 +231,7 @@ fun SplitContentSetting(
 
             SettingInfo(
                 modifier = Modifier.weight(1f),
+                enabled = enabled,
                 title = title,
                 details = details,
                 maxDetailLines = maxDetailLines,
@@ -271,6 +275,7 @@ private fun ClickableSetting(
                 interactionSource = sharedInteractionSource,
                 role = role,
             ),
+        enabled = enabled,
         title = title,
         details = details,
         startContent = startContent,
@@ -300,6 +305,7 @@ private fun ToggleableSetting(
                 interactionSource = sharedInteractionSource,
                 role = role,
             ),
+        enabled = enabled,
         title = title,
         details = details,
         startContent = startContent,
@@ -606,9 +612,9 @@ private fun ExpandableOptionsItemPreview() {
                 details = "Details",
                 onExpandClick = { expanded = !expanded },
             ) {
-                SettingInfo(title = "Option1")
-                SettingInfo(title = "Option2")
-                SettingInfo(title = "Option3")
+                SettingInfo(enabled = true, title = "Option1")
+                SettingInfo(enabled = true, title = "Option2")
+                SettingInfo(enabled = true, title = "Option3")
             }
         }
     }
