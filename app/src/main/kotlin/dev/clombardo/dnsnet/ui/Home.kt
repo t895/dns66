@@ -641,29 +641,6 @@ fun HomeScreen(
                     var ipv6Support by remember { mutableStateOf(config.ipV6Support) }
                     var blockLog by remember { mutableStateOf(config.blockLogging) }
 
-                    val showWatchdogWarningDialog by vm.showWatchdogWarningDialog.collectAsState()
-                    val dismiss = {
-                        config.watchDog = !config.watchDog
-                        watchConnection = config.watchDog
-                        config.save()
-                        vm.onDismissWatchdogWarning()
-                    }
-                    if (showWatchdogWarningDialog) {
-                        BasicDialog(
-                            title = stringResource(R.string.unstable_feature),
-                            text = stringResource(R.string.unstable_watchdog_message),
-                            primaryButton = DialogButton(
-                                text = stringResource(R.string.button_continue),
-                                onClick = { vm.onDismissWatchdogWarning() },
-                            ),
-                            secondaryButton = DialogButton(
-                                text = stringResource(R.string.button_cancel),
-                                onClick = dismiss,
-                            ),
-                            onDismissRequest = dismiss,
-                        )
-                    }
-
                     val showDisableBlockLogWarningDialog by vm.showDisableBlockLogWarningDialog.collectAsState()
                     if (showDisableBlockLogWarningDialog) {
                         BasicDialog(
@@ -703,10 +680,6 @@ fun HomeScreen(
                             config.watchDog = !config.watchDog
                             watchConnection = config.watchDog
                             config.save()
-
-                            if (watchConnection) {
-                                vm.onEnableWatchdog()
-                            }
                         },
                         ipv6Support = ipv6Support,
                         onIpv6SupportClick = {

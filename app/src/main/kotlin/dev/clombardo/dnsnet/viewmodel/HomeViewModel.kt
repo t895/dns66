@@ -53,9 +53,6 @@ class HomeViewModel : ViewModel() {
     private val _showHostsFilesNotFoundDialog = MutableStateFlow(false)
     val showHostsFilesNotFoundDialog = _showHostsFilesNotFoundDialog.asStateFlow()
 
-    private val _showWatchdogWarningDialog = MutableStateFlow(false)
-    val showWatchdogWarningDialog = _showWatchdogWarningDialog.asStateFlow()
-
     private val _showFilePermissionDeniedDialog = MutableStateFlow(false)
     val showFilePermissionDeniedDialog = _showFilePermissionDeniedDialog.asStateFlow()
 
@@ -154,14 +151,6 @@ class HomeViewModel : ViewModel() {
 
     fun onDismissHostsFilesNotFound() {
         _showHostsFilesNotFoundDialog.value = false
-    }
-
-    fun onEnableWatchdog() {
-        _showWatchdogWarningDialog.value = true
-    }
-
-    fun onDismissWatchdogWarning() {
-        _showWatchdogWarningDialog.value = false
     }
 
     private fun updateHostsList() {
