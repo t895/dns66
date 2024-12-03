@@ -62,6 +62,8 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.contentDescription
+import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -336,6 +338,7 @@ fun CheckboxListItem(
         startContent = startContent,
     ) {
         Checkbox(
+            modifier = Modifier.semantics { contentDescription = title },
             enabled = enabled,
             checked = checked,
             onCheckedChange = null,
@@ -384,6 +387,7 @@ fun SplitCheckboxListItem(
         startContent = startContent,
         endContent = {
             Checkbox(
+                modifier = Modifier.semantics { contentDescription = title },
                 enabled = checkboxEnabled,
                 checked = checked,
                 onCheckedChange = onCheckedChange,
@@ -430,6 +434,7 @@ fun SwitchListItem(
         startContent = startContent,
         toggleableContent = {
             MaterialSwitch(
+                modifier = Modifier.semantics { contentDescription = title },
                 enabled = enabled,
                 checked = checked,
                 onCheckedChange = null,
@@ -479,6 +484,7 @@ fun SplitSwitchListItem(
         startContent = startContent,
         endContent = {
             MaterialSwitch(
+                modifier = Modifier.semantics { contentDescription = title },
                 enabled = switchEnabled,
                 checked = checked,
                 onCheckedChange = onCheckedChange,
@@ -563,6 +569,7 @@ fun ExpandableOptionsItem(
             sharedInteractionSource = sharedInteractionSource,
         ) {
             IconButton(
+                modifier = Modifier.semantics { contentDescription = title },
                 enabled = enabled,
                 onClick = onExpandClick,
                 interactionSource = sharedInteractionSource,
@@ -575,9 +582,9 @@ fun ExpandableOptionsItem(
                     modifier = Modifier.rotate(iconRotation),
                     painter = rememberVectorPainter(Icons.Default.KeyboardArrowDown),
                     contentDescription = if (expanded) {
-                        stringResource(R.string.collapse)
+                        stringResource(R.string.expanded)
                     } else {
-                        stringResource(R.string.expand)
+                        stringResource(R.string.collapsed)
                     },
                 )
             }
@@ -640,6 +647,7 @@ fun RadioListItem(
         sharedInteractionSource = sharedInteractionSource,
         toggleableContent = {
             RadioButton(
+                modifier = Modifier.semantics { contentDescription = title },
                 selected = checked,
                 onClick = null,
                 interactionSource = sharedInteractionSource,
