@@ -75,7 +75,7 @@ private val innerHorizontalPadding = 8.dp
 private val clickablePadding = 8.dp
 
 @Composable
-private fun Modifier.roundedClickable(
+fun Modifier.roundedClickable(
     enabled: Boolean,
     interactionSource: MutableInteractionSource?,
     role: Role,
@@ -116,6 +116,7 @@ fun SettingInfo(
     enabled: Boolean,
     title: String,
     details: String = "",
+    maxTitleLines: Int = Int.MAX_VALUE,
     maxDetailLines: Int = Int.MAX_VALUE,
 ) {
     Column(
@@ -126,7 +127,7 @@ fun SettingInfo(
         Text(
             text = title,
             style = MaterialTheme.typography.labelLarge,
-            maxLines = 1,
+            maxLines = maxTitleLines,
             overflow = TextOverflow.Ellipsis,
         )
 
@@ -161,6 +162,8 @@ fun ContentSetting(
     enabled: Boolean = true,
     title: String = "",
     details: String = "",
+    maxTitleLines: Int = Int.MAX_VALUE,
+    maxDetailLines: Int = Int.MAX_VALUE,
     startContent: @Composable (BoxScope.() -> Unit)? = null,
     endContent: @Composable (BoxScope.() -> Unit)? = null,
 ) {
@@ -181,6 +184,8 @@ fun ContentSetting(
             enabled = enabled,
             title = title,
             details = details,
+            maxTitleLines = maxTitleLines,
+            maxDetailLines = maxDetailLines,
         )
 
         if (endContent != null) {

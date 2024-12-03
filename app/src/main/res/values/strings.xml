@@ -42,6 +42,7 @@
     <string name="translator_credits"/>
     <string name="app_version_info">Version: %s</string>
     <string name="dns66_credit">Based on DNS66 created by Julian Andres Klode</string>
+    <string name="adbuster_credit">Parts derived from AdBuster created by Daniel Brodie</string>
     <string name="missing_hosts_files_message">Some of your configured (non-ignored) hosts files are missing.\n\nUse the ‘Refresh’ action to download hosts files.\n\nDo you still want to continue?</string>
     <string name="missing_hosts_files_title">Missing hosts file</string>
     <string name="button_no">No</string>
@@ -161,4 +162,8 @@
     <string name="edit_host_exception">Edit host exception</string>
     <string name="start_title">General DNSNet configuration</string>
     <string name="hosts_title">Filter hosts with files and exceptions</string>
+    <string name="credits">Credits</string>
+    <string name="open_license">Open license</string>
+    <string name="dns66_license_link" translatable="false">https://github.com/julian-klode/dns66/blob/main/COPYING</string>
+    <string name="adbuster_license_link" translatable="false">https://github.com/dbrodie/AdBuster/blob/master/License-GPLv3</string>
 </resources>

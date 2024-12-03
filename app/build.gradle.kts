@@ -7,6 +7,8 @@ plugins {
     id("org.jetbrains.kotlinx.atomicfu")
     id("androidx.baselineprofile")
     id("app.accrescent.tools.bundletool")
+    id("app.cash.licensee")
+    id("io.github.usefulness.licensee-for-android")
 }
 
 android {
@@ -125,4 +127,16 @@ dependencies {
     implementation("androidx.core:core-splashscreen:1.0.1")
 
     implementation("io.github.t895:materialswitch:0.1.3")
+}
+
+licensee {
+    allow("MIT")
+    allow("Apache-2.0")
+    allow("BSD-3-Clause")
+    allowUrl("https://opensource.org/licenses/mit")
+    allowUrl("https://github.com/usefulness/licensee-for-android/blob/master/LICENSE")
+}
+
+licenseeForAndroid {
+    enableKotlinCodeGeneration = true
 }

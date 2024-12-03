@@ -14,6 +14,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -21,6 +22,7 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Code
+import androidx.compose.material.icons.filled.Description
 import androidx.compose.material3.Card
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
@@ -59,6 +61,7 @@ fun AboutText(text: String = "") {
 fun About(
     modifier: Modifier = Modifier,
     columnPadding: PaddingValues = PaddingValues(),
+    onOpenCredits: () -> Unit,
 ) {
     val scrollState = rememberScrollState()
     Column(
@@ -86,14 +89,29 @@ fun About(
 
                 val uriHandler = LocalUriHandler.current
                 val websiteUri = Uri.parse(stringResource(id = R.string.website))
-                IconButton(
-                    colors = IconButtonDefaults.filledIconButtonColors(),
-                    onClick = { uriHandler.openUri(websiteUri.toString()) },
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.Center,
+                    verticalAlignment = Alignment.CenterVertically,
                 ) {
-                    Icon(
-                        imageVector = Icons.Default.Code,
-                        contentDescription = stringResource(R.string.view_source_code),
-                    )
+                    IconButton(
+                        colors = IconButtonDefaults.filledIconButtonColors(),
+                        onClick = { uriHandler.openUri(websiteUri.toString()) },
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Code,
+                            contentDescription = stringResource(R.string.view_source_code),
+                        )
+                    }
+                    IconButton(
+                        colors = IconButtonDefaults.filledIconButtonColors(),
+                        onClick = onOpenCredits,
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Description,
+                            contentDescription = stringResource(R.string.credits),
+                        )
+                    }
                 }
             }
         }
@@ -104,7 +122,10 @@ fun About(
 @Composable
 private fun AboutPreview() {
     DnsNetTheme {
-        About(Modifier.background(MaterialTheme.colorScheme.surface))
+        About(
+            modifier = Modifier.background(MaterialTheme.colorScheme.surface),
+            onOpenCredits = {},
+        )
     }
 }
 
@@ -113,6 +134,7 @@ private fun AboutPreview() {
 fun AboutScreen(
     modifier: Modifier = Modifier,
     onNavigateUp: () -> Unit,
+    onOpenCredits: () -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Scaffold(
@@ -139,6 +161,7 @@ fun AboutScreen(
         About(
             modifier = Modifier.padding(horizontal = 16.dp),
             columnPadding = innerPadding,
+            onOpenCredits = onOpenCredits,
         )
     }
 }
@@ -147,6 +170,9 @@ fun AboutScreen(
 @Composable
 private fun AboutScreenPreview(modifier: Modifier = Modifier) {
     DnsNetTheme {
-        AboutScreen(onNavigateUp = {})
+        AboutScreen(
+            onNavigateUp = {},
+            onOpenCredits = {},
+        )
     }
 }

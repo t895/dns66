@@ -16,4 +16,7 @@ plugins {
     id("androidx.baselineprofile") version "1.3.3" apply false
 
     id("app.accrescent.tools.bundletool") version "0.2.4" apply false
+
+    id("app.cash.licensee") version "1.12.0" apply false
+    id("io.github.usefulness.licensee-for-android") version "0.2.2" apply false
 }

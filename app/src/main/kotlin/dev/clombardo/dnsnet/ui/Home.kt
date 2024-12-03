@@ -159,6 +159,9 @@ open class TopLevelDestination {
 
     @Serializable
     data object BlockLog : TopLevelDestination()
+
+    @Serializable
+    data object Credits : TopLevelDestination()
 }
 
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalComposeUiApi::class)
@@ -415,7 +418,10 @@ fun App(
             )
         }
         composable<TopLevelDestination.About> {
-            AboutScreen { navController.popBackStack() }
+            AboutScreen(
+                onNavigateUp = { navController.popBackStack() },
+                onOpenCredits = { navController.navigate(TopLevelDestination.Credits) },
+            )
         }
         composable<TopLevelDestination.BlockLog> {
             val loggedConnections by vm.connectionsLogState.collectAsState()
@@ -444,6 +450,9 @@ fun App(
                     )
                 },
             )
+        }
+        composable<TopLevelDestination.Credits> {
+            CreditsScreen { navController.popBackStack() }
         }
     }
 }
