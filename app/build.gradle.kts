@@ -124,5 +124,5 @@ dependencies {
 
     implementation("androidx.core:core-splashscreen:1.0.1")
 
-    implementation("io.github.t895:materialswitch:0.1.2")
+    implementation("io.github.t895:materialswitch:0.1.3")
 }
