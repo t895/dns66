@@ -21,7 +21,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
@@ -598,10 +598,14 @@ fun HomeScreen(
         Scaffold(
             contentWindowInsets = navigationSuiteScaffoldContentInsets,
             floatingActionButton = {
+                val endSystemBarsPadding = (WindowInsets.systemBars.getRight(
+                    localDensity,
+                    layoutDirection,
+                ) / localDensity.density).dp
                 AnimatedVisibility(
                     modifier = Modifier
                         .padding(end = endCutoutInset)
-                        .systemBarsPadding(),
+                        .padding(end = endSystemBarsPadding),
                     visible = (currentDestination == HomeDestinations.Hosts ||
                             currentDestination == HomeDestinations.DNS) && canEditSettings,
                     enter = scaleIn(animationSpec = tween(easing = EmphasizedDecelerateEasing)),
