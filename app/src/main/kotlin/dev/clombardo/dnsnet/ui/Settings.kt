@@ -590,7 +590,6 @@ fun ExpandableOptionsItem(
         ) {
             Column(
                 modifier = Modifier
-                    .padding(bottom = 16.dp)
                     .padding(horizontal = 8.dp),
                 horizontalAlignment = Alignment.Start,
                 verticalArrangement = Arrangement.spacedBy(8.dp),
