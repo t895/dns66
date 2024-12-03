@@ -599,15 +599,15 @@ fun HomeScreen(
             contentWindowInsets = navigationSuiteScaffoldContentInsets,
             floatingActionButton = {
                 AnimatedVisibility(
+                    modifier = Modifier
+                        .padding(end = endCutoutInset)
+                        .systemBarsPadding(),
                     visible = (currentDestination == HomeDestinations.Hosts ||
                             currentDestination == HomeDestinations.DNS) && canEditSettings,
                     enter = scaleIn(animationSpec = tween(easing = EmphasizedDecelerateEasing)),
                     exit = scaleOut(animationSpec = tween(easing = EmphasizedAccelerateEasing)),
                 ) {
                     FloatingActionButton(
-                        modifier = Modifier
-                            .padding(end = endCutoutInset)
-                            .systemBarsPadding(),
                         onClick = {
                             if (currentDestination == HomeDestinations.Hosts) {
                                 topLevelNavController.navigate(HostFile())
