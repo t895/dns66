@@ -1,11 +1,11 @@
 // Top-level build file where you can add configuration options common to all sub-projects/modules.
 plugins {
-    val agpVersion = "8.7.2"
+    val agpVersion = "8.7.3"
     id("com.android.application") version agpVersion apply false
     id("com.android.library") version agpVersion apply false
     id("com.android.test") version agpVersion apply false
 
-    val kotlinVersion = "2.0.21"
+    val kotlinVersion = "2.1.0"
     id("org.jetbrains.kotlin.android") version kotlinVersion apply false
     id("org.jetbrains.kotlin.plugin.compose") version kotlinVersion apply false
     id("org.jetbrains.kotlin.plugin.parcelize") version kotlinVersion apply false
