@@ -21,6 +21,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
@@ -604,7 +605,9 @@ fun HomeScreen(
                     exit = scaleOut(animationSpec = tween(easing = EmphasizedAccelerateEasing)),
                 ) {
                     FloatingActionButton(
-                        modifier = Modifier.padding(end = endCutoutInset),
+                        modifier = Modifier
+                            .padding(end = endCutoutInset)
+                            .systemBarsPadding(),
                         onClick = {
                             if (currentDestination == HomeDestinations.Hosts) {
                                 topLevelNavController.navigate(HostFile())
