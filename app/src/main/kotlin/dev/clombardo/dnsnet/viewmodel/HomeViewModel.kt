@@ -21,6 +21,7 @@ import dev.clombardo.dnsnet.Preferences
 import dev.clombardo.dnsnet.config
 import dev.clombardo.dnsnet.db.RuleDatabaseUpdateWorker
 import dev.clombardo.dnsnet.logw
+import dev.clombardo.dnsnet.ui.App
 import dev.clombardo.dnsnet.vpn.AdVpnService
 import dev.clombardo.dnsnet.vpn.LoggedConnection
 import kotlinx.atomicfu.atomic
@@ -41,7 +42,7 @@ class HomeViewModel : ViewModel() {
     private val _appListRefreshing = MutableStateFlow(false)
     val appListRefreshing = _appListRefreshing.asStateFlow()
 
-    private val _appList = MutableStateFlow<List<dev.clombardo.dnsnet.ui.App>>(emptyList())
+    private val _appList = MutableStateFlow<List<App>>(emptyList())
     val appList = _appList.asStateFlow()
 
     private val _hosts = MutableStateFlow(config.hosts.getAllHosts())
@@ -121,7 +122,7 @@ class HomeViewModel : ViewModel() {
 
             Collections.sort(apps, ApplicationInfo.DisplayNameComparator(pm))
 
-            val entries = ArrayList<dev.clombardo.dnsnet.ui.App>()
+            val entries = ArrayList<App>()
             val notOnVpn = HashSet<String>()
             config.appList.resolve(pm, HashSet(), notOnVpn)
             apps.forEach {
@@ -132,7 +133,7 @@ class HomeViewModel : ViewModel() {
                         )
                 ) {
                     entries.add(
-                        dev.clombardo.dnsnet.ui.App(
+                        App(
                             info = it,
                             label = it.loadLabel(pm).toString(),
                             enabled = notOnVpn.contains(it.packageName),
@@ -303,15 +304,15 @@ class HomeViewModel : ViewModel() {
 
     fun onReloadSettings() {
         populateAppList()
-        _hosts.value = config.hosts.items
-        _dnsServers.value = config.dnsServers.items
+        _hosts.value = config.hosts.getAllHosts()
+        _dnsServers.value = config.dnsServers.items.toList()
 
         if (!config.blockLogging) {
             AdVpnService.logger.clear()
         }
     }
 
-    fun onToggleApp(app: dev.clombardo.dnsnet.ui.App) {
+    fun onToggleApp(app: App) {
         val newApp = app.copy()
         newApp.enabled = !newApp.enabled
         if (!_appList.value.contains(app)) {
