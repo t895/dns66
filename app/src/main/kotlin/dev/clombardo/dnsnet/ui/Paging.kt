@@ -57,6 +57,7 @@ fun MaterialHorizontalTabLayout(
                 Tab(
                     modifier = Modifier.minimumInteractiveComponentSize(),
                     selected = index == selectedTabIndex,
+                    unselectedContentColor = MaterialTheme.colorScheme.onSurface,
                     onClick = { selectedTabIndex = index },
                 ) {
                     tabLayoutContent.tabContent()
