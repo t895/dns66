@@ -167,7 +167,7 @@ class DnsPacketProxy(
         if (udpPayload == null) {
             try {
                 logi("handleDnsRequest: Sending UDP packet without payload: $parsedUdp")
-            } catch (e1: java.lang.Exception) {
+            } catch (_: Exception) {
                 logi("handleDnsRequest: Sending UDP packet without payload")
             }
 
@@ -241,8 +241,12 @@ class DnsPacketProxy(
                 destAddr = upstreamDnsServers[index]
             } catch (e: Exception) {
                 loge(
-                    "handleDnsRequest: Cannot handle packets to ${parsedPacket.header.dstAddr.hostAddress} - not a valid address for this network",
-                    e
+                    """
+                        handleDnsRequest: Cannot handle packets to:
+                        ${parsedPacket.header.dstAddr.hostAddress}
+                        Not a valid address for this network
+                    """.trimIndent(),
+                    e,
                 )
                 return null
             }

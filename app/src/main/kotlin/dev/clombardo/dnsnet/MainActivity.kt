@@ -167,7 +167,7 @@ class MainActivity : AppCompatActivity() {
             val shareIntent = Intent.createChooser(sendIntent, null)
             startActivity(shareIntent)
         } catch (e: Exception) {
-            e.printStackTrace()
+            logd("sendLogcat: Not supported", e)
             Toast.makeText(this, "Not supported: $e", Toast.LENGTH_LONG).show()
         } finally {
             proc?.destroy()
@@ -228,6 +228,7 @@ class MainActivity : AppCompatActivity() {
                     val reader = FileHelper.openItemFile(item) ?: return false
                     reader.close()
                 } catch (e: IOException) {
+                    logi("areHostFilesExistent: Failed to open file {$item}", e)
                     return false
                 }
             }

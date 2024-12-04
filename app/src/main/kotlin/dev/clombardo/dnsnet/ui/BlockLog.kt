@@ -148,7 +148,7 @@ fun BlockLog(
         modifier = modifier,
         state = listState,
         contentPadding = contentPadding + PaddingValues(ListPadding) +
-                PaddingValues(bottom = ScrollUpIndicatorPadding + ScrollUpIndicatorSize),
+            PaddingValues(bottom = ScrollUpIndicatorPadding + ScrollUpIndicatorSize),
     ) {
         item {
             val blockedConnections = loggedConnections.count { !it.allowed }
@@ -482,8 +482,8 @@ fun BlockLogScreenPreview() {
         canEditSettings = true,
         onNavigateUp = {},
         loggedConnections = listOf(
-            LoggedConnectionState("some.blocked.server", false, 100, 0),
-            LoggedConnectionState("some.allowed.server", true, 100, 0),
+            LoggedConnectionState("some.blocked.server", false, 1, 0),
+            LoggedConnectionState("some.allowed.server", true, 1, 0),
         ),
         onCreateException = {},
     )

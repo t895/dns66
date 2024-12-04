@@ -44,6 +44,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import dev.clombardo.dnsnet.BuildConfig
 import dev.clombardo.dnsnet.R
 import dev.clombardo.dnsnet.ui.theme.DnsNetTheme
 import dev.clombardo.dnsnet.ui.theme.ListPadding
@@ -82,7 +83,7 @@ fun About(
                 verticalArrangement = Arrangement.spacedBy(16.dp),
             ) {
                 AboutText(text = stringResource(id = R.string.app_shortdesc))
-                AboutText(text = stringResource(id = R.string.app_version_info, dev.clombardo.dnsnet.BuildConfig.VERSION_NAME))
+                AboutText(text = stringResource(id = R.string.app_version_info, BuildConfig.VERSION_NAME))
                 AboutText(text = stringResource(id = R.string.info_app_copyright))
                 AboutText(text = stringResource(id = R.string.dns66_credit))
                 AboutText(text = stringResource(id = R.string.info_app_license))
@@ -168,7 +169,7 @@ fun AboutScreen(
 
 @Preview
 @Composable
-private fun AboutScreenPreview(modifier: Modifier = Modifier) {
+private fun AboutScreenPreview() {
     DnsNetTheme {
         AboutScreen(
             onNavigateUp = {},

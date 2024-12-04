@@ -375,7 +375,7 @@ fun App(
             val server = backstackEntry.toRoute<DnsServer>()
 
             val showDeleteDnsServerWarningDialog by
-            vm.showDeleteDnsServerWarningDialog.collectAsState()
+                vm.showDeleteDnsServerWarningDialog.collectAsState()
             if (showDeleteDnsServerWarningDialog) {
                 BasicDialog(
                     title = stringResource(R.string.warning),
@@ -591,7 +591,7 @@ fun HomeScreen(
                         // For whatever reason, UIAutomator cannot find tags on navigation
                         // items unless one is set in this label scope.
                         Text(
-                            modifier = Modifier.testTag("homeNavigation:${it}"),
+                            modifier = Modifier.testTag("homeNavigation:$it"),
                             text = stringResource(it.labelResId),
                         )
                     },
@@ -607,16 +607,20 @@ fun HomeScreen(
         Scaffold(
             contentWindowInsets = navigationSuiteScaffoldContentInsets,
             floatingActionButton = {
-                val endSystemBarsPadding = (WindowInsets.systemBars.getRight(
-                    localDensity,
-                    layoutDirection,
-                ) / localDensity.density).dp
+                val endSystemBarsPadding = (
+                    WindowInsets.systemBars.getRight(
+                        localDensity,
+                        layoutDirection,
+                    ) / localDensity.density
+                    ).dp
                 AnimatedVisibility(
                     modifier = Modifier
                         .padding(end = endCutoutInset)
                         .padding(end = endSystemBarsPadding),
-                    visible = (currentDestination == HomeDestinations.Hosts ||
-                            currentDestination == HomeDestinations.DNS) && canEditSettings,
+                    visible = (
+                        currentDestination == HomeDestinations.Hosts ||
+                            currentDestination == HomeDestinations.DNS
+                        ) && canEditSettings,
                     enter = scaleIn(animationSpec = tween(easing = EmphasizedDecelerateEasing)),
                     exit = scaleOut(animationSpec = tween(easing = EmphasizedAccelerateEasing)),
                 ) {
@@ -682,7 +686,7 @@ fun HomeScreen(
 
                     StartScreen(
                         contentPadding = contentPadding + PaddingValues(ListPadding) +
-                                PaddingValues(bottom = VpnFabSize + FabPadding),
+                            PaddingValues(bottom = VpnFabSize + FabPadding),
                         listState = startListState,
                         enabled = canEditSettings,
                         resumeOnStartup = resumeOnStartup,
@@ -731,7 +735,7 @@ fun HomeScreen(
                     val isRefreshingHosts by RuleDatabaseUpdateWorker.isRefreshing.collectAsState()
                     HostsScreen(
                         contentPadding = contentPadding + PaddingValues(ListPadding) +
-                                PaddingValues(bottom = DefaultFabSize + FabPadding),
+                            PaddingValues(bottom = DefaultFabSize + FabPadding),
                         listState = hostsListState,
                         enabled = canEditSettings,
                         refreshDaily = refreshDaily,
@@ -789,7 +793,7 @@ fun HomeScreen(
                     val servers by vm.dnsServers.collectAsState()
                     DnsScreen(
                         contentPadding = contentPadding + PaddingValues(ListPadding) +
-                                PaddingValues(bottom = DefaultFabSize + FabPadding),
+                            PaddingValues(bottom = DefaultFabSize + FabPadding),
                         listState = dnsListState,
                         enabled = canEditSettings,
                         servers = servers,

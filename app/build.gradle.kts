@@ -1,3 +1,5 @@
+import io.gitlab.arturbosch.detekt.Detekt
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
@@ -9,6 +11,7 @@ plugins {
     id("app.accrescent.tools.bundletool")
     id("app.cash.licensee")
     id("io.github.usefulness.licensee-for-android")
+    id("io.gitlab.arturbosch.detekt")
 }
 
 android {
@@ -127,6 +130,8 @@ dependencies {
     implementation("androidx.core:core-splashscreen:1.0.1")
 
     implementation("io.github.t895:materialswitch:0.1.3")
+
+    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.7")
 }
 
 licensee {
@@ -139,4 +144,17 @@ licensee {
 
 licenseeForAndroid {
     enableKotlinCodeGeneration = true
+}
+
+detekt {
+    toolVersion = "1.23.7"
+    config.setFrom(file("config/detekt/detekt.yml"))
+    buildUponDefaultConfig = true
+    autoCorrect = true
+}
+
+tasks.withType<Detekt>().configureEach {
+    reports {
+        html.required.set(true)
+    }
 }

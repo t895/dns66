@@ -48,6 +48,8 @@ class VpnWatchdog {
         private const val INIT_PENALTY_START = 0
         private const val INIT_PENALTY_END = 5000
         private const val INIT_PENALTY_INC = 200
+
+        private const val DNS_PORT = 53
     }
 
     var initPenalty = INIT_PENALTY_START
@@ -163,7 +165,7 @@ class VpnWatchdog {
         }
 
         logd("sendPacket: Sending packet, poll timeout is $pollTimeout")
-        val outPacket = DatagramPacket(ByteArray(0), 0, 0, target, 53)
+        val outPacket = DatagramPacket(ByteArray(0), 0, 0, target, DNS_PORT)
         try {
             newDatagramSocket().use {
                 it.send(outPacket)

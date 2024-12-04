@@ -84,9 +84,10 @@ class RuleDatabaseItemUpdate(
                 context.contentResolver.openInputStream(uri)?.close()
                 logd("run: Permission requested for ${item.data}")
             } catch (e: SecurityException) {
-                logd("doInBackground: Error taking permission: $e")
+                logd("run: Error taking permission", e)
                 worker.addError(item, context.getString(R.string.permission_denied))
             } catch (e: FileNotFoundException) {
+                logd("run: File not found", e)
                 worker.addError(item, context.getString(R.string.file_not_found))
             } catch (e: IOException) {
                 worker.addError(
@@ -107,7 +108,7 @@ class RuleDatabaseItemUpdate(
                 return
             }
             downloadFile(file!!, singleWriterMultipleReaderFile, connection)
-        } catch (e: SocketTimeoutException) {
+        } catch (_: SocketTimeoutException) {
             worker.addError(item, context.getString(R.string.requested_timed_out))
         } catch (e: IOException) {
             worker.addError(item, context.getString(R.string.unknown_error_s, e.toString()))

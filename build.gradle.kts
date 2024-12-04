@@ -19,4 +19,6 @@ plugins {
 
     id("app.cash.licensee") version "1.12.0" apply false
     id("io.github.usefulness.licensee-for-android") version "0.2.2" apply false
+
+    id("io.gitlab.arturbosch.detekt") version("1.23.7") apply false
 }

@@ -126,8 +126,10 @@ class HomeViewModel : ViewModel() {
             config.appList.resolve(pm, HashSet(), notOnVpn)
             apps.forEach {
                 if (it.packageName != dev.clombardo.dnsnet.BuildConfig.APPLICATION_ID &&
-                    (config.appList.showSystemApps ||
-                            (it.flags and ApplicationInfo.FLAG_SYSTEM) == 0)
+                    (
+                        config.appList.showSystemApps ||
+                            (it.flags and ApplicationInfo.FLAG_SYSTEM) == 0
+                        )
                 ) {
                     entries.add(
                         dev.clombardo.dnsnet.ui.App(

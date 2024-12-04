@@ -158,7 +158,7 @@ data class Configuration(
         hosts.items.removeAll { it.data == oldURL }
 
     fun disableURL(oldURL: String) {
-        logd(String.format("disableURL: Disabling %s", oldURL))
+        logd("disableURL: Disabling $oldURL")
         hosts.items.forEach {
             if (it.data == oldURL) {
                 it.state = HostState.IGNORE
@@ -325,7 +325,7 @@ data class HostException(
     override var title: String = "",
     @SerialName("hostname") override var data: String = "",
     override var state: HostState = HostState.IGNORE,
-): Host {
+) : Host {
     companion object : Parceler<HostException> {
         override fun HostException.write(parcel: Parcel, flags: Int) {
             parcel.apply {

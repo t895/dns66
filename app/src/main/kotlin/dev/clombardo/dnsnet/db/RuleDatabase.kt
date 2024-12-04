@@ -153,7 +153,6 @@ class RuleDatabase private constructor() {
         }
 
         blockedHosts.set(nextBlockedHosts)
-        Runtime.getRuntime().gc()
     }
 
     /**
@@ -171,7 +170,7 @@ class RuleDatabase private constructor() {
         val reader = try {
             FileHelper.openItemFile(item)
         } catch (e: FileNotFoundException) {
-            logd("loadItem: File not found: ${item.data}")
+            logd("loadItem: File not found: ${item.data}", e)
             return
         }
 

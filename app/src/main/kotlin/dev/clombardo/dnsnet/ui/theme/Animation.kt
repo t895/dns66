@@ -32,27 +32,27 @@ val HomeEnterTransition = scaleIn(
 ) + fadeIn(animationSpec = tween(400))
 val HomeExitTransition = fadeOut(animationSpec = tween(50))
 
-private const val sizeFraction = 12
-private val positiveOffset = { fullSize: IntSize ->
-    IntOffset(fullSize.width / sizeFraction, 0)
+private const val SIZE_FRACTION = 12
+private val PositiveOffset = { fullSize: IntSize ->
+    IntOffset(fullSize.width / SIZE_FRACTION, 0)
 }
-private val negativeOffset = { fullSize: IntSize ->
-    IntOffset(-fullSize.width / sizeFraction, 0)
+private val NegativeOffset = { fullSize: IntSize ->
+    IntOffset(-fullSize.width / SIZE_FRACTION, 0)
 }
 private val TopLevelFadeEnterSpec = tween<Float>(400)
 private val TopLevelFadeExitSpec = tween<Float>(100)
 
 val TopLevelEnter = slideIn(
-    initialOffset = positiveOffset,
+    initialOffset = PositiveOffset,
 ) + fadeIn(animationSpec = TopLevelFadeEnterSpec)
 val TopLevelPopEnter = slideIn(
-    initialOffset = negativeOffset,
+    initialOffset = NegativeOffset,
 ) + fadeIn(animationSpec = TopLevelFadeEnterSpec)
 val TopLevelExit = slideOut(
-    targetOffset = negativeOffset,
+    targetOffset = NegativeOffset,
 ) + fadeOut(animationSpec = TopLevelFadeExitSpec)
 val TopLevelPopExit = slideOut(
-    targetOffset = positiveOffset,
+    targetOffset = PositiveOffset,
 ) + fadeOut(animationSpec = TopLevelFadeExitSpec)
 
 val ShowScrollUpIndicator = slideInVertically { it }

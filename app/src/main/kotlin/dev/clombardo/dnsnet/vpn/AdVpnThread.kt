@@ -67,6 +67,7 @@ class AdVpnThread(
     companion object {
         private const val MIN_RETRY_TIME = 5
         private const val MAX_RETRY_TIME = 2 * 60
+        private const val RETRY_MULTIPLIER = 2
 
         /* If we had a successful connection for that long, reset retry timeout */
         private const val RETRY_RESET_SEC: Long = 60
@@ -74,6 +75,12 @@ class AdVpnThread(
         /* Maximum number of responses we want to wait for */
         const val DNS_MAXIMUM_WAITING = 1024
         const val DNS_TIMEOUT_SEC: Long = 10
+
+        private const val PREFIX_LENGTH = 24
+
+        private const val DNS_RESPONSE_PACKET_SIZE = 1024
+
+        private const val PACKET_SIZE = 32767
 
         @Throws(VpnNetworkException::class)
         private fun getDnsServers(context: Context): List<InetAddress> {
@@ -86,10 +93,11 @@ class AdVpnThread(
                     activeNetworkInfo ?: throw VpnNetworkException("No DNS Server")
 
                 for (nw in allNetworks) {
-                    val ni: NetworkInfo? = getNetworkInfo(nw)
-                    if (ni == null || !ni.isConnected || ni.type != activeInfo.type ||
-                        ni.subtype != activeInfo.subtype
-                    ) {
+                    val ni: NetworkInfo = getNetworkInfo(nw) ?: continue
+                    if (!ni.isConnected) {
+                        continue
+                    }
+                    if (ni.type != activeInfo.type || ni.subtype != activeInfo.subtype) {
                         continue
                     }
 
@@ -195,7 +203,7 @@ class AdVpnThread(
                 notify(VpnStatus.RECONNECTING_NETWORK_ERROR)
             } catch (e: Exception) {
                 loge("Network exception in vpn thread, reconnecting", e)
-                //ExceptionHandler.saveException(e, Thread.currentThread(), null);
+                // ExceptionHandler.saveException(e, Thread.currentThread(), null);
                 notify(VpnStatus.RECONNECTING_NETWORK_ERROR)
             }
 
@@ -213,7 +221,7 @@ class AdVpnThread(
             }
 
             if (retryTimeout < MAX_RETRY_TIME) {
-                retryTimeout *= 2
+                retryTimeout *= RETRY_MULTIPLIER
             }
         }
 
@@ -229,7 +237,7 @@ class AdVpnThread(
     )
     private fun runVpn() {
         // Allocate the buffer for a single packet.
-        val packet = ByteArray(32767)
+        val packet = ByteArray(PACKET_SIZE)
 
         // A pipe we can interrupt the poll() call with by closing the interruptFd end
         val pipes = Os.pipe()
@@ -339,6 +347,7 @@ class AdVpnThread(
         try {
             outFd.write(deviceWrites.poll())
         } catch (e: IOException) {
+            logd("writeToDevice: Failed writing", e)
             throw VpnNetworkException("Outgoing VPN output stream closed")
         }
 
@@ -352,7 +361,6 @@ class AdVpnThread(
         }
 
         if (length == 0) {
-            // TODO: Possibly change to exception
             logw("Got empty packet!")
             return
         }
@@ -396,7 +404,7 @@ class AdVpnThread(
 
     @Throws(IOException::class)
     private fun handleRawDnsResponse(parsedPacket: IpPacket, dnsSocket: DatagramSocket) {
-        val datagramData = ByteArray(1024)
+        val datagramData = ByteArray(DNS_RESPONSE_PACKET_SIZE)
         val replyPacket = DatagramPacket(datagramData, datagramData.size)
         dnsSocket.receive(replyPacket)
         dnsPacketProxy.handleDnsResponse(parsedPacket, datagramData)
@@ -479,8 +487,9 @@ class AdVpnThread(
         var format: String? = null
         for (prefix in arrayOf("192.0.2", "198.51.100", "203.0.113")) {
             try {
-                builder.addAddress("$prefix.1", 24)
+                builder.addAddress("$prefix.1", PREFIX_LENGTH)
             } catch (e: IllegalArgumentException) {
+                logd("configure: Unable to use this prefix: $prefix", e)
                 continue
             }
 
@@ -499,8 +508,8 @@ class AdVpnThread(
                 val addr = Inet6Address.getByAddress(ipv6Template)
                 logd("configure: Adding IPv6 address$addr")
                 builder.addAddress(addr, 120)
-            } catch (e: java.lang.Exception) {
-                e.printStackTrace()
+            } catch (e: Exception) {
+                logd("configure: Failed to add ipv6 template", e)
                 ipv6Template = null
             }
         } else {
@@ -509,7 +518,7 @@ class AdVpnThread(
 
         if (format == null) {
             logw("configure: Could not find a prefix to use, directly using DNS servers")
-            builder.addAddress("192.168.50.1", 24)
+            builder.addAddress("192.168.50.1", PREFIX_LENGTH)
         }
 
         // Add configured DNS servers

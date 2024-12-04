@@ -163,11 +163,11 @@ class AdVpnService : VpnService(), Handler.Callback {
         val mainActivityIntent = Intent(applicationContext, MainActivity::class.java)
             .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
         return PendingIntent.getActivity(
-                applicationContext,
-                0,
-                mainActivityIntent,
-                PendingIntent.FLAG_IMMUTABLE
-            )
+            applicationContext,
+            0,
+            mainActivityIntent,
+            PendingIntent.FLAG_IMMUTABLE
+        )
     }
 
     override fun onCreate() {

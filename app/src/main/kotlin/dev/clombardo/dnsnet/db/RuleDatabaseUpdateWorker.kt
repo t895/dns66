@@ -49,6 +49,8 @@ class RuleDatabaseUpdateWorker(
 
         var lastErrors by atomic<MutableList<String>?>(null)
 
+        private const val DATABASE_UPDATE_TIMEOUT = 3600000L
+
         private val _isRefreshing = MutableStateFlow(false)
         val isRefreshing = _isRefreshing.asStateFlow()
     }
@@ -85,7 +87,7 @@ class RuleDatabaseUpdateWorker(
         releaseGarbagePermissions()
 
         try {
-            withTimeout(3600000) {
+            withTimeout(DATABASE_UPDATE_TIMEOUT) {
                 jobs.awaitAll()
             }
         } catch (_: TimeoutCancellationException) {
@@ -168,7 +170,7 @@ class RuleDatabaseUpdateWorker(
         try {
             RuleDatabase.instance.initialize()
         } catch (e: InterruptedException) {
-            e.printStackTrace()
+            logd("postExecute: RuleDatabase initialization interrupted", e)
         }
 
         if (errors.isEmpty()) {

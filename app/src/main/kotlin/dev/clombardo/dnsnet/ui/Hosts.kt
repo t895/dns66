@@ -443,7 +443,7 @@ fun EditHostScreen(
                     it,
                     Intent.FLAG_GRANT_READ_URI_PERMISSION,
                 )
-            } catch (e: SecurityException) {
+            } catch (_: SecurityException) {
                 onUriPermissionAcquireFailed?.invoke()
                 return@rememberLauncherForActivityResult
             }

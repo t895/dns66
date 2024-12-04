@@ -280,7 +280,7 @@ fun EditDnsScreen(
 
 @Preview
 @Composable
-fun EditDnsScreenPreview(modifier: Modifier = Modifier) {
+private fun EditDnsScreenPreview() {
     DnsNetTheme {
         EditDnsScreen(
             server = DnsServer("Title", "Location", true),

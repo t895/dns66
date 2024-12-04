@@ -74,7 +74,7 @@ object FileHelper {
                     URLEncoder.encode(item.data, "UTF-8"),
                 )
             } catch (e: UnsupportedEncodingException) {
-                e.printStackTrace()
+                logd("getItemFile: File failed to decode", e)
                 null
             }
         } else {
