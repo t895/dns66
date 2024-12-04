@@ -48,8 +48,12 @@ import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
+import androidx.compose.material3.TooltipBox
+import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -100,6 +104,7 @@ private fun IconText(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HostsScreen(
     modifier: Modifier = Modifier,
@@ -224,14 +229,20 @@ fun HostsScreen(
                 title = it.title,
                 details = it.data,
                 endContent = {
-                    IconButton(
-                        enabled = enabled,
-                        onClick = { onHostStateChanged(it) },
+                    TooltipBox(
+                        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
+                        state = rememberTooltipState(),
+                        tooltip = { PlainTooltip { Text(getStateString(it.state)) } },
                     ) {
-                        Icon(
-                            painter = painterResource(iconResource),
-                            contentDescription = getStateString(it.state),
-                        )
+                        IconButton(
+                            enabled = enabled,
+                            onClick = { onHostStateChanged(it) },
+                        ) {
+                            Icon(
+                                painter = painterResource(iconResource),
+                                contentDescription = getStateString(it.state),
+                            )
+                        }
                     }
                 },
             )
