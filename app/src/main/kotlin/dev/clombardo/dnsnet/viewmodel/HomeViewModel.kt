@@ -216,7 +216,8 @@ class HomeViewModel : ViewModel() {
         }
         val oldIndex = config.hosts.items.indexOf(oldHost)
         config.hosts.items[oldIndex] = newHost
-        _hosts[oldIndex] = newHost
+        val oldStateIndex = _hosts.indexOf(oldHost)
+        _hosts[oldStateIndex] = newHost
         config.save()
     }
 
@@ -227,7 +228,8 @@ class HomeViewModel : ViewModel() {
         }
         val oldIndex = config.hosts.exceptions.indexOf(oldHost)
         config.hosts.exceptions[oldIndex] = newHost
-        _hosts[oldIndex] = newHost
+        val oldStateIndex = _hosts.indexOf(oldHost)
+        _hosts[oldStateIndex] = newHost
         config.save()
     }
 
