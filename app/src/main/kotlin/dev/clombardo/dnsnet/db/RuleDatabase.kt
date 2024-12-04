@@ -79,7 +79,14 @@ class RuleDatabase {
                 return null
             }
 
-            val host = line.substring(startOfHost, endOfLine).trim().lowercase()
+            while (startOfHost < endOfLine && Character.isWhitespace(line[startOfHost])) {
+                startOfHost++
+            }
+            while (startOfHost > endOfLine && Character.isWhitespace(line[endOfLine - 1])) {
+                endOfLine--
+            }
+
+            val host = line.substring(startOfHost, endOfLine).lowercase()
             if (host.isEmpty() || host.any { Character.isWhitespace(it) }) {
                 return null
             }
