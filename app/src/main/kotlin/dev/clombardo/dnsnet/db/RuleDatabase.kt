@@ -25,7 +25,6 @@ import java.io.BufferedReader
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.Reader
-import java.util.Locale
 
 /**
  * Represents hosts that are blocked.
@@ -36,16 +35,19 @@ import java.util.Locale
  */
 class RuleDatabase {
     companion object {
+        private const val IPV4_LOOPBACK = "127.0.0.1"
+        private const val IPV6_LOOPBACK = "::1"
+        private const val NO_ROUTE = "0.0.0.0"
+
         fun parseLine(line: String): String? {
+            if (line.isEmpty() || line.isBlank()) {
+                return null
+            }
+
             var endOfLine = line.indexOf('#')
 
             if (endOfLine == -1) {
                 endOfLine = line.length
-            }
-
-            // Trim spaces
-            while (endOfLine > 0 && Character.isWhitespace(line[endOfLine - 1])) {
-                endOfLine--
             }
 
             // The line is empty
@@ -56,29 +58,20 @@ class RuleDatabase {
             // Find beginning of host field
             var startOfHost = 0
 
-            if (line.regionMatches(0, "127.0.0.1", 0, 9) &&
-                (endOfLine <= 9 || Character.isWhitespace(line[9]))
-            ) {
-                startOfHost += 10
-            } else if (line.regionMatches(0, "::1", 0, 3) &&
-                (endOfLine <= 3 || Character.isWhitespace(line[3]))
-            ) {
-                startOfHost += 4
-            } else if (line.regionMatches(0, "0.0.0.0", 0, 7) &&
-                (endOfLine <= 7 || Character.isWhitespace(line[7]))
-            ) {
-                startOfHost += 8
+            val ipv4LoopbackIndex = line.lastIndexOf(IPV4_LOOPBACK)
+            if (ipv4LoopbackIndex != -1) {
+                startOfHost += (ipv4LoopbackIndex + IPV4_LOOPBACK.length)
             }
-
-            // Trim of space at the beginning of the host
-            while (startOfHost < endOfLine && Character.isWhitespace(line[startOfHost])) {
-                startOfHost++
+            if (startOfHost == 0) {
+                val ipv6LoopbackIndex = line.lastIndexOf(IPV6_LOOPBACK)
+                if (ipv6LoopbackIndex != -1) {
+                    startOfHost += (ipv6LoopbackIndex + IPV6_LOOPBACK.length)
+                }
             }
-
-            // Reject lines containing a space
-            for (i in startOfHost until endOfLine) {
-                if (Character.isWhitespace(line[i])) {
-                    return null
+            if (startOfHost == 0) {
+                val noRouteIndex = line.lastIndexOf(NO_ROUTE)
+                if (noRouteIndex != -1) {
+                    startOfHost += (noRouteIndex + NO_ROUTE.length)
                 }
             }
 
@@ -86,7 +79,12 @@ class RuleDatabase {
                 return null
             }
 
-            return line.substring(startOfHost, endOfLine).lowercase(Locale.ENGLISH)
+            val host = line.substring(startOfHost, endOfLine).trim().lowercase()
+            if (host.isEmpty() || host.any { Character.isWhitespace(it) }) {
+                return null
+            }
+
+            return host
         }
     }
 
@@ -232,8 +230,6 @@ class RuleDatabase {
                 e
             )
             return false
-        } finally {
-            FileHelper.closeOrWarn(reader, "loadBlockedHosts: Error closing ${item.data}")
         }
     }
 }
