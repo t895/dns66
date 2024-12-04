@@ -740,7 +740,6 @@ fun HomeScreen(
                 composable<HomeDestinations.Hosts> {
                     vm.showStatusBarShade()
                     var refreshDaily by remember { mutableStateOf(config.hosts.automaticRefresh) }
-                    val hosts by vm.hosts.collectAsState()
                     val isRefreshingHosts by RuleDatabaseUpdateWorker.isRefreshing.collectAsState()
                     HostsScreen(
                         contentPadding = contentPadding + PaddingValues(ListPadding) +
@@ -754,7 +753,7 @@ fun HomeScreen(
                             config.save()
                             onUpdateRefreshWork()
                         },
-                        hosts = hosts,
+                        hosts = vm.hosts,
                         onHostClick = { host ->
                             topLevelNavController.navigate(host)
                         },
@@ -800,13 +799,12 @@ fun HomeScreen(
                 composable<HomeDestinations.DNS> {
                     vm.showStatusBarShade()
                     var customDnsServers by remember { mutableStateOf(config.dnsServers.enabled) }
-                    val servers by vm.dnsServers.collectAsState()
                     DnsScreen(
                         contentPadding = contentPadding + PaddingValues(ListPadding) +
                             PaddingValues(bottom = DefaultFabSize + FabPadding),
                         listState = dnsListState,
                         enabled = canEditSettings,
-                        servers = servers,
+                        servers = vm.dnsServers,
                         customDnsServers = customDnsServers,
                         onCustomDnsServersClick = {
                             config.dnsServers.enabled = !config.dnsServers.enabled

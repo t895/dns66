@@ -46,11 +46,11 @@ class HomeViewModel : ViewModel() {
     private val _appList = mutableStateListOf<App>()
     val appList: List<App> = _appList
 
-    private val _hosts = MutableStateFlow(config.hosts.getAllHosts())
-    val hosts = _hosts.asStateFlow()
+    private val _hosts = mutableStateListOf<Host>()
+    val hosts: List<Host> = _hosts
 
-    private val _dnsServers = MutableStateFlow(config.dnsServers.items.toList())
-    val dnsServers = _dnsServers.asStateFlow()
+    private val _dnsServers = mutableStateListOf<DnsServer>()
+    val dnsServers: List<DnsServer> = _dnsServers
 
     private val _showHostsFilesNotFoundDialog = MutableStateFlow(false)
     val showHostsFilesNotFoundDialog = _showHostsFilesNotFoundDialog.asStateFlow()
@@ -92,6 +92,8 @@ class HomeViewModel : ViewModel() {
             _connectionsLogState.value = HashMap(it)
         }
         populateAppList()
+        _hosts.addAll(config.hosts.getAllHosts())
+        _dnsServers.addAll(config.dnsServers.items)
     }
 
     override fun onCleared() {
@@ -161,19 +163,16 @@ class HomeViewModel : ViewModel() {
         _showHostsFilesNotFoundDialog.value = false
     }
 
-    private fun updateHostsList() {
-        _hosts.value = config.hosts.getAllHosts()
-        config.save()
-    }
-
     private fun addHostFile(host: HostFile) {
         config.hosts.items.add(host)
-        updateHostsList()
+        _hosts.add(host)
+        config.save()
     }
 
     private fun addHostException(host: HostException) {
         config.hosts.exceptions.add(host)
-        updateHostsList()
+        _hosts.add(host)
+        config.save()
     }
 
     fun addHost(host: Host) {
@@ -189,7 +188,8 @@ class HomeViewModel : ViewModel() {
             return
         }
         config.hosts.items.remove(host)
-        updateHostsList()
+        _hosts.remove(host)
+        config.save()
     }
 
     private fun removeHostException(host: HostException) {
@@ -198,7 +198,8 @@ class HomeViewModel : ViewModel() {
             return
         }
         config.hosts.exceptions.remove(host)
-        updateHostsList()
+        _hosts.remove(host)
+        config.save()
     }
 
     fun removeHost(host: Host) {
@@ -214,9 +215,9 @@ class HomeViewModel : ViewModel() {
             return
         }
         val oldIndex = config.hosts.items.indexOf(oldHost)
-        config.hosts.items.removeAt(oldIndex)
-        config.hosts.items.add(oldIndex, newHost)
-        updateHostsList()
+        config.hosts.items[oldIndex] = newHost
+        _hosts[oldIndex] = newHost
+        config.save()
     }
 
     private fun replaceHostException(oldHost: HostException, newHost: HostException) {
@@ -225,9 +226,9 @@ class HomeViewModel : ViewModel() {
             return
         }
         val oldIndex = config.hosts.exceptions.indexOf(oldHost)
-        config.hosts.exceptions.removeAt(oldIndex)
-        config.hosts.exceptions.add(oldIndex, newHost)
-        updateHostsList()
+        config.hosts.exceptions[oldIndex] = newHost
+        _hosts[oldIndex] = newHost
+        config.save()
     }
 
     fun replaceHost(oldHost: Host, newHost: Host) {
@@ -272,7 +273,7 @@ class HomeViewModel : ViewModel() {
 
     fun addDnsServer(server: DnsServer) {
         config.dnsServers.items.add(server)
-        _dnsServers.value = config.dnsServers.items.toList()
+        _dnsServers.add(server)
         config.save()
     }
 
@@ -282,7 +283,7 @@ class HomeViewModel : ViewModel() {
             return
         }
         config.dnsServers.items.remove(server)
-        _dnsServers.value = config.dnsServers.items.toList()
+        _dnsServers.remove(server)
         config.save()
     }
 
@@ -295,9 +296,8 @@ class HomeViewModel : ViewModel() {
             return
         }
         val oldIndex = config.dnsServers.items.indexOf(oldServer)
-        config.dnsServers.items.removeAt(oldIndex)
-        config.dnsServers.items.add(oldIndex, newDnsServer)
-        _dnsServers.value = config.dnsServers.items.toList()
+        config.dnsServers.items[oldIndex] = newDnsServer
+        _dnsServers[oldIndex] = newDnsServer
         config.save()
     }
 
@@ -309,8 +309,10 @@ class HomeViewModel : ViewModel() {
 
     fun onReloadSettings() {
         populateAppList()
-        _hosts.value = config.hosts.getAllHosts()
-        _dnsServers.value = config.dnsServers.items.toList()
+        _hosts.clear()
+        _hosts.addAll(config.hosts.getAllHosts())
+        _dnsServers.clear()
+        _dnsServers.addAll(config.dnsServers.items)
 
         if (!config.blockLogging) {
             AdVpnService.logger.clear()
