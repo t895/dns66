@@ -72,7 +72,7 @@ class DnsPacketProxy(
         }
     }
 
-    private val ruleDatabase: RuleDatabase = RuleDatabase.instance
+    private val ruleDatabase = RuleDatabase()
     private var upstreamDnsServers = ArrayList<InetAddress>()
 
     /**

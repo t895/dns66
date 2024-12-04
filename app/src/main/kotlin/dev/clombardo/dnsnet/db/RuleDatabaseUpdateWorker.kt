@@ -167,12 +167,6 @@ class RuleDatabaseUpdateWorker(
     @Synchronized
     private fun postExecute() {
         logd("postExecute: Sending notification")
-        try {
-            RuleDatabase.instance.initialize()
-        } catch (e: InterruptedException) {
-            logd("postExecute: RuleDatabase initialization interrupted", e)
-        }
-
         if (errors.isEmpty()) {
             notificationManager.cancel(UPDATE_NOTIFICATION_ID)
         } else {

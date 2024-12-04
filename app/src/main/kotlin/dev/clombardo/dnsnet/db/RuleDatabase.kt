@@ -20,12 +20,12 @@ import dev.clombardo.dnsnet.config
 import dev.clombardo.dnsnet.logd
 import dev.clombardo.dnsnet.loge
 import dev.clombardo.dnsnet.logi
+import kotlinx.atomicfu.atomic
 import java.io.BufferedReader
 import java.io.FileNotFoundException
 import java.io.IOException
 import java.io.Reader
 import java.util.Locale
-import java.util.concurrent.atomic.AtomicReference
 
 /**
  * Represents hosts that are blocked.
@@ -34,10 +34,8 @@ import java.util.concurrent.atomic.AtomicReference
  * readers with writers active at the same time, only the writers
  * having to take a lock.
  */
-class RuleDatabase private constructor() {
+class RuleDatabase {
     companion object {
-        val instance = RuleDatabase()
-
         fun parseLine(line: String): String? {
             var endOfLine = line.indexOf('#')
 
@@ -92,13 +90,8 @@ class RuleDatabase private constructor() {
         }
     }
 
-    private val blockedHosts = AtomicReference(HashSet<String>())
+    private var blockedHosts by atomic(HashSet<String>())
     private var nextBlockedHosts: HashSet<String>? = null
-
-    /**
-     * Returns the instance of the rule database.
-     */
-    fun getInstance(): RuleDatabase = instance
 
     /**
      * Checks if a host is blocked.
@@ -106,14 +99,14 @@ class RuleDatabase private constructor() {
      * @param host A hostname
      * @return true if the host is blocked, false otherwise.
      */
-    fun isBlocked(host: String): Boolean = blockedHosts.get().contains(host)
+    fun isBlocked(host: String): Boolean = blockedHosts.contains(host)
 
     /**
      * Check if any hosts are blocked
      *
      * @return true if any hosts are blocked, false otherwise.
      */
-    fun isEmpty(): Boolean = blockedHosts.get().isEmpty()
+    fun isEmpty(): Boolean = blockedHosts.isEmpty()
 
     /**
      * Load the hosts according to the configuration
@@ -124,7 +117,7 @@ class RuleDatabase private constructor() {
     @Synchronized
     @Throws(InterruptedException::class)
     fun initialize() {
-        nextBlockedHosts = HashSet(blockedHosts.get().size)
+        nextBlockedHosts = HashSet(blockedHosts.size)
 
         logi("Loading block list")
 
@@ -152,7 +145,7 @@ class RuleDatabase private constructor() {
             addHostException(exception)
         }
 
-        blockedHosts.set(nextBlockedHosts)
+        blockedHosts = nextBlockedHosts!!
     }
 
     /**
