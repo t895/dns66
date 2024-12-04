@@ -39,7 +39,6 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
@@ -207,12 +206,11 @@ fun BlockLog(
                     .padding(vertical = 8.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                IconButton(onClick = { showModifyListSheet = true }) {
-                    Icon(
-                        imageVector = Icons.Default.FilterList,
-                        contentDescription = stringResource(R.string.modify_list),
-                    )
-                }
+                BasicTooltipIconButton(
+                    icon = Icons.Default.FilterList,
+                    contentDescription = stringResource(R.string.modify_list),
+                    onClick = { showModifyListSheet = true },
+                )
             }
         }
 
@@ -236,12 +234,11 @@ fun BlockLog(
 
                         Box(contentAlignment = Alignment.Center) {
                             var showMenu by rememberSaveable { mutableStateOf(false) }
-                            IconButton(onClick = { showMenu = true }) {
-                                Icon(
-                                    imageVector = Icons.Default.MoreVert,
-                                    contentDescription = stringResource(R.string.modify_list),
-                                )
-                            }
+                            BasicTooltipIconButton(
+                                icon = Icons.Default.MoreVert,
+                                contentDescription = stringResource(R.string.modify_list),
+                                onClick = { showMenu = true },
+                            )
 
                             DropdownMenu(
                                 expanded = showMenu,
@@ -452,12 +449,11 @@ fun BlockLogScreen(
                         Text(text = stringResource(id = R.string.block_log))
                     },
                     navigationIcon = {
-                        IconButton(onClick = onNavigateUp) {
-                            Icon(
-                                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                                contentDescription = stringResource(R.string.navigate_up),
-                            )
-                        }
+                        BasicTooltipIconButton(
+                            icon = Icons.AutoMirrored.Filled.ArrowBack,
+                            contentDescription = stringResource(R.string.navigate_up),
+                            onClick = onNavigateUp,
+                        )
                     },
                     windowInsets = topAppBarInsets,
                     scrollBehavior = scrollBehavior,

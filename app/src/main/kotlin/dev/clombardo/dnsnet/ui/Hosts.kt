@@ -43,17 +43,12 @@ import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.MenuAnchorType
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.PlainTooltip
 import androidx.compose.material3.Text
-import androidx.compose.material3.TooltipBox
-import androidx.compose.material3.TooltipDefaults
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.rememberTooltipState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -229,21 +224,13 @@ fun HostsScreen(
                 title = it.title,
                 details = it.data,
                 endContent = {
-                    TooltipBox(
-                        positionProvider = TooltipDefaults.rememberPlainTooltipPositionProvider(),
-                        state = rememberTooltipState(),
-                        tooltip = { PlainTooltip { Text(getStateString(it.state)) } },
-                    ) {
-                        IconButton(
-                            enabled = enabled,
-                            onClick = { onHostStateChanged(it) },
-                        ) {
-                            Icon(
-                                painter = painterResource(iconResource),
-                                contentDescription = getStateString(it.state),
-                            )
-                        }
-                    }
+                    val stateText = getStateString(it.state)
+                    TooltipIconButton(
+                        enabled = enabled,
+                        painter = painterResource(iconResource),
+                        contentDescription = stateText,
+                        onClick = { onHostStateChanged(it) },
+                    )
                 },
             )
         }
@@ -330,12 +317,11 @@ fun EditHost(
             onValueChange = onDataTextChanged,
             trailingIcon = if (onOpenHostsDirectoryClick != null) {
                 {
-                    IconButton(onClick = onOpenHostsDirectoryClick) {
-                        Icon(
-                            imageVector = Icons.Default.AttachFile,
-                            contentDescription = stringResource(R.string.action_use_file),
-                        )
-                    }
+                    BasicTooltipIconButton(
+                        icon = Icons.Default.AttachFile,
+                        contentDescription = stringResource(R.string.action_use_file),
+                        onClick = onOpenHostsDirectoryClick,
+                    )
                 }
             } else {
                 null
@@ -489,29 +475,29 @@ fun EditHostScreen(
                     Text(text = text)
                 },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateUp) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.navigate_up),
-                        )
-                    }
+                    BasicTooltipIconButton(
+                        icon = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.navigate_up),
+                        onClick = onNavigateUp,
+                    )
                 },
                 actions = {
                     if (onDelete != null) {
-                        IconButton(onClick = onDelete) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = stringResource(R.string.action_delete),
-                            )
-                        }
+                        BasicTooltipIconButton(
+                            icon = Icons.Default.Delete,
+                            contentDescription = stringResource(R.string.action_delete),
+                            onClick = onDelete,
+                        )
                     }
 
-                    IconButton(
+                    BasicTooltipIconButton(
+                        icon = Icons.Default.Save,
+                        contentDescription = stringResource(R.string.save),
                         onClick = {
                             titleInputError = titleInput.isBlank()
                             dataInputError = dataInput.isBlank()
                             if (titleInputError || dataInputError) {
-                                return@IconButton
+                                return@BasicTooltipIconButton
                             }
 
                             when (host) {
@@ -519,13 +505,8 @@ fun EditHostScreen(
                                 is HostException ->
                                     onSave(HostException(titleInput, dataInput, stateInput))
                             }
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Save,
-                            contentDescription = stringResource(R.string.save),
-                        )
-                    }
+                        },
+                    )
                 },
                 scrollBehavior = scrollBehavior,
             )

@@ -26,8 +26,6 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Save
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.LargeTopAppBar
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
@@ -215,29 +213,29 @@ fun EditDnsScreen(
                     Text(text = stringResource(R.string.activity_edit_dns_server))
                 },
                 navigationIcon = {
-                    IconButton(onClick = onNavigateUp) {
-                        Icon(
-                            imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                            contentDescription = stringResource(R.string.navigate_up),
-                        )
-                    }
+                    BasicTooltipIconButton(
+                        icon = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = stringResource(R.string.navigate_up),
+                        onClick = onNavigateUp,
+                    )
                 },
                 actions = {
                     if (onDelete != null) {
-                        IconButton(onClick = onDelete) {
-                            Icon(
-                                imageVector = Icons.Default.Delete,
-                                contentDescription = stringResource(R.string.action_delete),
-                            )
-                        }
+                        BasicTooltipIconButton(
+                            icon = Icons.Default.Delete,
+                            contentDescription = stringResource(R.string.action_delete),
+                            onClick = onDelete,
+                        )
                     }
 
-                    IconButton(
+                    BasicTooltipIconButton(
+                        icon = Icons.Default.Save,
+                        contentDescription = stringResource(R.string.save),
                         onClick = {
                             titleInputError = titleInput.isBlank()
                             locationInputError = locationInput.isBlank()
                             if (titleInputError || locationInputError) {
-                                return@IconButton
+                                return@BasicTooltipIconButton
                             }
 
                             onSave(
@@ -247,13 +245,8 @@ fun EditDnsScreen(
                                     enabledInput
                                 )
                             )
-                        }
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Save,
-                            contentDescription = stringResource(R.string.save),
-                        )
-                    }
+                        },
+                    )
                 },
                 scrollBehavior = scrollBehavior,
             )
