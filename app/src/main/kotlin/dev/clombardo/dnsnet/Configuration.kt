@@ -101,7 +101,7 @@ data class Configuration(
             return load(inputStream)
         }
 
-        fun loadBackup(
+        private fun loadBackup(
             name: String = "$DEFAULT_CONFIG_FILENAME$CONFIG_BACKUP_EXTENSION"
         ): Configuration = load(name)
     }

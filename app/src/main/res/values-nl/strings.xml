@@ -16,7 +16,6 @@
     <string name="location">Locatie (URL of host)</string>
     <string name="action">Actie</string>
     <string name="cannot_restore_previous_config">Kan vorige configuratie niet herstellen: %s</string>
-    <string name="cannot_read_config">Kan configuratie niet lezen: %s</string>
     <string name="cannot_load_default_config">Kan standaardinstellingen niet lezen: %s - Dit mag niet gebeuren</string>
     <string name="cannot_write_config">Kan configuratie niet schrijven: %s</string>
     <string name="action_refresh">Hosts-bestanden verversen</string>

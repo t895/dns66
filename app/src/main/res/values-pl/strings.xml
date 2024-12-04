@@ -16,7 +16,6 @@
     <string name="location">Lokalizacja (adres URL lub host)</string>
     <string name="action">Akcja</string>
     <string name="cannot_restore_previous_config">Nie można przywrócić poprzedniej konfiguracji: %s</string>
-    <string name="cannot_read_config">Nie można odczytać konfiguracji: %s</string>
     <string name="cannot_load_default_config">Nie można odczytać ustawień domyślnych: %s - To się nie powinno zdarzyć</string>
     <string name="cannot_write_config">Nie można zapisać konfiguracji: %s</string>
     <string name="action_refresh">Odśwież pliki hosts</string>

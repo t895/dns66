@@ -26,7 +26,6 @@
     <string name="location">Lokasyon (URL veya Adres)</string>
     <string name="action">Aksiyon</string>
     <string name="cannot_restore_previous_config">Önceki yapılandırma yüklenemedi: %s</string>
-    <string name="cannot_read_config">Yapılandırma okunamıyor: %s</string>
     <string name="cannot_load_default_config">Varsayılan ayarlar okunamıyor: %s - Bunun olmaması gerekirdi</string>
     <string name="cannot_write_config">Yapılandırma hazırlanamıyor: %s</string>
     <string name="action_refresh">Adres dosyalarını yenile</string>

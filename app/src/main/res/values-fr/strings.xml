@@ -17,7 +17,6 @@
     <string name="location">Localisation (URL ou hôte)</string>
     <string name="action">Action</string>
     <string name="cannot_restore_previous_config">Impossible de rétablir la configuration précédente : %s</string>
-    <string name="cannot_read_config">Impossible de lire la configuration : %s</string>
     <string name="cannot_load_default_config">Impossible de lire les paramètres par défaut : %s – ça ne devrait pas arriver</string>
     <string name="cannot_write_config">Impossible d\'écrire la configuration : %s</string>
     <string name="action_refresh">Rafraîchir les fichiers d\'hôtes</string>

@@ -47,7 +47,6 @@
     <string name="location">Местоположение (URL-адрес или хост)</string>
     <string name="action">Действие</string>
     <string name="cannot_restore_previous_config">Не удалось восстановить предыдущую конфигурацию: %s</string>
-    <string name="cannot_read_config">Не удаётся прочитать конфигурацию: %s</string>
     <string name="cannot_load_default_config">Не удаётся прочитать настройки по умолчанию: %s - Этого не должно произойти</string>
     <string name="cannot_write_config">Не удаётся записать конфигурацию: %s</string>
     <string name="action_refresh">Обновить хост файл</string>

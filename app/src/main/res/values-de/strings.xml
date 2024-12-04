@@ -23,7 +23,6 @@
     </string-array>
     <string name="action_refresh">Hosts-Dateien aktualisieren</string>
     <string name="cannot_load_default_config">Standardeinstellungen konnten nicht gelesen werden: %s - Das sollte nicht passieren!</string>
-    <string name="cannot_read_config">Kann Einstellungen nicht lesen: %s</string>
     <string name="cannot_restore_previous_config">Kann vorherige Einstellungen nicht wiederherstellen: %s</string>
     <string name="cannot_write_config">Kann Einstellungen nicht speichern: %s</string>
     <string name="notification_reconnecting">Verbindung wird wiederhergestellt</string>

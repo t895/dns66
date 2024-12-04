@@ -18,7 +18,6 @@
     <string name="location">ロケーション (URL またはホスト)</string>
     <string name="action">操作</string>
     <string name="cannot_restore_previous_config">以前の設定を復元できません: %s</string>
-    <string name="cannot_read_config">設定を読み込みできません: %s</string>
     <string name="cannot_load_default_config">デフォルトの設定を読み込みできません: %s - これは起こらないはずです</string>
     <string name="cannot_write_config">設定を書き込みできません: %s</string>
     <string name="action_refresh">ホストファイルを更新</string>

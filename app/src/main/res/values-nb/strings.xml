@@ -16,7 +16,6 @@
     <string name="location">Plassering (Nettadresse eller vert)</string>
     <string name="action">Handling</string>
     <string name="cannot_restore_previous_config">Klarte ikke å gjenopprette det forrige oppsettet: %s</string>
-    <string name="cannot_read_config">Klarte ikke å lese inn oppsettet: %s</string>
     <string name="cannot_load_default_config">Klarte ikke å lese inn standardinnstillingene: %s - Dette skal ikke kunne skje</string>
     <string name="cannot_write_config">Klarte ikke å lagre oppsettet: %s</string>
     <string name="action_refresh">Oppfrisk vertsfilene</string>

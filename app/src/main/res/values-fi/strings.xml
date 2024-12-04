@@ -17,7 +17,6 @@
     <string name="location">Sijainti (URL tai verkkotunnus)</string>
     <string name="action">Toiminto</string>
     <string name="cannot_restore_previous_config">Ei voida palauttaa aiempia asetuksia: %s</string>
-    <string name="cannot_read_config">Ei voida lukea asetuksia: %s</string>
     <string name="cannot_load_default_config">Ei voida lukea oletusasetuksia: %s - Näin ei pitäisi käydä!</string>
     <string name="cannot_write_config">Ei voida kirjoittaa asetuksia: %s</string>
     <string name="action_refresh">Päivitä hosts-tiedostot</string>

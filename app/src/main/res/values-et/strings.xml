@@ -16,7 +16,6 @@
     <string name="location">Asukoht (URL või host)</string>
     <string name="action">Tegevus</string>
     <string name="cannot_restore_previous_config">Eelmist konfiguratsiooni ei saa taastada: %s</string>
-    <string name="cannot_read_config">Konfiguratsiooni ei saa lugeda: %s</string>
     <string name="cannot_load_default_config">Vaikimisi seadeid ei saa lugeda: %s - See ei tohiks juhtuda</string>
     <string name="cannot_write_config">Konfiguratsiooni ei saa kirjutada: %s</string>
     <string name="action_refresh">Värskenda hostifaile</string>
