@@ -432,7 +432,7 @@ fun BlockLogScreen(
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
     Box(modifier = Modifier.fillMaxSize()) {
-        Scaffold(
+        InsetScaffold(
             modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
             topBar = {
                 TopAppBar(
@@ -451,7 +451,6 @@ fun BlockLogScreen(
                     scrollBehavior = scrollBehavior,
                 )
             },
-            contentWindowInsets = scaffoldContentInsets,
         ) { contentPadding ->
             BlockLog(
                 contentPadding = contentPadding,

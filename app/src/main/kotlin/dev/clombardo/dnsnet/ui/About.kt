@@ -138,7 +138,7 @@ fun AboutScreen(
     onOpenCredits: () -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
-    Scaffold(
+    InsetScaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
         topBar = {
             TopAppBar(
@@ -157,7 +157,6 @@ fun AboutScreen(
                 scrollBehavior = scrollBehavior,
             )
         },
-        contentWindowInsets = scaffoldContentInsets,
     ) { innerPadding ->
         About(
             modifier = Modifier.padding(horizontal = 16.dp),
