@@ -9,6 +9,7 @@
 package dev.clombardo.dnsnet.viewmodel
 
 import android.content.pm.ApplicationInfo
+import androidx.compose.runtime.mutableStateListOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.clombardo.dnsnet.DnsNetApplication.Companion.applicationContext
@@ -42,8 +43,8 @@ class HomeViewModel : ViewModel() {
     private val _appListRefreshing = MutableStateFlow(false)
     val appListRefreshing = _appListRefreshing.asStateFlow()
 
-    private val _appList = MutableStateFlow<List<App>>(emptyList())
-    val appList = _appList.asStateFlow()
+    private val _appList = mutableStateListOf<App>()
+    val appList: List<App> = _appList
 
     private val _hosts = MutableStateFlow(config.hosts.getAllHosts())
     val hosts = _hosts.asStateFlow()
@@ -145,7 +146,8 @@ class HomeViewModel : ViewModel() {
                 }
             }
 
-            _appList.value = entries
+            _appList.clear()
+            _appList.addAll(entries)
             _appListRefreshing.value = false
             refreshingLock = false
         }
@@ -316,25 +318,13 @@ class HomeViewModel : ViewModel() {
     }
 
     fun onToggleApp(app: App) {
-        val newApp = app.copy()
-        newApp.enabled = !newApp.enabled
-        if (!_appList.value.contains(app)) {
+        if (!appList.contains(app)) {
             logw("Tried to toggle app that does not exist in list! - $app")
             return
         }
-        val oldIndex = _appList.value.indexOf(app)
-        val newAppList = _appList.value.toMutableList()
-        newAppList.removeAt(oldIndex)
-        newAppList.add(oldIndex, newApp)
-        _appList.value = newAppList.toList()
-
-        // No change
-        if (newApp.enabled && config.appList.onVpn.contains(newApp.info.packageName)) {
-            return
-        }
-        if (!newApp.enabled && config.appList.onVpn.contains(newApp.info.packageName)) {
-            return
-        }
+        val oldIndex = _appList.indexOf(app)
+        val newApp = _appList[oldIndex].copy(enabled = !app.enabled)
+        _appList[oldIndex] = newApp
 
         if (newApp.enabled) {
             config.appList.notOnVpn.add(newApp.info.packageName)

@@ -768,7 +768,6 @@ fun HomeScreen(
 
                 composable<HomeDestinations.Apps> {
                     vm.showStatusBarShade()
-                    val apps by vm.appList.collectAsState()
                     val isRefreshing by vm.appListRefreshing.collectAsState()
                     var showSystemApps by remember { mutableStateOf(config.appList.showSystemApps) }
                     var allowlistDefault by remember { mutableStateOf(config.appList.defaultMode) }
@@ -792,7 +791,7 @@ fun HomeScreen(
                             config.save()
                             vm.populateAppList()
                         },
-                        apps = apps,
+                        apps = vm.appList,
                         onAppClick = { app ->
                             vm.onToggleApp(app)
                         },
