@@ -42,7 +42,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -75,6 +74,7 @@ import dev.clombardo.dnsnet.ui.theme.EmphasizedDecelerateEasing
 import dev.clombardo.dnsnet.ui.theme.ListPadding
 import dev.clombardo.dnsnet.ui.theme.ScrollUpIndicatorPadding
 import dev.clombardo.dnsnet.ui.theme.ScrollUpIndicatorSize
+import dev.clombardo.dnsnet.vpn.LoggedConnection
 import kotlinx.parcelize.Parcelize
 
 @Parcelize
@@ -92,7 +92,7 @@ fun BlockLog(
     listState: LazyListState,
     canEditSettings: Boolean,
     contentPadding: PaddingValues,
-    loggedConnections: List<LoggedConnectionState>,
+    loggedConnections: Map<String, LoggedConnection>,
     onCreateException: (LoggedConnectionState) -> Unit,
 ) {
     val allowedString = stringResource(R.string.allowed)
@@ -107,23 +107,32 @@ fun BlockLog(
 
     val adjustedList by remember {
         derivedStateOf {
+            val list = loggedConnections.map {
+                LoggedConnectionState(
+                    it.key,
+                    it.value.allowed,
+                    it.value.attempts,
+                    it.value.lastAttemptTime,
+                )
+            }
+
             val sortedList = when (sortState.selectedType) {
                 BlockLogSortType.Alphabetical -> if (sortState.ascending) {
-                    loggedConnections.sortedByDescending { it.hostname }
+                    list.sortedByDescending { it.hostname }
                 } else {
-                    loggedConnections.sortedBy { it.hostname }
+                    list.sortedBy { it.hostname }
                 }
 
                 BlockLogSortType.LastConnected -> if (sortState.ascending) {
-                    loggedConnections.sortedByDescending { it.lastAttemptTime }
+                    list.sortedByDescending { it.lastAttemptTime }
                 } else {
-                    loggedConnections.sortedBy { it.lastAttemptTime }
+                    list.sortedBy { it.lastAttemptTime }
                 }
 
                 BlockLogSortType.Attempts -> if (sortState.ascending) {
-                    loggedConnections.sortedByDescending { it.attempts }
+                    list.sortedByDescending { it.attempts }
                 } else {
-                    loggedConnections.sortedBy { it.attempts }
+                    list.sortedBy { it.attempts }
                 }
             }
 
@@ -151,7 +160,7 @@ fun BlockLog(
             PaddingValues(bottom = ScrollUpIndicatorPadding + ScrollUpIndicatorSize),
     ) {
         item {
-            val blockedConnections = loggedConnections.count { !it.allowed }
+            val blockedConnections = loggedConnections.count { !it.value.allowed }
             val blockedConnectionsPercent =
                 blockedConnections.toFloat() / loggedConnections.size.toFloat()
             val blockedRatioAnimated by animateFloatAsState(
@@ -207,7 +216,10 @@ fun BlockLog(
             }
         }
 
-        items(adjustedList) {
+        items(
+            items = adjustedList,
+            key = { it.hostname },
+        ) {
             ContentSetting(
                 modifier = Modifier.animateItem(),
                 title = it.hostname,
@@ -427,7 +439,7 @@ fun BlockLogScreen(
     canEditSettings: Boolean,
     onNavigateUp: () -> Unit,
     listState: LazyListState = rememberLazyListState(),
-    loggedConnections: List<LoggedConnectionState>,
+    loggedConnections: Map<String, LoggedConnection>,
     onCreateException: (LoggedConnectionState) -> Unit,
 ) {
     val scrollBehavior = TopAppBarDefaults.pinnedScrollBehavior()
@@ -480,9 +492,9 @@ fun BlockLogScreenPreview() {
         modifier = Modifier,
         canEditSettings = true,
         onNavigateUp = {},
-        loggedConnections = listOf(
-            LoggedConnectionState("some.blocked.server", false, 1, 0),
-            LoggedConnectionState("some.allowed.server", true, 1, 0),
+        loggedConnections = mapOf(
+            "some.blocked.server" to LoggedConnection(false, 1, 0),
+            "some.allowed.server" to LoggedConnection(false, 1, 0),
         ),
         onCreateException = {},
     )

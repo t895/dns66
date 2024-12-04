@@ -28,9 +28,9 @@ data class LoggedConnection(
 @Serializable
 data class BlockLogger(val connections: MutableMap<String, LoggedConnection> = HashMap()) {
     @Transient
-    private var onConnection: ((connections: Map<String, LoggedConnection>) -> Unit)? = null
+    private var onConnection: ((name: String, connection: LoggedConnection) -> Unit)? = null
 
-    fun setOnConnectionListener(listener: ((connections: Map<String, LoggedConnection>) -> Unit)?) {
+    fun setOnConnectionListener(listener: ((name: String, connection: LoggedConnection) -> Unit)?) {
         onConnection = listener
     }
 
@@ -46,7 +46,7 @@ data class BlockLogger(val connections: MutableMap<String, LoggedConnection> = H
         } else {
             connections[name] = LoggedConnection(allowed, 1, now)
         }
-        onConnection?.invoke(connections)
+        onConnection?.invoke(name, connections[name]!!)
     }
 
     @OptIn(ExperimentalSerializationApi::class)

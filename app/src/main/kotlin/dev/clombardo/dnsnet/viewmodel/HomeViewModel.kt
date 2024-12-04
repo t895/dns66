@@ -10,6 +10,7 @@ package dev.clombardo.dnsnet.viewmodel
 
 import android.content.pm.ApplicationInfo
 import androidx.compose.runtime.mutableStateListOf
+import androidx.compose.runtime.mutableStateMapOf
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dev.clombardo.dnsnet.DnsNetApplication.Companion.applicationContext
@@ -67,9 +68,8 @@ class HomeViewModel : ViewModel() {
     private val _showDisablePrivateDnsDialog = MutableStateFlow(false)
     val showDisablePrivateDnsDialog = _showDisablePrivateDnsDialog.asStateFlow()
 
-    private val _connectionsLogState =
-        MutableStateFlow<Map<String, LoggedConnection>>(emptyMap())
-    val connectionsLogState = _connectionsLogState.asStateFlow()
+    private val _connectionsLog = mutableStateMapOf<String, LoggedConnection>()
+    val connectionsLog: Map<String, LoggedConnection> = _connectionsLog
 
     private val _showDisableBlockLogWarningDialog = MutableStateFlow(false)
     val showDisableBlockLogWarningDialog = _showDisableBlockLogWarningDialog.asStateFlow()
@@ -87,9 +87,9 @@ class HomeViewModel : ViewModel() {
     val showStatusBarShade = _showStatusBarShade.asStateFlow()
 
     init {
-        _connectionsLogState.value = AdVpnService.logger.connections
-        AdVpnService.logger.setOnConnectionListener {
-            _connectionsLogState.value = HashMap(it)
+        _connectionsLog.putAll(AdVpnService.logger.connections)
+        AdVpnService.logger.setOnConnectionListener { name, connection ->
+            _connectionsLog[name] = connection
         }
         populateAppList()
         _hosts.addAll(config.hosts.getAllHosts())
@@ -268,7 +268,7 @@ class HomeViewModel : ViewModel() {
 
     fun removeBlockLogEntry(hostname: String) {
         AdVpnService.logger.connections.remove(hostname)
-        _connectionsLogState.value = HashMap(AdVpnService.logger.connections)
+        _connectionsLog.remove(hostname)
     }
 
     fun addDnsServer(server: DnsServer) {

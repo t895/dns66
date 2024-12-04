@@ -430,18 +430,10 @@ fun App(
         }
         composable<TopLevelDestination.BlockLog> {
             vm.hideStatusBarShade()
-            val loggedConnections by vm.connectionsLogState.collectAsState()
             BlockLogScreen(
                 canEditSettings = canEditSettings,
                 onNavigateUp = { navController.popBackStack() },
-                loggedConnections = loggedConnections.map {
-                    LoggedConnectionState(
-                        it.key,
-                        it.value.allowed,
-                        it.value.attempts,
-                        it.value.lastAttemptTime,
-                    )
-                },
+                loggedConnections = vm.connectionsLog,
                 onCreateException = {
                     navController.navigate(
                         HostException(
