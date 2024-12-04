@@ -104,6 +104,7 @@ fun CreditsScreen(
     val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior()
     Scaffold(
         modifier = modifier.nestedScroll(scrollBehavior.nestedScrollConnection),
+        contentWindowInsets = scaffoldContentInsets,
         topBar = {
             LargeTopAppBar(
                 windowInsets = topAppBarInsets,
