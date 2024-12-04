@@ -57,6 +57,7 @@ android {
             val debug = ".debug"
             applicationIdSuffix = debug
             versionNameSuffix = debug
+            resValue("string", "app_name", "DNSNet Debug")
         }
 
         release {
@@ -68,6 +69,19 @@ android {
                 getDefaultProguardFile("proguard-android.txt"),
                 "proguard-rules.pro"
             )
+        }
+
+        create("benchmark") {
+            val benchmark = ".benchmark"
+            applicationIdSuffix = benchmark
+            versionNameSuffix = benchmark
+            isMinifyEnabled = true
+            proguardFiles(
+                getDefaultProguardFile("proguard-android.txt"),
+                "proguard-rules.pro"
+            )
+            signingConfig = signingConfigs.getByName("debug")
+            resValue("string", "app_name", "DNSNet Benchmark")
         }
     }
 
