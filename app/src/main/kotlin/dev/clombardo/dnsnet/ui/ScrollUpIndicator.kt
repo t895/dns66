@@ -82,6 +82,7 @@ fun BoxScope.ScrollUpIndicator(
             Icon(
                 imageVector = Icons.Default.ArrowUpward,
                 contentDescription = stringResource(R.string.scroll_up),
+                tint = MaterialTheme.colorScheme.onSurface,
             )
         }
     }
