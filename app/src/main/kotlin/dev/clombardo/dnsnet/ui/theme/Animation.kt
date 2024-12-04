@@ -68,3 +68,6 @@ val HideRefreshHostFilesSpinner = fadeOut() + shrinkHorizontally(
     shrinkTowards = Alignment.Start,
     clip = false,
 )
+
+val ShowStatusBarShade = fadeIn(tween())
+val HideStatusBarShade = fadeOut(tween())

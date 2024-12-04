@@ -342,6 +342,7 @@ fun App(
         popExitTransition = { TopLevelPopExit },
     ) {
         composable<TopLevelDestination.Home> {
+            vm.showStatusBarShade()
             HomeScreen(
                 vm = vm,
                 topLevelNavController = navController,
@@ -356,6 +357,7 @@ fun App(
             )
         }
         composable<HostFile> { backstackEntry ->
+            vm.hideStatusBarShade()
             val host = backstackEntry.toRoute<HostFile>()
             EditHostDestination(
                 host = host,
@@ -364,6 +366,7 @@ fun App(
             )
         }
         composable<HostException> { backstackEntry ->
+            vm.hideStatusBarShade()
             val host = backstackEntry.toRoute<HostException>()
             EditHostDestination(
                 host = host,
@@ -372,6 +375,7 @@ fun App(
             )
         }
         composable<DnsServer> { backstackEntry ->
+            vm.hideStatusBarShade()
             val server = backstackEntry.toRoute<DnsServer>()
 
             val showDeleteDnsServerWarningDialog by
@@ -418,12 +422,14 @@ fun App(
             )
         }
         composable<TopLevelDestination.About> {
+            vm.hideStatusBarShade()
             AboutScreen(
                 onNavigateUp = { navController.popBackStack() },
                 onOpenCredits = { navController.navigate(TopLevelDestination.Credits) },
             )
         }
         composable<TopLevelDestination.BlockLog> {
+            vm.hideStatusBarShade()
             val loggedConnections by vm.connectionsLogState.collectAsState()
             BlockLogScreen(
                 canEditSettings = canEditSettings,
@@ -452,6 +458,7 @@ fun App(
             )
         }
         composable<TopLevelDestination.Credits> {
+            vm.hideStatusBarShade()
             CreditsScreen { navController.popBackStack() }
         }
     }
@@ -656,6 +663,7 @@ fun HomeScreen(
                 popExitTransition = { HomeExitTransition },
             ) {
                 composable<HomeDestinations.Start> {
+                    vm.showStatusBarShade()
                     var resumeOnStartup by remember { mutableStateOf(config.autoStart) }
                     var watchConnection by remember { mutableStateOf(config.watchDog) }
                     var ipv6Support by remember { mutableStateOf(config.ipV6Support) }
@@ -730,6 +738,7 @@ fun HomeScreen(
                     )
                 }
                 composable<HomeDestinations.Hosts> {
+                    vm.showStatusBarShade()
                     var refreshDaily by remember { mutableStateOf(config.hosts.automaticRefresh) }
                     val hosts by vm.hosts.collectAsState()
                     val isRefreshingHosts by RuleDatabaseUpdateWorker.isRefreshing.collectAsState()
@@ -758,6 +767,7 @@ fun HomeScreen(
                 }
 
                 composable<HomeDestinations.Apps> {
+                    vm.showStatusBarShade()
                     val apps by vm.appList.collectAsState()
                     val isRefreshing by vm.appListRefreshing.collectAsState()
                     var showSystemApps by remember { mutableStateOf(config.appList.showSystemApps) }
@@ -789,6 +799,7 @@ fun HomeScreen(
                     )
                 }
                 composable<HomeDestinations.DNS> {
+                    vm.showStatusBarShade()
                     var customDnsServers by remember { mutableStateOf(config.dnsServers.enabled) }
                     val servers by vm.dnsServers.collectAsState()
                     DnsScreen(

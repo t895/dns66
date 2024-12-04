@@ -82,6 +82,9 @@ class HomeViewModel : ViewModel() {
     private val _showDeleteHostWarningDialog = MutableStateFlow(false)
     val showDeleteHostWarningDialog = _showDeleteHostWarningDialog.asStateFlow()
 
+    private val _showStatusBarShade = MutableStateFlow(true)
+    val showStatusBarShade = _showStatusBarShade.asStateFlow()
+
     init {
         _connectionsLogState.value = AdVpnService.logger.connections
         AdVpnService.logger.setOnConnectionListener {
@@ -412,5 +415,13 @@ class HomeViewModel : ViewModel() {
 
     fun onDismissDeleteHostWarning() {
         _showDeleteHostWarningDialog.value = false
+    }
+
+    fun showStatusBarShade() {
+        _showStatusBarShade.value = true
+    }
+
+    fun hideStatusBarShade() {
+        _showStatusBarShade.value = false
     }
 }

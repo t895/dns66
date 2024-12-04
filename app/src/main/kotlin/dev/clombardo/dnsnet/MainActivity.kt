@@ -28,12 +28,23 @@ import androidx.activity.result.ActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.systemBars
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
+import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.work.Constraints
 import androidx.work.ExistingPeriodicWorkPolicy
@@ -44,6 +55,8 @@ import androidx.work.WorkManager
 import dev.clombardo.dnsnet.db.RuleDatabaseUpdateWorker
 import dev.clombardo.dnsnet.ui.App
 import dev.clombardo.dnsnet.ui.theme.DnsNetTheme
+import dev.clombardo.dnsnet.ui.theme.HideStatusBarShade
+import dev.clombardo.dnsnet.ui.theme.ShowStatusBarShade
 import dev.clombardo.dnsnet.viewmodel.HomeViewModel
 import dev.clombardo.dnsnet.vpn.AdVpnService
 import dev.clombardo.dnsnet.vpn.Command
@@ -114,7 +127,7 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
 
-                Surface(
+                Box(
                     modifier = Modifier
                         .fillMaxSize()
                         .semantics { testTagsAsResourceId = true },
@@ -136,6 +149,23 @@ class MainActivity : AppCompatActivity() {
                         onUpdateRefreshWork = ::updateRefreshWork,
                         onOpenNetworkSettings = ::openNetworkSettings,
                     )
+
+                    val localDensity = LocalDensity.current
+                    val systemBarShadeHeight =
+                        WindowInsets.systemBars.getTop(localDensity) / localDensity.density
+                    val showStatusBarShade by vm.showStatusBarShade.collectAsState()
+                    AnimatedVisibility(
+                        visible = showStatusBarShade,
+                        enter = ShowStatusBarShade,
+                        exit = HideStatusBarShade,
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .height(systemBarShadeHeight.dp)
+                                .background(color = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)),
+                        )
+                    }
                 }
             }
         }
