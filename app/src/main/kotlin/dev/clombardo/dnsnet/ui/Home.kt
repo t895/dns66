@@ -286,8 +286,8 @@ fun App(
     val showDisablePrivateDnsDialog by vm.showDisablePrivateDnsDialog.collectAsState()
     if (showDisablePrivateDnsDialog) {
         BasicDialog(
-            title = stringResource(R.string.private_dns_warning),
-            text = stringResource(R.string.private_dns_warning_description),
+            title = stringResource(R.string.private_dns_error),
+            text = stringResource(R.string.private_dns_error_description),
             primaryButton = DialogButton(
                 text = stringResource(R.string.open_settings),
                 onClick = onOpenNetworkSettings,

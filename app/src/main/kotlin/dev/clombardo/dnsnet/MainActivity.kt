@@ -237,8 +237,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun isPrivateDnsEnabled(): Boolean {
-        // Private DNS isn't enabled by default until Android 10
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.Q) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.P) {
             return false
         }
 

@@ -134,8 +134,8 @@
     <string name="more_options">More options</string>
     <string name="expanded">Expanded</string>
     <string name="collapsed">Collapsed</string>
-    <string name="private_dns_warning">Warning: Private DNS enabled</string>
-    <string name="private_dns_warning_description">DNSNet is a DNS-based hosts blocker.\nStarting from Android 10, all DNS requests are routed through a private DNS server if enabled. You will need to select "Private DNS" in settings and set it to "Off". Otherwise, connections will fail.</string>
+    <string name="private_dns_error">Private DNS error</string>
+    <string name="private_dns_error_description">When Private DNS is enabled, we are unable to make and block connections properly.\nYou need to disable it in network settings to continue.</string>
     <string name="open_settings">Open settings</string>
     <string name="close">Close</string>
     <string name="try_again">Try again</string>
