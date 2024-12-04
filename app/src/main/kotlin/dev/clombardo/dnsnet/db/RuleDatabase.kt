@@ -91,7 +91,6 @@ class RuleDatabase {
     }
 
     private var blockedHosts by atomic(HashSet<String>())
-    private var nextBlockedHosts: HashSet<String>? = null
 
     /**
      * Checks if a host is blocked.
@@ -117,8 +116,6 @@ class RuleDatabase {
     @Synchronized
     @Throws(InterruptedException::class)
     fun initialize() {
-        nextBlockedHosts = HashSet(blockedHosts.size)
-
         logi("Loading block list")
 
         val sortedHostItems = config.hosts.items
@@ -131,21 +128,22 @@ class RuleDatabase {
             }
             .sortedBy { it.state.ordinal }
 
+        val newHosts = HashSet<String>(sortedHostItems.size + config.hosts.exceptions.size)
         for (item in sortedHostItems) {
             if (Thread.interrupted()) {
                 throw InterruptedException("Interrupted")
             }
-            loadItem(item)
+            loadItem(newHosts, item)
         }
 
         for (exception in config.hosts.exceptions) {
             if (Thread.interrupted()) {
                 throw InterruptedException("Interrupted")
             }
-            addHostException(exception)
+            addHostException(newHosts, exception)
         }
 
-        blockedHosts = nextBlockedHosts!!
+        blockedHosts = newHosts
     }
 
     /**
@@ -155,7 +153,7 @@ class RuleDatabase {
      * @throws InterruptedException If the thread was interrupted.
      */
     @Throws(InterruptedException::class)
-    private fun loadItem(item: HostFile) {
+    private fun loadItem(set: HashSet<String>, item: HostFile) {
         if (item.state == HostState.IGNORE) {
             return
         }
@@ -168,9 +166,9 @@ class RuleDatabase {
         }
 
         if (reader == null) {
-            addHost(item, item.data)
+            addHost(set, item, item.data)
         } else {
-            loadReader(item, reader)
+            loadReader(set, item, reader)
         }
     }
 
@@ -180,27 +178,19 @@ class RuleDatabase {
      * @param item The item the host belongs to
      * @param host The host
      */
-    private fun addHost(item: Host, host: String) {
+    private fun addHost(set: HashSet<String>, item: Host, host: String) {
         // Single address to block
         if (item.state == HostState.ALLOW) {
-            nextBlockedHosts?.remove(host) ?: logd(
-                "addHost: nextBlockedHosts was null when attempting to remove host!"
-            )
+            set.remove(host)
         } else if (item.state == HostState.DENY) {
-            nextBlockedHosts?.add(host) ?: logd(
-                "addHost: nextBlockedHosts was null when attempting to add host!"
-            )
+            set.add(host)
         }
     }
 
-    private fun addHostException(exception: HostException) {
+    private fun addHostException(set: HashSet<String>, exception: HostException) {
         when (exception.state) {
-            HostState.ALLOW -> nextBlockedHosts?.remove(exception.data) ?: logd(
-                "addHost: nextBlockedHosts was null when attempting to remove host!"
-            )
-            HostState.DENY -> nextBlockedHosts?.add(exception.data) ?: logd(
-                "addHost: nextBlockedHosts was null when attempting to add host!"
-            )
+            HostState.ALLOW -> set.remove(exception.data)
+            HostState.DENY -> set.add(exception.data)
             else -> return
         }
     }
@@ -213,7 +203,7 @@ class RuleDatabase {
      * @throws InterruptedException If thread was interrupted
      */
     @Throws(InterruptedException::class)
-    fun loadReader(item: Host, reader: Reader): Boolean {
+    fun loadReader(set: HashSet<String>, item: Host, reader: Reader): Boolean {
         var count = 0
         try {
             logd("loadBlockedHosts: Reading: ${item.data}")
@@ -227,7 +217,7 @@ class RuleDatabase {
                     val host = parseLine(line)
                     if (host != null) {
                         count++
-                        addHost(item, host)
+                        addHost(set, item, host)
                     }
 
                     line = it.readLine()
