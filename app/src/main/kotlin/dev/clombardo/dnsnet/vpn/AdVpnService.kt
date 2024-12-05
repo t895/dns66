@@ -283,7 +283,7 @@ class AdVpnService : VpnService(), Handler.Callback {
 
     private fun stopVpn() {
         logi("Stopping Service")
-        vpnThread?.stopThread()
+        vpnThread?.stopThread() ?: return
         vpnThread = null
 
         updateVpnStatus(VpnStatus.STOPPED)
