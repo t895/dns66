@@ -1,5 +1,6 @@
 package dev.clombardo.dnsnet.vpn
 
+import dev.clombardo.dnsnet.DnsNetApplication.Companion.applicationContext
 import dev.clombardo.dnsnet.FileHelper
 import dev.clombardo.dnsnet.loge
 import kotlinx.serialization.ExperimentalSerializationApi
@@ -61,7 +62,7 @@ data class BlockLogger(val connections: MutableMap<String, LoggedConnection> = H
 
     fun clear() {
         connections.clear()
-        save(DEFAULT_LOG_FILENAME)
+        applicationContext.getFileStreamPath(DEFAULT_LOG_FILENAME).delete()
     }
 
     companion object {

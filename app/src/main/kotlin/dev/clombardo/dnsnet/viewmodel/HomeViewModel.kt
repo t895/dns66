@@ -418,4 +418,9 @@ class HomeViewModel : ViewModel() {
     fun hideStatusBarShade() {
         _showStatusBarShade.value = false
     }
+
+    fun onClearBlockLog() {
+        _connectionsLog.clear()
+        AdVpnService.logger.clear()
+    }
 }

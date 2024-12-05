@@ -669,7 +669,7 @@ fun HomeScreen(
                             primaryButton = DialogButton(
                                 text = stringResource(R.string.disable),
                                 onClick = {
-                                    AdVpnService.logger.clear()
+                                    vm.onClearBlockLog()
                                     config.blockLogging = false
                                     blockLog = config.blockLogging
                                     config.save()
