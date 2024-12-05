@@ -19,11 +19,11 @@ import android.net.Uri
 import androidx.core.app.NotificationCompat
 import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
-import dev.clombardo.dnsnet.Configuration
 import dev.clombardo.dnsnet.Host
 import dev.clombardo.dnsnet.MainActivity
 import dev.clombardo.dnsnet.NotificationChannels
 import dev.clombardo.dnsnet.R
+import dev.clombardo.dnsnet.config
 import dev.clombardo.dnsnet.logd
 import dev.clombardo.dnsnet.logi
 import dev.clombardo.dnsnet.logv
@@ -61,8 +61,6 @@ class RuleDatabaseUpdateWorker(
 
     private lateinit var notificationManager: NotificationManager
     private lateinit var notificationBuilder: NotificationCompat.Builder
-
-    private val config = Configuration.load()
 
     init {
         logd("Begin")
