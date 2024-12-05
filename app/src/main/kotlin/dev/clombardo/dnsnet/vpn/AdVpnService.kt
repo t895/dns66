@@ -18,7 +18,6 @@ package dev.clombardo.dnsnet.vpn
 
 import android.app.NotificationManager
 import android.app.PendingIntent
-import android.app.Service
 import android.content.Context
 import android.content.Intent
 import android.net.ConnectivityManager
@@ -31,6 +30,7 @@ import android.os.Looper
 import android.os.Message
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
+import dev.clombardo.dnsnet.DnsNetApplication.Companion.applicationContext
 import dev.clombardo.dnsnet.MainActivity
 import dev.clombardo.dnsnet.NotificationChannels
 import dev.clombardo.dnsnet.Preferences
@@ -67,14 +67,24 @@ enum class VpnStatus {
     }
 }
 
+enum class Command {
+    START,
+    STOP,
+    PAUSE,
+    RESUME,
+}
+
 class AdVpnService : VpnService(), Handler.Callback {
     companion object {
-        const val NOTIFICATION_ID_STATE = 10
+        const val SERVICE_NOTIFICATION_ID = 1
         const val REQUEST_CODE_START = 43
 
         const val REQUEST_CODE_PAUSE = 42
 
         const val VPN_MSG_STATUS_UPDATE = 0
+
+        private const val COMMAND_TAG = "COMMAND"
+        private const val NOTIFICATION_INTENT_TAG = "NOTIFICATION_INTENT"
 
         private val _status = MutableStateFlow(VpnStatus.STOPPED)
         val status = _status.asStateFlow()
@@ -82,48 +92,57 @@ class AdVpnService : VpnService(), Handler.Callback {
         val logger: BlockLogger = BlockLogger.load()
 
         fun checkStartVpnOnBoot(context: Context) {
-            logi("Checking whether to start DNSNet on boot")
-            if (!config.autoStart) {
-                return
-            }
-            if (!Preferences.VpnIsActive) {
+            if (!config.autoStart && !Preferences.VpnIsActive) {
                 return
             }
 
             if (prepare(context) != null) {
                 logi("VPN preparation not confirmed by user, changing enabled to false")
+                config.autoStart = false
+                config.save()
+                return
             }
 
-            logi("Starting ad buster from boot")
-            NotificationChannels.onCreate(context)
-
-            val intent = getStartIntent(context)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                context.startForegroundService(intent)
+                context.startForegroundService(getStartIntent())
             } else {
-                context.startService(intent)
+                context.startService(getStartIntent())
             }
         }
 
-        private fun getStartIntent(context: Context): Intent =
-            Intent(context, AdVpnService::class.java).apply {
-                putExtra("COMMAND", Command.START.ordinal)
+        private const val NOTIFICATION_ACTION_PENDING_INTENT_FLAGS =
+            PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
 
-                val intent = Intent(context, MainActivity::class.java)
-                val pendingIntent =
-                    PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-                putExtra("NOTIFICATION_INTENT", pendingIntent)
-            }
+        private fun getOpenMainActivityPendingIntent() = PendingIntent.getActivity(
+            applicationContext,
+            0,
+            Intent(applicationContext, MainActivity::class.java)
+                .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP),
+            PendingIntent.FLAG_IMMUTABLE,
+        )
 
-        private fun getResumeIntent(context: Context): Intent =
-            Intent(context, AdVpnService::class.java).apply {
-                putExtra("COMMAND", Command.RESUME.ordinal)
+        private fun getStartIntent() = Intent(applicationContext, AdVpnService::class.java).apply {
+            putExtra(NOTIFICATION_INTENT_TAG, getOpenMainActivityPendingIntent())
+            putExtra(COMMAND_TAG, Command.START.ordinal)
+        }
 
-                val intent = Intent(context, MainActivity::class.java)
-                val pendingIntent =
-                    PendingIntent.getActivity(context, 0, intent, PendingIntent.FLAG_IMMUTABLE)
-                putExtra("NOTIFICATION_INTENT", pendingIntent)
-            }
+        private fun getPausePendingIntent() = PendingIntent.getService(
+            applicationContext,
+            REQUEST_CODE_PAUSE,
+            Intent(applicationContext, AdVpnService::class.java)
+                .putExtra(COMMAND_TAG, Command.PAUSE.ordinal),
+            NOTIFICATION_ACTION_PENDING_INTENT_FLAGS,
+        )
+
+        private fun getResumePendingIntent() = PendingIntent.getService(
+            applicationContext,
+            REQUEST_CODE_START,
+            Intent(applicationContext, AdVpnService::class.java).apply {
+                putExtra(NOTIFICATION_INTENT_TAG, getOpenMainActivityPendingIntent())
+                putExtra(COMMAND_TAG, Command.RESUME.ordinal)
+            },
+            NOTIFICATION_ACTION_PENDING_INTENT_FLAGS,
+        )
     }
 
     private val handler = Handler(Looper.myLooper()!!, this)
@@ -154,42 +173,21 @@ class AdVpnService : VpnService(), Handler.Callback {
         }
     }
 
-    private val notificationBuilder =
+    private val serviceNotificationBuilder =
         NotificationCompat.Builder(this, NotificationChannels.SERVICE_RUNNING)
             .setSmallIcon(R.drawable.ic_state_deny)
-            .setPriority(NotificationCompat.PRIORITY_MIN)
-
-    private fun getOpenAppIntent(): PendingIntent {
-        val mainActivityIntent = Intent(applicationContext, MainActivity::class.java)
-            .setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP)
-        return PendingIntent.getActivity(
-            applicationContext,
-            0,
-            mainActivityIntent,
-            PendingIntent.FLAG_IMMUTABLE
-        )
-    }
+            .setPriority(NotificationCompat.PRIORITY_LOW)
+            .setContentIntent(getOpenMainActivityPendingIntent())
 
     override fun onCreate() {
         super.onCreate()
-        NotificationChannels.onCreate(this)
 
-        notificationBuilder
-            .setContentIntent(getOpenAppIntent())
-
-        val intent = Intent(this, AdVpnService::class.java)
-            .putExtra("COMMAND", Command.PAUSE.ordinal)
-        val pendingIntent =
-            PendingIntent.getService(this, REQUEST_CODE_PAUSE, intent, PendingIntent.FLAG_IMMUTABLE)
-        notificationBuilder
-            .addAction(
-                R.drawable.ic_pause,
-                getString(R.string.notification_action_pause),
-                pendingIntent
-            )
-
-        val connectivityManager = getSystemService(ConnectivityManager::class.java)
-        connectivityManager.registerDefaultNetworkCallback(connectivityChangedCallback)
+        // Action must be added after onCreate or else we'll get an NPE
+        serviceNotificationBuilder.addAction(
+            0,
+            getString(R.string.notification_action_pause),
+            getPausePendingIntent(),
+        )
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
@@ -206,14 +204,14 @@ class AdVpnService : VpnService(), Handler.Callback {
         }
 
         when (command) {
+            Command.START,
             Command.RESUME -> {
                 with(getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager) {
-                    cancelAll()
+                    cancel(SERVICE_NOTIFICATION_ID)
                 }
                 start()
             }
 
-            Command.START -> start()
             Command.STOP -> {
                 Preferences.VpnIsActive = false
                 stopVpn()
@@ -222,45 +220,37 @@ class AdVpnService : VpnService(), Handler.Callback {
             Command.PAUSE -> pauseVpn()
         }
 
-        return Service.START_STICKY
+        return START_STICKY
+    }
+
+    private fun startVpn() {
+        updateVpnStatus(VpnStatus.STARTING)
+        restartVpnThread()
+        getSystemService(ConnectivityManager::class.java)
+            .registerDefaultNetworkCallback(connectivityChangedCallback)
+    }
+
+    private fun updateVpnStatus(newStatus: VpnStatus) {
+        serviceNotificationBuilder.setContentTitle(getString(newStatus.toTextId()))
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            startForeground(SERVICE_NOTIFICATION_ID, serviceNotificationBuilder.build())
+        }
+        _status.value = newStatus
     }
 
     private fun pauseVpn() {
         stopVpn()
         with(getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager) {
-            val pendingIntent = PendingIntent.getService(
-                this@AdVpnService,
-                REQUEST_CODE_START,
-                getResumeIntent(this@AdVpnService),
-                PendingIntent.FLAG_ONE_SHOT or PendingIntent.FLAG_IMMUTABLE
-            )
             val notification =
                 NotificationCompat.Builder(this@AdVpnService, NotificationChannels.SERVICE_PAUSED)
                     .setSmallIcon(R.drawable.ic_state_deny)
                     .setPriority(NotificationCompat.PRIORITY_LOW)
                     .setContentTitle(getString(R.string.notification_paused_title))
-                    .addAction(0, getString(R.string.resume), pendingIntent)
-                    .setContentIntent(getOpenAppIntent())
+                    .addAction(0, getString(R.string.resume), getResumePendingIntent())
+                    .setContentIntent(getOpenMainActivityPendingIntent())
                     .build()
-            notify(NOTIFICATION_ID_STATE, notification)
+            notify(SERVICE_NOTIFICATION_ID, notification)
         }
-    }
-
-    private fun updateVpnStatus(newStatus: VpnStatus) {
-        val notificationTextId = newStatus.toTextId()
-        notificationBuilder.setContentTitle(getString(notificationTextId))
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O || config.showNotification) {
-            startForeground(NOTIFICATION_ID_STATE, notificationBuilder.build())
-        }
-        _status.value = newStatus
-    }
-
-    private fun startVpn() {
-        notificationBuilder.setContentTitle(getString(R.string.app_name))
-        updateVpnStatus(VpnStatus.STARTING)
-
-        restartVpnThread()
     }
 
     private fun restartVpnThread() {
@@ -273,14 +263,12 @@ class AdVpnService : VpnService(), Handler.Callback {
         vpnThread?.startThread()
     }
 
-    private fun stopVpnThread() = vpnThread?.stopThread()
-
     private fun waitForNetVpn() {
         if (status.value != VpnStatus.RUNNING) {
             return
         }
 
-        stopVpnThread()
+        vpnThread?.stopThread()
         updateVpnStatus(VpnStatus.WAITING_FOR_NETWORK)
     }
 
@@ -295,15 +283,13 @@ class AdVpnService : VpnService(), Handler.Callback {
 
     private fun stopVpn() {
         logi("Stopping Service")
-        if (vpnThread != null) {
-            stopVpnThread()
-        }
+        vpnThread?.stopThread()
         vpnThread = null
 
         updateVpnStatus(VpnStatus.STOPPED)
 
-        val connectivityManager = getSystemService(ConnectivityManager::class.java)
-        connectivityManager.unregisterNetworkCallback(connectivityChangedCallback)
+        getSystemService(ConnectivityManager::class.java)
+            .unregisterNetworkCallback(connectivityChangedCallback)
 
         logger.save()
 

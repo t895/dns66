@@ -50,7 +50,7 @@ object NotificationChannels {
         val runningChannel = NotificationChannel(
             SERVICE_RUNNING,
             context.getString(R.string.notifications_running),
-            NotificationManager.IMPORTANCE_MIN
+            NotificationManager.IMPORTANCE_LOW
         ).apply {
             description = context.getString(R.string.notifications_running_desc)
             group = GROUP_SERVICE

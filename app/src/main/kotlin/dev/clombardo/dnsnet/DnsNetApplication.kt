@@ -30,6 +30,8 @@ class DnsNetApplication : Application() {
         super.onCreate()
         application = this
 
+        NotificationChannels.onCreate(this)
+
         SingletonImageLoader.setSafe {
             ImageLoader.Builder(applicationContext)
                 .components {

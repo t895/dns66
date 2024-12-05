@@ -73,7 +73,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         installSplashScreen()
         super.onCreate(savedInstanceState)
-        NotificationChannels.onCreate(this)
 
         setContent {
             enableEdgeToEdge()
