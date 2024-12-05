@@ -163,7 +163,7 @@ fun BlockLog(
             val blockedConnectionsPercent =
                 blockedConnections.toFloat() / loggedConnections.size.toFloat()
             val blockedRatioAnimated by animateFloatAsState(
-                targetValue = blockedConnectionsPercent,
+                targetValue = blockedConnectionsPercent.takeIf { !it.isNaN() } ?: 0f,
                 animationSpec = tween(
                     durationMillis = 500,
                     easing = EmphasizedDecelerateEasing,
@@ -179,9 +179,7 @@ fun BlockLog(
             ) {
                 CircularProgressIndicator(
                     modifier = Modifier.size(size),
-                    progress = {
-                        if (blockedRatioAnimated.isNaN()) 0f else blockedRatioAnimated
-                    },
+                    progress = { blockedRatioAnimated },
                     strokeWidth = 14.dp,
                 )
 
