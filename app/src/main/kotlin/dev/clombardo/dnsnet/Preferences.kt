@@ -18,6 +18,12 @@ private val preferences by lazy {
 
 object Preferences {
     var NotificationPermissionDenied by BooleanPreference("NotificationPermissionDenied", false)
+
+    /**
+     * Tracks whether the VPN is running and is meant to tell the service if it was running when
+     * the device was last on. On the next device boot, this is checked and if it is true and
+     * the user enabled "Resume on system start-up," the service is started.
+     */
     var VpnIsActive by BooleanPreference("isActive", false)
 }
 
