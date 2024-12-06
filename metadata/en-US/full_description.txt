@@ -1,0 +1,3 @@
+DNSNet allows you to take more control over what internet traffic goes in and out of your device. You can download host files to block a set of known advertising or malicious host names and then create exemptions where you see fit.
+
+It works by creating a lightweight VPN service that filters your internet traffic as you use your device. If you ever have trouble with connecting to a site or using an app, you can always exempt an app from filtering or create an exception for a specific host name.
