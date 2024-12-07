@@ -118,6 +118,7 @@ fun AppsScreen(
                 key = { it.info.packageName },
             ) {
                 var checked by remember { mutableStateOf(it.enabled) }
+                checked = it.enabled
                 SwitchListItem(
                     modifier = Modifier
                         .testTag("apps:listItem")
