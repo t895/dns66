@@ -56,7 +56,7 @@ fun AppsScreen(
     bypassSelection: AllowListMode,
     onBypassSelection: (AllowListMode) -> Unit,
     apps: List<App> = emptyList(),
-    onAppClick: (App) -> Unit,
+    onAppClick: (App, Boolean) -> Unit,
 ) {
     val pullToRefreshState = rememberPullToRefreshState()
     PullToRefreshBox(
@@ -113,14 +113,23 @@ fun AppsScreen(
                 Spacer(modifier = Modifier.padding(vertical = 4.dp))
             }
 
-            items(apps) {
+            items(
+                items = apps,
+                key = { it.info.packageName },
+            ) {
+                var checked by remember { mutableStateOf(it.enabled) }
                 SwitchListItem(
-                    modifier = Modifier.testTag("apps:listItem"),
+                    modifier = Modifier
+                        .testTag("apps:listItem")
+                        .animateItem(),
                     title = it.label,
                     details = it.info.packageName,
-                    checked = it.enabled,
+                    checked = checked,
                     enabled = enabled,
-                    onCheckedChange = { _ -> onAppClick(it) },
+                    onCheckedChange = { _ ->
+                        checked = !checked
+                        onAppClick(it, checked)
+                    },
                     startContent = {
                         Image(
                             modifier = Modifier.fillMaxSize(),
@@ -143,7 +152,7 @@ private fun AppsScreenPreview() {
             enabled = true,
             onRefresh = {},
             apps = listOf(App(ApplicationInfo(), "Label", true)),
-            onAppClick = {},
+            onAppClick = { _, _ -> },
             showSystemApps = false,
             onShowSystemAppsClick = {},
             bypassSelection = AllowListMode.ON_VPN,

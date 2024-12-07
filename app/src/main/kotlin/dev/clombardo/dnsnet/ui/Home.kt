@@ -784,8 +784,8 @@ fun HomeScreen(
                             vm.populateAppList()
                         },
                         apps = vm.appList,
-                        onAppClick = { app ->
-                            vm.onToggleApp(app)
+                        onAppClick = { app, enabled ->
+                            vm.onToggleApp(app, enabled)
                         },
                     )
                 }

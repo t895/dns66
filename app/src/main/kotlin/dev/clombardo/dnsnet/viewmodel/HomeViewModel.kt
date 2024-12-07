@@ -321,21 +321,19 @@ class HomeViewModel : ViewModel() {
         }
     }
 
-    fun onToggleApp(app: App) {
+    fun onToggleApp(app: App, enabled: Boolean) {
         if (!appList.contains(app)) {
             logw("Tried to toggle app that does not exist in list! - $app")
             return
         }
-        val oldIndex = _appList.indexOf(app)
-        val newApp = _appList[oldIndex].copy(enabled = !app.enabled)
-        _appList[oldIndex] = newApp
+        app.enabled = enabled
 
-        if (newApp.enabled) {
-            config.appList.notOnVpn.add(newApp.info.packageName)
-            config.appList.onVpn.remove(newApp.info.packageName)
+        if (enabled) {
+            config.appList.notOnVpn.add(app.info.packageName)
+            config.appList.onVpn.remove(app.info.packageName)
         } else {
-            config.appList.notOnVpn.remove(newApp.info.packageName)
-            config.appList.onVpn.add(newApp.info.packageName)
+            config.appList.notOnVpn.remove(app.info.packageName)
+            config.appList.onVpn.add(app.info.packageName)
         }
         config.save()
     }
