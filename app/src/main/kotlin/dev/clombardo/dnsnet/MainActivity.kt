@@ -29,7 +29,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
@@ -39,8 +38,11 @@ import androidx.compose.foundation.layout.systemBars
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
@@ -52,6 +54,10 @@ import androidx.work.NetworkType
 import androidx.work.OneTimeWorkRequestBuilder
 import androidx.work.PeriodicWorkRequestBuilder
 import androidx.work.WorkManager
+import dev.chrisbanes.haze.HazeDefaults
+import dev.chrisbanes.haze.HazeState
+import dev.chrisbanes.haze.haze
+import dev.chrisbanes.haze.hazeChild
 import dev.clombardo.dnsnet.db.RuleDatabaseUpdateWorker
 import dev.clombardo.dnsnet.ui.App
 import dev.clombardo.dnsnet.ui.theme.DnsNetTheme
@@ -131,7 +137,10 @@ class MainActivity : AppCompatActivity() {
                         .fillMaxSize()
                         .semantics { testTagsAsResourceId = true },
                 ) {
+                    val hazeState = remember { HazeState() }
+
                     App(
+                        modifier = Modifier.haze(hazeState),
                         vm = vm,
                         onRefreshHosts = ::refresh,
                         onLoadDefaults = {
@@ -162,7 +171,18 @@ class MainActivity : AppCompatActivity() {
                             modifier = Modifier
                                 .fillMaxWidth()
                                 .height(systemBarShadeHeight.dp)
-                                .background(color = MaterialTheme.colorScheme.surface.copy(alpha = 0.6f)),
+                                .hazeChild(
+                                    state = hazeState,
+                                    style = HazeDefaults.style(
+                                        backgroundColor = MaterialTheme.colorScheme.surface,
+                                        blurRadius = 1.dp,
+                                    ),
+                                ) {
+                                    mask = Brush.verticalGradient(
+                                        0f to Color.White,
+                                        1f to Color.Transparent,
+                                    )
+                                },
                         )
                     }
                 }

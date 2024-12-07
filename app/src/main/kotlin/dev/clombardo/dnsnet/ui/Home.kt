@@ -167,6 +167,7 @@ open class TopLevelDestination {
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun App(
+    modifier: Modifier = Modifier,
     vm: HomeViewModel = viewModel(),
     onRefreshHosts: () -> Unit,
     onLoadDefaults: () -> Unit,
@@ -333,7 +334,7 @@ fun App(
         derivedStateOf { status == VpnStatus.STOPPED }
     }
     NavHost(
-        modifier = Modifier.background(MaterialTheme.colorScheme.surface),
+        modifier = modifier.background(MaterialTheme.colorScheme.surface),
         navController = navController,
         startDestination = TopLevelDestination.Home,
         enterTransition = { TopLevelEnter },

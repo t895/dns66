@@ -146,6 +146,8 @@ dependencies {
     implementation("io.github.t895:materialswitch:0.1.3")
 
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.7")
+
+    implementation("dev.chrisbanes.haze:haze:1.1.1")
 }
 
 licensee {
