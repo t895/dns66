@@ -248,7 +248,7 @@ class AdVpnThread(
         try {
             configure().use { pfd ->
                 // Read and write views of the tun device
-                val inputStream = FileInputStream(pfd!!.fileDescriptor)
+                val inputStream = FileInputStream(pfd.fileDescriptor)
                 val outFd = FileOutputStream(pfd.fileDescriptor)
 
                 // Now we are connected. Set the flag and show the message.
@@ -472,7 +472,7 @@ class AdVpnThread(
     }
 
     @Throws(VpnNetworkException::class)
-    private fun configure(): ParcelFileDescriptor? {
+    private fun configure(): ParcelFileDescriptor {
         logi("Configuring $this")
 
         // Get the current DNS servers before starting the VPN
@@ -579,7 +579,7 @@ class AdVpnThread(
             .establish()
         logi("Configured")
 
-        return pfd
+        return pfd!!
     }
 
     fun hasIpV6Servers(config: Configuration, dnsServers: List<InetAddress>): Boolean {

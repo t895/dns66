@@ -224,6 +224,11 @@ class AdVpnService : VpnService(), Handler.Callback {
     }
 
     private fun startVpn() {
+        if (prepare(this) != null) {
+            stopVpn()
+            return
+        }
+
         updateVpnStatus(VpnStatus.STARTING)
         restartVpnThread()
         getSystemService(ConnectivityManager::class.java)
