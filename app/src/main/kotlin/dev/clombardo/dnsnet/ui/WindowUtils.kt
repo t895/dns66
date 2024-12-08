@@ -21,8 +21,3 @@ val topAppBarInsets: WindowInsets
     get() = WindowInsets.systemBars.only(WindowInsetsSides.Horizontal)
         .add(WindowInsets.systemBars.only(WindowInsetsSides.Top))
         .add(WindowInsets.displayCutout.only(WindowInsetsSides.Horizontal))
-
-val navigationSuiteScaffoldContentInsets: WindowInsets
-    @Composable
-    get() = WindowInsets.systemBars
-        .add(WindowInsets.displayCutout.only(WindowInsetsSides.End))

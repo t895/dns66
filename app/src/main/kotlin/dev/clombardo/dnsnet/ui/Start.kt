@@ -17,7 +17,6 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
-import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.rememberScrollState
@@ -39,6 +38,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowWidthSizeClass
 import dev.clombardo.dnsnet.R
+import dev.clombardo.dnsnet.ui.navigation.NavigationBar
 import dev.clombardo.dnsnet.ui.theme.DnsNetTheme
 import dev.clombardo.dnsnet.ui.theme.FabPadding
 import dev.clombardo.dnsnet.vpn.VpnStatus
@@ -161,9 +161,9 @@ fun StartScreen(
                 modifier = Modifier
                     .then(
                         if (windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT) {
-                            Modifier
+                            Modifier.padding(bottom = NavigationBar.height)
                         } else {
-                            Modifier.displayCutoutPadding()
+                            Modifier
                         }
                     )
                     .padding(FabPadding),

@@ -18,10 +18,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.WindowInsets
-import androidx.compose.foundation.layout.displayCutout
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.systemBars
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.material.icons.Icons
@@ -30,15 +27,10 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Android
 import androidx.compose.material.icons.filled.Dns
 import androidx.compose.material.icons.filled.VpnKey
-import androidx.compose.material3.FabPosition
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
-import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
-import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteType
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -51,8 +43,6 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
@@ -79,6 +69,8 @@ import dev.clombardo.dnsnet.R
 import dev.clombardo.dnsnet.config
 import dev.clombardo.dnsnet.db.RuleDatabaseUpdateWorker
 import dev.clombardo.dnsnet.ui.HomeDestinationIcon.Companion.toHomeDestinationIcon
+import dev.clombardo.dnsnet.ui.navigation.LayoutType
+import dev.clombardo.dnsnet.ui.navigation.NavigationScaffold
 import dev.clombardo.dnsnet.ui.theme.DefaultFabSize
 import dev.clombardo.dnsnet.ui.theme.EmphasizedAccelerateEasing
 import dev.clombardo.dnsnet.ui.theme.EmphasizedDecelerateEasing
@@ -380,7 +372,7 @@ fun App(
             val server = backstackEntry.toRoute<DnsServer>()
 
             val showDeleteDnsServerWarningDialog by
-                vm.showDeleteDnsServerWarningDialog.collectAsState()
+            vm.showDeleteDnsServerWarningDialog.collectAsState()
             if (showDeleteDnsServerWarningDialog) {
                 BasicDialog(
                     title = stringResource(R.string.warning),
@@ -565,253 +557,219 @@ fun HomeScreen(
     }
 
     val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
-
-    val displayCutout = WindowInsets.displayCutout
-    val localDensity = LocalDensity.current
-    val layoutDirection = LocalLayoutDirection.current
-    val startCutoutInset =
-        (displayCutout.getLeft(localDensity, layoutDirection) / localDensity.density).dp
-    val endCutoutInset =
-        (displayCutout.getRight(localDensity, layoutDirection) / localDensity.density).dp
-    NavigationSuiteScaffold(
+    NavigationScaffold(
         modifier = modifier,
-        navigationSuiteItems = {
+        layoutType = if (windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT) {
+            LayoutType.NavigationBar
+        } else {
+            LayoutType.NavigationRail
+        },
+        navigationItems = {
             HomeDestinations.entries.forEach {
                 item(
-                    modifier = Modifier.padding(start = startCutoutInset),
                     selected = it == currentDestination,
                     onClick = { setDestination(it) },
-                    icon = {
-                        Icon(
-                            imageVector = it.iconEnum.icon,
-                            contentDescription = stringResource(it.labelResId),
-                        )
-                    },
-                    label = {
-                        // For whatever reason, UIAutomator cannot find tags on navigation
-                        // items unless one is set in this label scope.
-                        Text(
-                            modifier = Modifier.testTag("homeNavigation:$it"),
-                            text = stringResource(it.labelResId),
-                        )
-                    },
+                    icon = it.iconEnum.icon,
+                    textId = it.labelResId,
                 )
             }
         },
-        layoutType = if (windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT) {
-            NavigationSuiteType.NavigationBar
-        } else {
-            NavigationSuiteType.NavigationRail
-        },
-    ) {
-        Scaffold(
-            contentWindowInsets = navigationSuiteScaffoldContentInsets,
-            floatingActionButton = {
-                val endSystemBarsPadding = (
-                    WindowInsets.systemBars.getRight(
-                        localDensity,
-                        layoutDirection,
-                    ) / localDensity.density
-                    ).dp
-                AnimatedVisibility(
-                    modifier = Modifier
-                        .padding(end = endCutoutInset)
-                        .padding(end = endSystemBarsPadding),
-                    visible = (
+        floatingActionButton = {
+            AnimatedVisibility(
+                modifier = Modifier.padding(16.dp),
+                visible = (
                         currentDestination == HomeDestinations.Hosts ||
-                            currentDestination == HomeDestinations.DNS
+                                currentDestination == HomeDestinations.DNS
                         ) && canEditSettings,
-                    enter = scaleIn(animationSpec = tween(easing = EmphasizedDecelerateEasing)),
-                    exit = scaleOut(animationSpec = tween(easing = EmphasizedAccelerateEasing)),
-                ) {
-                    FloatingActionButton(
-                        onClick = {
-                            if (currentDestination == HomeDestinations.Hosts) {
-                                topLevelNavController.navigate(HostFile())
-                            } else if (currentDestination == HomeDestinations.DNS) {
-                                topLevelNavController.navigate(DnsServer())
-                            }
-                        },
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Add,
-                            contentDescription = stringResource(R.string.add),
-                        )
-                    }
-                }
-            },
-            floatingActionButtonPosition = FabPosition.End,
-        ) { contentPadding ->
-            // List state must be hoisted outside of the NavHost or it will be lost on recomposition
-            val startListState = rememberScrollState()
-            val hostsListState = rememberLazyListState()
-            val appListState = rememberLazyListState()
-            val dnsListState = rememberLazyListState()
-            NavHost(
-                navController = navController,
-                startDestination = HomeDestinations.Start,
-                enterTransition = { HomeEnterTransition },
-                exitTransition = { HomeExitTransition },
-                popEnterTransition = { HomeEnterTransition },
-                popExitTransition = { HomeExitTransition },
+                enter = scaleIn(animationSpec = tween(easing = EmphasizedDecelerateEasing)),
+                exit = scaleOut(animationSpec = tween(easing = EmphasizedAccelerateEasing)),
             ) {
-                composable<HomeDestinations.Start> {
-                    vm.showStatusBarShade()
-                    var resumeOnStartup by remember { mutableStateOf(config.autoStart) }
-                    var watchConnection by remember { mutableStateOf(config.watchDog) }
-                    var ipv6Support by remember { mutableStateOf(config.ipV6Support) }
-                    var blockLog by remember { mutableStateOf(config.blockLogging) }
+                FloatingActionButton(
+                    onClick = {
+                        if (currentDestination == HomeDestinations.Hosts) {
+                            topLevelNavController.navigate(HostFile())
+                        } else if (currentDestination == HomeDestinations.DNS) {
+                            topLevelNavController.navigate(DnsServer())
+                        }
+                    },
+                ) {
+                    Icon(
+                        imageVector = Icons.Default.Add,
+                        contentDescription = stringResource(R.string.add),
+                    )
+                }
+            }
+        },
+    ) { contentPadding ->
+        // List state must be hoisted outside of the NavHost or it will be lost on recomposition
+        val startListState = rememberScrollState()
+        val hostsListState = rememberLazyListState()
+        val appListState = rememberLazyListState()
+        val dnsListState = rememberLazyListState()
+        NavHost(
+            navController = navController,
+            startDestination = HomeDestinations.Start,
+            enterTransition = { HomeEnterTransition },
+            exitTransition = { HomeExitTransition },
+            popEnterTransition = { HomeEnterTransition },
+            popExitTransition = { HomeExitTransition },
+        ) {
+            composable<HomeDestinations.Start> {
+                vm.showStatusBarShade()
+                var resumeOnStartup by remember { mutableStateOf(config.autoStart) }
+                var watchConnection by remember { mutableStateOf(config.watchDog) }
+                var ipv6Support by remember { mutableStateOf(config.ipV6Support) }
+                var blockLog by remember { mutableStateOf(config.blockLogging) }
 
-                    val showDisableBlockLogWarningDialog by vm.showDisableBlockLogWarningDialog.collectAsState()
-                    if (showDisableBlockLogWarningDialog) {
-                        BasicDialog(
-                            title = stringResource(R.string.warning),
-                            text = stringResource(R.string.disable_block_log_warning_description),
-                            primaryButton = DialogButton(
-                                text = stringResource(R.string.disable),
-                                onClick = {
-                                    vm.onClearBlockLog()
-                                    config.blockLogging = false
-                                    blockLog = config.blockLogging
-                                    config.save()
-                                    vm.onDismissDisableBlockLogWarning()
-                                },
-                            ),
-                            secondaryButton = DialogButton(
-                                text = stringResource(R.string.close),
-                                onClick = { vm.onDismissDisableBlockLogWarning() },
-                            ),
-                            onDismissRequest = { vm.onDismissDisableBlockLogWarning() },
-                        )
-                    }
-
-                    StartScreen(
-                        contentPadding = contentPadding + PaddingValues(ListPadding) +
-                            PaddingValues(bottom = VpnFabSize + FabPadding),
-                        listState = startListState,
-                        enabled = canEditSettings,
-                        resumeOnStartup = resumeOnStartup,
-                        onResumeOnStartupClick = {
-                            config.autoStart = !config.autoStart
-                            resumeOnStartup = config.autoStart
-                            config.save()
-                        },
-                        watchConnection = watchConnection,
-                        onWatchConnectionClick = {
-                            config.watchDog = !config.watchDog
-                            watchConnection = config.watchDog
-                            config.save()
-                        },
-                        ipv6Support = ipv6Support,
-                        onIpv6SupportClick = {
-                            config.ipV6Support = !config.ipV6Support
-                            ipv6Support = config.ipV6Support
-                            config.save()
-                        },
-                        blockLog = blockLog,
-                        onToggleBlockLog = {
-                            if (blockLog) {
-                                vm.onDisableBlockLogWarning()
-                            } else {
-                                config.blockLogging = !config.blockLogging
+                val showDisableBlockLogWarningDialog by vm.showDisableBlockLogWarningDialog.collectAsState()
+                if (showDisableBlockLogWarningDialog) {
+                    BasicDialog(
+                        title = stringResource(R.string.warning),
+                        text = stringResource(R.string.disable_block_log_warning_description),
+                        primaryButton = DialogButton(
+                            text = stringResource(R.string.disable),
+                            onClick = {
+                                vm.onClearBlockLog()
+                                config.blockLogging = false
                                 blockLog = config.blockLogging
                                 config.save()
-                            }
-                        },
-                        onOpenBlockLog = {
-                            topLevelNavController.navigate(TopLevelDestination.BlockLog)
-                        },
-                        onImport = onImport,
-                        onExport = onExport,
-                        onShareLogcat = onShareLogcat,
-                        onResetSettings = { vm.onResetSettingsWarning() },
-                        onOpenAbout = { topLevelNavController.navigate(TopLevelDestination.About) },
-                        status = status,
-                        onChangeVpnStatusClick = onTryToggleService,
-                    )
-                }
-                composable<HomeDestinations.Hosts> {
-                    vm.showStatusBarShade()
-                    var refreshDaily by remember { mutableStateOf(config.hosts.automaticRefresh) }
-                    val isRefreshingHosts by RuleDatabaseUpdateWorker.isRefreshing.collectAsState()
-                    HostsScreen(
-                        contentPadding = contentPadding + PaddingValues(ListPadding) +
-                            PaddingValues(bottom = DefaultFabSize + FabPadding),
-                        listState = hostsListState,
-                        enabled = canEditSettings,
-                        refreshDaily = refreshDaily,
-                        onRefreshDailyClick = {
-                            config.hosts.automaticRefresh = !config.hosts.automaticRefresh
-                            refreshDaily = config.hosts.automaticRefresh
-                            config.save()
-                            onUpdateRefreshWork()
-                        },
-                        hosts = vm.hosts,
-                        onHostClick = { host ->
-                            topLevelNavController.navigate(host)
-                        },
-                        onHostStateChanged = { host ->
-                            vm.cycleHost(host)
-                        },
-                        isRefreshingHosts = isRefreshingHosts,
-                        onRefreshHosts = onRefreshHosts,
+                                vm.onDismissDisableBlockLogWarning()
+                            },
+                        ),
+                        secondaryButton = DialogButton(
+                            text = stringResource(R.string.close),
+                            onClick = { vm.onDismissDisableBlockLogWarning() },
+                        ),
+                        onDismissRequest = { vm.onDismissDisableBlockLogWarning() },
                     )
                 }
 
-                composable<HomeDestinations.Apps> {
-                    vm.showStatusBarShade()
-                    val isRefreshing by vm.appListRefreshing.collectAsState()
-                    var showSystemApps by remember { mutableStateOf(config.appList.showSystemApps) }
-                    var allowlistDefault by remember { mutableStateOf(config.appList.defaultMode) }
-                    AppsScreen(
-                        contentPadding = contentPadding + PaddingValues(ListPadding),
-                        listState = appListState,
-                        enabled = canEditSettings,
-                        isRefreshing = isRefreshing,
-                        onRefresh = { vm.populateAppList() },
-                        showSystemApps = showSystemApps,
-                        onShowSystemAppsClick = {
-                            config.appList.showSystemApps = !config.appList.showSystemApps
-                            showSystemApps = config.appList.showSystemApps
+                StartScreen(
+                    contentPadding = contentPadding + PaddingValues(ListPadding) +
+                            PaddingValues(bottom = VpnFabSize + FabPadding),
+                    listState = startListState,
+                    enabled = canEditSettings,
+                    resumeOnStartup = resumeOnStartup,
+                    onResumeOnStartupClick = {
+                        config.autoStart = !config.autoStart
+                        resumeOnStartup = config.autoStart
+                        config.save()
+                    },
+                    watchConnection = watchConnection,
+                    onWatchConnectionClick = {
+                        config.watchDog = !config.watchDog
+                        watchConnection = config.watchDog
+                        config.save()
+                    },
+                    ipv6Support = ipv6Support,
+                    onIpv6SupportClick = {
+                        config.ipV6Support = !config.ipV6Support
+                        ipv6Support = config.ipV6Support
+                        config.save()
+                    },
+                    blockLog = blockLog,
+                    onToggleBlockLog = {
+                        if (blockLog) {
+                            vm.onDisableBlockLogWarning()
+                        } else {
+                            config.blockLogging = !config.blockLogging
+                            blockLog = config.blockLogging
                             config.save()
-                            vm.populateAppList()
-                        },
-                        bypassSelection = allowlistDefault,
-                        onBypassSelection = { selection ->
-                            config.appList.defaultMode = selection
-                            allowlistDefault = selection
-                            config.save()
-                            vm.populateAppList()
-                        },
-                        apps = vm.appList,
-                        onAppClick = { app, enabled ->
-                            vm.onToggleApp(app, enabled)
-                        },
-                    )
-                }
-                composable<HomeDestinations.DNS> {
-                    vm.showStatusBarShade()
-                    var customDnsServers by remember { mutableStateOf(config.dnsServers.enabled) }
-                    DnsScreen(
-                        contentPadding = contentPadding + PaddingValues(ListPadding) +
+                        }
+                    },
+                    onOpenBlockLog = {
+                        topLevelNavController.navigate(TopLevelDestination.BlockLog)
+                    },
+                    onImport = onImport,
+                    onExport = onExport,
+                    onShareLogcat = onShareLogcat,
+                    onResetSettings = { vm.onResetSettingsWarning() },
+                    onOpenAbout = { topLevelNavController.navigate(TopLevelDestination.About) },
+                    status = status,
+                    onChangeVpnStatusClick = onTryToggleService,
+                )
+            }
+            composable<HomeDestinations.Hosts> {
+                vm.showStatusBarShade()
+                var refreshDaily by remember { mutableStateOf(config.hosts.automaticRefresh) }
+                val isRefreshingHosts by RuleDatabaseUpdateWorker.isRefreshing.collectAsState()
+                HostsScreen(
+                    contentPadding = contentPadding + PaddingValues(ListPadding) +
                             PaddingValues(bottom = DefaultFabSize + FabPadding),
-                        listState = dnsListState,
-                        enabled = canEditSettings,
-                        servers = vm.dnsServers,
-                        customDnsServers = customDnsServers,
-                        onCustomDnsServersClick = {
-                            config.dnsServers.enabled = !config.dnsServers.enabled
-                            customDnsServers = config.dnsServers.enabled
-                            config.save()
-                        },
-                        onItemClick = { item ->
-                            topLevelNavController.navigate(item)
-                        },
-                        onItemCheckClicked = { item ->
-                            vm.toggleDnsServer(item)
-                        },
-                    )
-                }
+                    listState = hostsListState,
+                    enabled = canEditSettings,
+                    refreshDaily = refreshDaily,
+                    onRefreshDailyClick = {
+                        config.hosts.automaticRefresh = !config.hosts.automaticRefresh
+                        refreshDaily = config.hosts.automaticRefresh
+                        config.save()
+                        onUpdateRefreshWork()
+                    },
+                    hosts = vm.hosts,
+                    onHostClick = { host ->
+                        topLevelNavController.navigate(host)
+                    },
+                    onHostStateChanged = { host ->
+                        vm.cycleHost(host)
+                    },
+                    isRefreshingHosts = isRefreshingHosts,
+                    onRefreshHosts = onRefreshHosts,
+                )
+            }
+
+            composable<HomeDestinations.Apps> {
+                vm.showStatusBarShade()
+                val isRefreshing by vm.appListRefreshing.collectAsState()
+                var showSystemApps by remember { mutableStateOf(config.appList.showSystemApps) }
+                var allowlistDefault by remember { mutableStateOf(config.appList.defaultMode) }
+                AppsScreen(
+                    contentPadding = contentPadding + PaddingValues(ListPadding),
+                    listState = appListState,
+                    enabled = canEditSettings,
+                    isRefreshing = isRefreshing,
+                    onRefresh = { vm.populateAppList() },
+                    showSystemApps = showSystemApps,
+                    onShowSystemAppsClick = {
+                        config.appList.showSystemApps = !config.appList.showSystemApps
+                        showSystemApps = config.appList.showSystemApps
+                        config.save()
+                        vm.populateAppList()
+                    },
+                    bypassSelection = allowlistDefault,
+                    onBypassSelection = { selection ->
+                        config.appList.defaultMode = selection
+                        allowlistDefault = selection
+                        config.save()
+                        vm.populateAppList()
+                    },
+                    apps = vm.appList,
+                    onAppClick = { app, enabled ->
+                        vm.onToggleApp(app, enabled)
+                    },
+                )
+            }
+            composable<HomeDestinations.DNS> {
+                vm.showStatusBarShade()
+                var customDnsServers by remember { mutableStateOf(config.dnsServers.enabled) }
+                DnsScreen(
+                    contentPadding = contentPadding + PaddingValues(ListPadding) +
+                            PaddingValues(bottom = DefaultFabSize + FabPadding),
+                    listState = dnsListState,
+                    enabled = canEditSettings,
+                    servers = vm.dnsServers,
+                    customDnsServers = customDnsServers,
+                    onCustomDnsServersClick = {
+                        config.dnsServers.enabled = !config.dnsServers.enabled
+                        customDnsServers = config.dnsServers.enabled
+                        config.save()
+                    },
+                    onItemClick = { item ->
+                        topLevelNavController.navigate(item)
+                    },
+                    onItemCheckClicked = { item ->
+                        vm.toggleDnsServer(item)
+                    },
+                )
             }
         }
     }
