@@ -67,7 +67,7 @@ fun NavigationRail(
                 top = insets.calculateTopPadding(),
                 bottom = insets.calculateBottomPadding(),
             )
-            .padding(start = 6.dp, end = 6.dp),
+            .padding(horizontal = 12.dp),
         verticalArrangement = verticalArrangement,
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
