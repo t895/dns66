@@ -113,16 +113,11 @@ fun AppsScreen(
                 Spacer(modifier = Modifier.padding(vertical = 4.dp))
             }
 
-            items(
-                items = apps,
-                key = { it.info.packageName },
-            ) {
+            items(apps) {
                 var checked by remember { mutableStateOf(it.enabled) }
                 checked = it.enabled
                 SwitchListItem(
-                    modifier = Modifier
-                        .testTag("apps:listItem")
-                        .animateItem(),
+                    modifier = Modifier.testTag("apps:listItem"),
                     title = it.label,
                     details = it.info.packageName,
                     checked = checked,
