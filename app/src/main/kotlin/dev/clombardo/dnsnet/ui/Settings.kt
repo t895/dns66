@@ -442,7 +442,7 @@ fun SwitchListItem(
                 modifier = Modifier.semantics { contentDescription = title },
                 enabled = enabled,
                 checked = checked,
-                onCheckedChange = null,
+                onCheckedChange = onCheckedChange,
                 interactionSource = sharedInteractionSource,
             )
         },
