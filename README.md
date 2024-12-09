@@ -30,7 +30,7 @@ current connection's DNS servers are used.
 
 Privacy Guarantee
 -----------------
-Privacy is the most important aspect of DNS66. Currently, DNS66 is strictly
+Privacy is the most important aspect of DNSNet. Currently, DNSNet is strictly
 data reducing: Running it can only reduce the amount of data leaving your
 device, not increase it (except for fetching hosts files, obviously), as for
 each request, we will either allow it to leave your device or not - we will
