@@ -148,6 +148,8 @@ dependencies {
     detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.7")
 
     implementation("dev.chrisbanes.haze:haze:1.1.1")
+
+    implementation("com.aallam.similarity:string-similarity-kotlin:0.1.0")
 }
 
 licensee {
@@ -155,7 +157,8 @@ licensee {
     allow("Apache-2.0")
     allow("BSD-3-Clause")
     allowUrl("https://opensource.org/licenses/mit")
-    allowUrl("https://github.com/usefulness/licensee-for-android/blob/master/LICENSE")
+    allowUrl("https://github.com/usefulness/licensee-for-android/blob/master/LICENSE") // MIT
+    allowUrl("https://github.com/aallam/string-similarity-kotlin/blob/main/LICENSE") // MIT
 }
 
 licenseeForAndroid {

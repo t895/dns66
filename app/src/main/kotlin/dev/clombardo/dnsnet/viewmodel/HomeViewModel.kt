@@ -132,17 +132,13 @@ class HomeViewModel : ViewModel() {
             val notOnVpn = HashSet<String>()
             config.appList.resolve(pm, HashSet(), notOnVpn)
             apps.forEach {
-                if (it.packageName != dev.clombardo.dnsnet.BuildConfig.APPLICATION_ID &&
-                    (
-                        config.appList.showSystemApps ||
-                            (it.flags and ApplicationInfo.FLAG_SYSTEM) == 0
-                        )
-                ) {
+                if (it.packageName != dev.clombardo.dnsnet.BuildConfig.APPLICATION_ID) {
                     entries.add(
                         App(
                             info = it,
                             label = it.loadLabel(pm).toString(),
                             enabled = notOnVpn.contains(it.packageName),
+                            isSystem = (it.flags and ApplicationInfo.FLAG_SYSTEM) != 0,
                         )
                     )
                 }

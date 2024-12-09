@@ -12,7 +12,7 @@ import android.os.Parcelable
 import androidx.annotation.StringRes
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -28,24 +28,20 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
-import androidx.compose.foundation.selection.triStateToggleable
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.ArrowUpward
 import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.material.icons.filled.MoreVert
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
-import androidx.compose.material3.TriStateCheckbox
-import androidx.compose.material3.minimumInteractiveComponentSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
@@ -56,17 +52,16 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.state.ToggleableState
+import androidx.compose.ui.text.input.KeyboardCapitalization
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.aallam.similarity.Cosine
 import dev.clombardo.dnsnet.NumberFormatterCompat
 import dev.clombardo.dnsnet.R
 import dev.clombardo.dnsnet.ui.theme.EmphasizedDecelerateEasing
@@ -103,6 +98,8 @@ fun BlockLog(
 
     var sortState by rememberSaveable { mutableStateOf(BlockLogSortState()) }
     var filterState by rememberSaveable { mutableStateOf(BlockLogFilterState()) }
+    var searchValue by rememberSaveable { mutableStateOf("") }
+    val cosine = remember { Cosine() }
 
     val adjustedList by remember {
         derivedStateOf {
@@ -135,7 +132,7 @@ fun BlockLog(
                 }
             }
 
-            sortedList.filter {
+            val filteredList = sortedList.filter {
                 var result = true
                 filterState.filters.forEach { (type, mode) ->
                     when (type) {
@@ -148,6 +145,22 @@ fun BlockLog(
                     }
                 }
                 result
+            }
+
+            if (searchValue.isEmpty()) {
+                filteredList
+            } else {
+                val adjustedSearchValue = searchValue.trim().lowercase()
+                filteredList.mapNotNull {
+                    val similarity = cosine.similarity(it.hostname, adjustedSearchValue)
+                    if (similarity > 0) {
+                        similarity to it
+                    } else {
+                        null
+                    }
+                }.sortedByDescending {
+                    it.first
+                }.map { it.second }
             }
         }
     }
@@ -198,12 +211,36 @@ fun BlockLog(
                 )
             }
 
-            Box(
+            Row(
                 modifier = Modifier
                     .fillMaxWidth()
                     .padding(vertical = 8.dp),
-                contentAlignment = Alignment.Center,
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically,
             ) {
+                val keyboardOptions = remember {
+                    KeyboardOptions(
+                        capitalization = KeyboardCapitalization.None,
+                        autoCorrectEnabled = false,
+                    )
+                }
+                var expanded by rememberSaveable { mutableStateOf(false) }
+                SearchWidget(
+                    modifier = Modifier.weight(
+                        weight = 1f,
+                        fill = false
+                    ),
+                    expanded = expanded,
+                    searchValue = searchValue,
+                    onSearchButtonClick = { expanded = true },
+                    onSearchValueChange = { searchValue = it },
+                    onClearButtonClick = {
+                        expanded = false
+                        searchValue = ""
+                    },
+                    keyboardOptions = keyboardOptions,
+                )
+                Spacer(Modifier.padding(horizontal = 2.dp))
                 BasicTooltipIconButton(
                     icon = Icons.Default.FilterList,
                     contentDescription = stringResource(R.string.modify_list),
@@ -274,10 +311,10 @@ fun BlockLog(
                         },
                         pageContent = {
                             BlockLogSortType.entries.forEach {
-                                BlockLogSortItem(
+                                SortItem(
                                     selected = sortState.selectedType == it,
                                     ascending = sortState.ascending,
-                                    type = it,
+                                    label = stringResource(it.labelRes),
                                     onClick = {
                                         sortState = if (sortState.selectedType == it) {
                                             BlockLogSortState(
@@ -290,7 +327,6 @@ fun BlockLog(
                                                 ascending = true,
                                             )
                                         }
-                                        println(sortState)
                                     }
                                 )
                             }
@@ -302,8 +338,8 @@ fun BlockLog(
                         },
                         pageContent = {
                             BlockLogFilterType.entries.forEach {
-                                BlockLogFilterItem(
-                                    type = it,
+                                FilterItem(
+                                    label = stringResource(it.labelRes),
                                     mode = filterState.filters[it],
                                     onClick = {
                                         val newFilters = filterState.filters.toMutableMap()
@@ -327,22 +363,6 @@ fun BlockLog(
     }
 }
 
-@Composable
-fun BlockLogListItem(
-    modifier: Modifier = Modifier,
-    text: String,
-    endContent: @Composable () -> Unit,
-) {
-    ContentSetting(
-        modifier = modifier
-            .minimumInteractiveComponentSize()
-            .padding(horizontal = 16.dp),
-        title = text,
-    ) {
-        endContent()
-    }
-}
-
 enum class BlockLogSortType(@StringRes val labelRes: Int) {
     Attempts(R.string.attempts),
     LastConnected(R.string.last_connected),
@@ -355,77 +375,14 @@ data class BlockLogSortState(
     val ascending: Boolean = true,
 ) : Parcelable
 
-@Composable
-private fun BlockLogSortItem(
-    modifier: Modifier = Modifier,
-    selected: Boolean,
-    ascending: Boolean,
-    type: BlockLogSortType,
-    onClick: () -> Unit,
-) {
-    val text = stringResource(type.labelRes)
-    BlockLogListItem(
-        modifier = modifier
-            .clickable(
-                role = Role.Button,
-                onClick = onClick,
-            ),
-        text = text,
-    ) {
-        if (selected) {
-            val animatedRotation by animateFloatAsState(
-                targetValue = if (ascending) 0f else -180f,
-                label = "animatedRotation",
-            )
-            Icon(
-                modifier = Modifier.rotate(animatedRotation),
-                imageVector = Icons.Filled.ArrowUpward,
-                contentDescription = text,
-            )
-        }
-    }
-}
-
 enum class BlockLogFilterType(@StringRes val labelRes: Int) {
     Blocked(R.string.blocked),
-}
-
-enum class FilterMode {
-    Include,
-    Exclude,
 }
 
 @Parcelize
 data class BlockLogFilterState(
     val filters: Map<BlockLogFilterType, FilterMode> = emptyMap()
 ) : Parcelable
-
-@Composable
-private fun BlockLogFilterItem(
-    modifier: Modifier = Modifier,
-    type: BlockLogFilterType,
-    mode: FilterMode?,
-    onClick: () -> Unit,
-) {
-    val state = when (mode) {
-        FilterMode.Include -> ToggleableState.On
-        FilterMode.Exclude -> ToggleableState.Indeterminate
-        null -> ToggleableState.Off
-    }
-    BlockLogListItem(
-        modifier = modifier
-            .triStateToggleable(
-                state = state,
-                onClick = onClick,
-            ),
-        text = stringResource(type.labelRes),
-    ) {
-        TriStateCheckbox(
-            state = state,
-            onClick = onClick,
-        )
-    }
-}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

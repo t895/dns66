@@ -166,4 +166,8 @@
     <string name="open_license">Open license</string>
     <string name="dns66_license_link" translatable="false">https://github.com/julian-klode/dns66/blob/main/COPYING</string>
     <string name="adbuster_license_link" translatable="false">https://github.com/dbrodie/AdBuster/blob/master/License-GPLv3</string>
+    <string name="search">Search</string>
+    <string name="ascending">Ascending</string>
+    <string name="descending">Descending</string>
+    <string name="system_apps">System apps</string>
 </resources>

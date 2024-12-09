@@ -41,15 +41,17 @@ import dev.clombardo.dnsnet.ui.theme.ShowScrollUpIndicator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
-val ScrollUpIndicatorWindowInsets: WindowInsets
-    @Composable get() = WindowInsets.systemBars
-        .add(WindowInsets.displayCutout)
+object ScrollUpIndicatorDefaults {
+    val windowInsets: WindowInsets
+        @Composable get() = WindowInsets.systemBars
+            .add(WindowInsets.displayCutout)
+}
 
 @Composable
 fun BoxScope.ScrollUpIndicator(
     enabled: Boolean = true,
     visible: Boolean,
-    windowInsets: WindowInsets = ScrollUpIndicatorWindowInsets,
+    windowInsets: WindowInsets = ScrollUpIndicatorDefaults.windowInsets,
     onClick: suspend CoroutineScope.() -> Unit,
 ) {
     val scope = rememberCoroutineScope()

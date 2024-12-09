@@ -720,7 +720,6 @@ fun HomeScreen(
             composable<HomeDestinations.Apps> {
                 vm.showStatusBarShade()
                 val isRefreshing by vm.appListRefreshing.collectAsState()
-                var showSystemApps by remember { mutableStateOf(config.appList.showSystemApps) }
                 var allowlistDefault by remember { mutableStateOf(config.appList.defaultMode) }
                 AppsScreen(
                     contentPadding = contentPadding + PaddingValues(ListPadding),
@@ -728,13 +727,6 @@ fun HomeScreen(
                     enabled = canEditSettings,
                     isRefreshing = isRefreshing,
                     onRefresh = { vm.populateAppList() },
-                    showSystemApps = showSystemApps,
-                    onShowSystemAppsClick = {
-                        config.appList.showSystemApps = !config.appList.showSystemApps
-                        showSystemApps = config.appList.showSystemApps
-                        config.save()
-                        vm.populateAppList()
-                    },
                     bypassSelection = allowlistDefault,
                     onBypassSelection = { selection ->
                         config.appList.defaultMode = selection

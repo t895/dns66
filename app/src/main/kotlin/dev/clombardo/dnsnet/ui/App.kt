@@ -20,6 +20,7 @@ data class App(
     val info: ApplicationInfo,
     val label: String,
     var enabled: Boolean,
+    val isSystem: Boolean,
 ) {
     private var weakIcon: WeakReference<Drawable>? = null
 
