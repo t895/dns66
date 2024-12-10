@@ -49,7 +49,6 @@ fun StartScreen(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
     listState: ScrollState = rememberScrollState(),
-    enabled: Boolean,
     resumeOnStartup: Boolean,
     onResumeOnStartupClick: () -> Unit,
     watchConnection: Boolean,
@@ -87,14 +86,12 @@ fun StartScreen(
                     title = stringResource(id = R.string.watchdog),
                     details = stringResource(id = R.string.watchdog_description),
                     checked = watchConnection,
-                    enabled = enabled,
                     onCheckedChange = { onWatchConnectionClick() },
                 )
                 SwitchListItem(
                     title = stringResource(id = R.string.ipv6_support),
                     details = stringResource(id = R.string.ipv6_support_description),
                     checked = ipv6Support,
-                    enabled = enabled,
                     onCheckedChange = { onIpv6SupportClick() },
                 )
                 SplitSwitchListItem(
@@ -103,7 +100,6 @@ fun StartScreen(
                     maxDetailLines = Int.MAX_VALUE,
                     outlineColor = MaterialTheme.colorScheme.outline,
                     checked = blockLog,
-                    switchEnabled = enabled,
                     bodyEnabled = blockLog,
                     onCheckedChange = { onToggleBlockLog() },
                     onBodyClick = onOpenBlockLog,
@@ -113,7 +109,6 @@ fun StartScreen(
 
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 FilledTonalSettingsButton(
-                    enabled = enabled,
                     title = stringResource(R.string.action_import),
                     description = stringResource(R.string.import_description),
                     icon = Icons.Default.Download,
@@ -132,7 +127,6 @@ fun StartScreen(
                     onClick = onShareLogcat,
                 )
                 FilledTonalSettingsButton(
-                    enabled = enabled,
                     title = stringResource(R.string.load_defaults),
                     description = stringResource(R.string.load_defaults_description),
                     icon = Icons.Default.History,
@@ -181,7 +175,6 @@ private fun StartScreenPreview() {
     DnsNetTheme {
         StartScreen(
             modifier = Modifier.background(MaterialTheme.colorScheme.surface),
-            enabled = true,
             resumeOnStartup = false,
             onResumeOnStartupClick = {},
             watchConnection = false,

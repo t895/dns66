@@ -46,7 +46,7 @@ import java.util.Locale
  */
 class DnsPacketProxy(
     private val eventLoop: EventLoop,
-    private val log: ((name: String, allowed: Boolean) -> Unit)?,
+    private val log: (name: String, allowed: Boolean) -> Unit,
 ) {
     companion object {
         // Choose a value that is smaller than the time needed to unblock a host.
@@ -205,7 +205,7 @@ class DnsPacketProxy(
         val dnsQueryName = dnsMsg.question.name.toString(true).lowercase()
         if (!ruleDatabase.isBlocked(dnsQueryName)) {
             logi("handleDnsRequest: DNS Name $dnsQueryName Allowed, sending to $destAddr")
-            log?.invoke(dnsQueryName, true)
+            log(dnsQueryName, true)
             val outPacket = DatagramPacket(
                 dnsRawData,
                 0,
@@ -216,7 +216,7 @@ class DnsPacketProxy(
             eventLoop.forwardPacket(outPacket, parsedPacket)
         } else {
             logi("handleDnsRequest: DNS Name $dnsQueryName Blocked!")
-            log?.invoke(dnsQueryName, false)
+            log(dnsQueryName, false)
             dnsMsg.header.setFlag(Flags.QR.toInt())
             dnsMsg.header.rcode = Rcode.NOERROR
             dnsMsg.addRecord(NEGATIVE_CACHE_SOA_RECORD, Section.AUTHORITY)

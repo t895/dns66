@@ -89,7 +89,6 @@ fun AppsScreen(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
     listState: LazyListState = rememberLazyListState(),
-    enabled: Boolean,
     isRefreshing: Boolean,
     onRefresh: () -> Unit,
     bypassSelection: AllowListMode,
@@ -181,7 +180,6 @@ fun AppsScreen(
                     val bypassOptions = stringArrayResource(R.array.allowlist_defaults)
                     ExpandableOptionsItem(
                         expanded = expanded,
-                        enabled = enabled,
                         title = stringResource(R.string.allowlist_defaults_title),
                         details = bypassOptions[bypassSelection.ordinal],
                         sharedInteractionSource = remember { MutableInteractionSource() },
@@ -251,7 +249,6 @@ fun AppsScreen(
                     title = it.label,
                     details = it.info.packageName,
                     checked = checked,
-                    enabled = enabled,
                     onCheckedChange = { _ ->
                         checked = !checked
                         onAppClick(it, checked)
@@ -360,7 +357,6 @@ private fun AppsScreenPreview() {
     DnsNetTheme {
         AppsScreen(
             isRefreshing = false,
-            enabled = true,
             onRefresh = {},
             apps = listOf(App(ApplicationInfo(), "Label", true, false)),
             onAppClick = { _, _ -> },

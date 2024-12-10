@@ -83,7 +83,7 @@ class AdVpnService : VpnService(), Handler.Callback {
 
         const val VPN_MSG_STATUS_UPDATE = 0
 
-        private const val COMMAND_TAG = "COMMAND"
+        const val COMMAND_TAG = "COMMAND"
         private const val NOTIFICATION_INTENT_TAG = "NOTIFICATION_INTENT"
 
         private val _status = MutableStateFlow(VpnStatus.STOPPED)
@@ -152,12 +152,10 @@ class AdVpnService : VpnService(), Handler.Callback {
         notify = { status ->
             handler.sendMessage(handler.obtainMessage(VPN_MSG_STATUS_UPDATE, status.ordinal, 0))
         },
-        log = if (config.blockLogging) {
-            { connectionName, allowed ->
+        log = { connectionName, allowed ->
+            if (config.blockLogging) {
                 logger.newConnection(connectionName, allowed)
             }
-        } else {
-            null
         }
     )
 

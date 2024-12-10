@@ -51,7 +51,6 @@ fun DnsScreen(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
     listState: LazyListState = rememberLazyListState(),
-    enabled: Boolean,
     servers: List<DnsServer> = emptyList(),
     customDnsServers: Boolean,
     onCustomDnsServersClick: () -> Unit,
@@ -69,7 +68,6 @@ fun DnsScreen(
                     title = stringResource(R.string.custom_dns),
                     details = stringResource(R.string.dns_description),
                     checked = customDnsServers,
-                    enabled = enabled,
                     onCheckedChange = { onCustomDnsServersClick() },
                 )
             }
@@ -82,8 +80,6 @@ fun DnsScreen(
                 title = it.title,
                 details = it.location,
                 checked = it.enabled,
-                bodyEnabled = enabled,
-                checkboxEnabled = enabled,
                 onBodyClick = { onItemClick(it) },
                 onCheckedChange = { _ -> onItemCheckClicked(it) },
             )
@@ -100,7 +96,6 @@ private fun DnsScreenPreview() {
         item.location = "213.73.91.35"
         DnsScreen(
             modifier = Modifier.background(MaterialTheme.colorScheme.surface),
-            enabled = true,
             servers = listOf(item, item, item),
             onItemClick = {},
             customDnsServers = false,

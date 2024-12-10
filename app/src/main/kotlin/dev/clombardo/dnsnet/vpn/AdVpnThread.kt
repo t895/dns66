@@ -62,7 +62,7 @@ import java.util.Queue
 class AdVpnThread(
     private val vpnService: VpnService,
     private val notify: (VpnStatus) -> Unit,
-    log: ((name: String, allowed: Boolean) -> Unit)?,
+    log: (name: String, allowed: Boolean) -> Unit,
 ) : Runnable, EventLoop {
     companion object {
         private const val MIN_RETRY_TIME = 5
@@ -167,15 +167,16 @@ class AdVpnThread(
     override fun run() {
         logi("Starting")
 
+        notify(VpnStatus.STARTING)
+
         // Load the block list
         try {
             dnsPacketProxy.initialize(upstreamDnsServers)
             vpnWatchDog.initialize(config.watchDog)
         } catch (e: InterruptedException) {
+            notify(VpnStatus.STOPPED)
             return
         }
-
-        notify(VpnStatus.STARTING)
 
         var retryTimeout = MIN_RETRY_TIME
         // Try connecting the vpn continuously

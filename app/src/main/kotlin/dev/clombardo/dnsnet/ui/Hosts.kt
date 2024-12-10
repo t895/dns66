@@ -99,13 +99,11 @@ private fun IconText(
     }
 }
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HostsScreen(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
     listState: LazyListState = rememberLazyListState(),
-    enabled: Boolean,
     refreshDaily: Boolean,
     onRefreshDailyClick: () -> Unit,
     hosts: List<Host>,
@@ -179,7 +177,6 @@ fun HostsScreen(
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     FilledTonalButton(
-                        enabled = enabled,
                         onClick = {
                             if (!isRefreshingHosts) {
                                 onRefreshHosts()
@@ -217,7 +214,6 @@ fun HostsScreen(
 
             SplitContentSetting(
                 modifier = Modifier.animateItem(),
-                enabled = enabled,
                 onBodyClick = {
                     onHostClick(it)
                 },
@@ -226,7 +222,6 @@ fun HostsScreen(
                 endContent = {
                     val stateText = getStateString(it.state)
                     TooltipIconButton(
-                        enabled = enabled,
                         painter = painterResource(iconResource),
                         contentDescription = stateText,
                         onClick = { onHostStateChanged(it) },
@@ -263,7 +258,6 @@ private fun HostsScreenPreview() {
     DnsNetTheme {
         HostsScreen(
             modifier = Modifier.background(MaterialTheme.colorScheme.surface),
-            enabled = true,
             refreshDaily = false,
             onRefreshDailyClick = {},
             hosts = items,

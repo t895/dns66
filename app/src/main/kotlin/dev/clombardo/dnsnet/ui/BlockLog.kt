@@ -84,7 +84,6 @@ data class LoggedConnectionState(
 fun BlockLog(
     modifier: Modifier = Modifier,
     listState: LazyListState,
-    canEditSettings: Boolean,
     contentPadding: PaddingValues,
     loggedConnections: Map<String, LoggedConnection>,
     onCreateException: (LoggedConnectionState) -> Unit,
@@ -282,7 +281,6 @@ fun BlockLog(
                                 MenuItem(
                                     text = stringResource(R.string.create_exception),
                                     painter = rememberVectorPainter(Icons.Default.Add),
-                                    enabled = canEditSettings,
                                     onClick = {
                                         showMenu = false
                                         onCreateException(it)
@@ -388,7 +386,6 @@ data class BlockLogFilterState(
 @Composable
 fun BlockLogScreen(
     modifier: Modifier = Modifier,
-    canEditSettings: Boolean,
     onNavigateUp: () -> Unit,
     listState: LazyListState = rememberLazyListState(),
     loggedConnections: Map<String, LoggedConnection>,
@@ -418,7 +415,6 @@ fun BlockLogScreen(
             BlockLog(
                 contentPadding = contentPadding,
                 listState = listState,
-                canEditSettings = canEditSettings,
                 loggedConnections = loggedConnections,
                 onCreateException = onCreateException,
             )
@@ -440,8 +436,6 @@ fun BlockLogScreen(
 @Composable
 fun BlockLogScreenPreview() {
     BlockLogScreen(
-        modifier = Modifier,
-        canEditSettings = true,
         onNavigateUp = {},
         loggedConnections = mapOf(
             "some.blocked.server" to LoggedConnection(false, 1, 0),

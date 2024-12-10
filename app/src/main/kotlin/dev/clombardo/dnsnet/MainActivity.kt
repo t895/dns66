@@ -103,6 +103,7 @@ class MainActivity : AppCompatActivity() {
                         }
                         config.save()
                         vm.onReloadSettings()
+                        restartService()
                         recreate()
                     }
 
@@ -154,6 +155,7 @@ class MainActivity : AppCompatActivity() {
                         onShareLogcat = ::sendLogcat,
                         onTryToggleService = { tryToggleService(true, vpnLauncher) },
                         onStartWithoutHostsCheck = { tryToggleService(false, vpnLauncher) },
+                        onRestartService = ::restartService,
                         onUpdateRefreshWork = ::updateRefreshWork,
                         onOpenNetworkSettings = ::openNetworkSettings,
                     )
@@ -246,7 +248,7 @@ class MainActivity : AppCompatActivity() {
         if (AdVpnService.status.value != VpnStatus.STOPPED) {
             logi("Attempting to disconnect")
             val intent = Intent(this, AdVpnService::class.java)
-                .putExtra("COMMAND", Command.STOP.ordinal)
+                .putExtra(AdVpnService.COMMAND_TAG, Command.STOP.ordinal)
             startService(intent)
         } else {
             if (isPrivateDnsEnabled()) {
@@ -258,6 +260,14 @@ class MainActivity : AppCompatActivity() {
                 return
             }
             startService(launcher)
+        }
+    }
+
+    private fun restartService() {
+        if (AdVpnService.status.value == VpnStatus.RUNNING) {
+            val intent = Intent(this, AdVpnService::class.java)
+                .putExtra(AdVpnService.COMMAND_TAG, Command.START.ordinal)
+            startService(intent)
         }
     }
 

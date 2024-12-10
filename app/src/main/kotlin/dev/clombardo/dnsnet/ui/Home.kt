@@ -35,7 +35,6 @@ import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -169,6 +168,7 @@ fun App(
     onShareLogcat: () -> Unit,
     onTryToggleService: () -> Unit,
     onStartWithoutHostsCheck: () -> Unit,
+    onRestartService: () -> Unit,
     onUpdateRefreshWork: () -> Unit,
     onOpenNetworkSettings: () -> Unit,
 ) {
@@ -311,6 +311,7 @@ fun App(
                 onClick = {
                     onLoadDefaults()
                     vm.onDismissResetSettingsDialog()
+                    onRestartService()
                 },
             ),
             secondaryButton = DialogButton(
@@ -330,10 +331,6 @@ fun App(
         }
     }
 
-    val status by AdVpnService.status.collectAsState()
-    val canEditSettings by remember {
-        derivedStateOf { status == VpnStatus.STOPPED }
-    }
     NavHost(
         modifier = modifier.background(MaterialTheme.colorScheme.surface),
         navController = navController,
@@ -345,16 +342,17 @@ fun App(
     ) {
         composable<TopLevelDestination.Home> {
             vm.showStatusBarShade()
+            val status by AdVpnService.status.collectAsState()
             HomeScreen(
                 vm = vm,
                 topLevelNavController = navController,
                 status = status,
-                canEditSettings = canEditSettings,
                 onRefreshHosts = onRefreshHosts,
                 onImport = onImport,
                 onExport = onExport,
                 onShareLogcat = onShareLogcat,
                 onTryToggleService = onTryToggleService,
+                onRestartService = onRestartService,
                 onUpdateRefreshWork = onUpdateRefreshWork,
             )
         }
@@ -365,6 +363,7 @@ fun App(
                 host = host,
                 vm = vm,
                 onPopBackStack = { onPopBackStack(backstackEntry.id) },
+                onRestartService = onRestartService,
             )
         }
         composable<HostException> { backstackEntry ->
@@ -374,6 +373,7 @@ fun App(
                 host = host,
                 vm = vm,
                 onPopBackStack = { onPopBackStack(backstackEntry.id) },
+                onRestartService = onRestartService,
             )
         }
         composable<DnsServer> { backstackEntry ->
@@ -395,6 +395,7 @@ fun App(
                             vm.removeDnsServer(server)
                             vm.onDismissDeleteDnsServerWarning()
                             onPopBackStack(backstackEntry.id)
+                            onRestartService()
                         },
                     ),
                     secondaryButton = DialogButton(
@@ -415,6 +416,7 @@ fun App(
                         vm.replaceDnsServer(server, savedServer)
                     }
                     onPopBackStack(backstackEntry.id)
+                    onRestartService()
                 },
                 onDelete = if (server.title.isEmpty()) {
                     null
@@ -433,7 +435,6 @@ fun App(
         composable<TopLevelDestination.BlockLog> {
             vm.hideStatusBarShade()
             BlockLogScreen(
-                canEditSettings = canEditSettings,
                 onNavigateUp = { onPopBackStack(it.id) },
                 loggedConnections = vm.connectionsLog,
                 onCreateException = {
@@ -463,6 +464,7 @@ fun EditHostDestination(
     host: Host,
     vm: HomeViewModel,
     onPopBackStack: () -> Unit,
+    onRestartService: () -> Unit,
 ) {
     val showDeleteHostWarningDialog by vm.showDeleteHostWarningDialog.collectAsState()
     if (showDeleteHostWarningDialog) {
@@ -478,6 +480,7 @@ fun EditHostDestination(
                     vm.removeHost(host)
                     vm.onDismissDeleteHostWarning()
                     onPopBackStack()
+                    onRestartService()
                 },
             ),
             secondaryButton = DialogButton(
@@ -501,6 +504,7 @@ fun EditHostDestination(
                 vm.replaceHost(host, hostToSave)
             }
             onPopBackStack()
+            onRestartService()
         },
         onDelete = if (host.title.isEmpty()) {
             null
@@ -526,6 +530,7 @@ fun AppPreview() {
         onShareLogcat = {},
         onTryToggleService = {},
         onStartWithoutHostsCheck = {},
+        onRestartService = {},
         onUpdateRefreshWork = {},
         onOpenNetworkSettings = {},
     )
@@ -537,12 +542,12 @@ fun HomeScreen(
     vm: HomeViewModel,
     topLevelNavController: NavHostController,
     status: VpnStatus,
-    canEditSettings: Boolean,
     onRefreshHosts: () -> Unit,
     onImport: () -> Unit,
     onExport: () -> Unit,
     onShareLogcat: () -> Unit,
     onTryToggleService: () -> Unit,
+    onRestartService: () -> Unit,
     onUpdateRefreshWork: () -> Unit,
 ) {
     val navController = rememberNavController()
@@ -586,10 +591,8 @@ fun HomeScreen(
         floatingActionButton = {
             AnimatedVisibility(
                 modifier = Modifier.padding(16.dp),
-                visible = (
-                        currentDestination == HomeDestinations.Hosts ||
-                                currentDestination == HomeDestinations.DNS
-                        ) && canEditSettings,
+                visible = currentDestination == HomeDestinations.Hosts ||
+                        currentDestination == HomeDestinations.DNS,
                 enter = scaleIn(animationSpec = tween(easing = EmphasizedDecelerateEasing)),
                 exit = scaleOut(animationSpec = tween(easing = EmphasizedAccelerateEasing)),
             ) {
@@ -640,8 +643,9 @@ fun HomeScreen(
                             onClick = {
                                 vm.onClearBlockLog()
                                 config.blockLogging = false
-                                blockLog = config.blockLogging
+                                blockLog = false
                                 config.save()
+                                onRestartService()
                                 vm.onDismissDisableBlockLogWarning()
                             },
                         ),
@@ -657,24 +661,26 @@ fun HomeScreen(
                     contentPadding = contentPadding + PaddingValues(ListPadding) +
                             PaddingValues(bottom = VpnFabSize + FabPadding),
                     listState = startListState,
-                    enabled = canEditSettings,
                     resumeOnStartup = resumeOnStartup,
                     onResumeOnStartupClick = {
                         config.autoStart = !config.autoStart
                         resumeOnStartup = config.autoStart
                         config.save()
+                        onRestartService()
                     },
                     watchConnection = watchConnection,
                     onWatchConnectionClick = {
                         config.watchDog = !config.watchDog
                         watchConnection = config.watchDog
                         config.save()
+                        onRestartService()
                     },
                     ipv6Support = ipv6Support,
                     onIpv6SupportClick = {
                         config.ipV6Support = !config.ipV6Support
                         ipv6Support = config.ipV6Support
                         config.save()
+                        onRestartService()
                     },
                     blockLog = blockLog,
                     onToggleBlockLog = {
@@ -684,6 +690,7 @@ fun HomeScreen(
                             config.blockLogging = !config.blockLogging
                             blockLog = config.blockLogging
                             config.save()
+                            onRestartService()
                         }
                     },
                     onOpenBlockLog = {
@@ -706,7 +713,6 @@ fun HomeScreen(
                     contentPadding = contentPadding + PaddingValues(ListPadding) +
                             PaddingValues(bottom = DefaultFabSize + FabPadding),
                     listState = hostsListState,
-                    enabled = canEditSettings,
                     refreshDaily = refreshDaily,
                     onRefreshDailyClick = {
                         config.hosts.automaticRefresh = !config.hosts.automaticRefresh
@@ -720,6 +726,7 @@ fun HomeScreen(
                     },
                     onHostStateChanged = { host ->
                         vm.cycleHost(host)
+                        onRestartService()
                     },
                     isRefreshingHosts = isRefreshingHosts,
                     onRefreshHosts = onRefreshHosts,
@@ -733,7 +740,6 @@ fun HomeScreen(
                 AppsScreen(
                     contentPadding = contentPadding + PaddingValues(ListPadding),
                     listState = appListState,
-                    enabled = canEditSettings,
                     isRefreshing = isRefreshing,
                     onRefresh = { vm.populateAppList() },
                     bypassSelection = allowlistDefault,
@@ -741,11 +747,13 @@ fun HomeScreen(
                         config.appList.defaultMode = selection
                         allowlistDefault = selection
                         config.save()
+                        onRestartService()
                         vm.populateAppList()
                     },
                     apps = vm.appList,
                     onAppClick = { app, enabled ->
                         vm.onToggleApp(app, enabled)
+                        onRestartService()
                     },
                 )
             }
@@ -756,19 +764,20 @@ fun HomeScreen(
                     contentPadding = contentPadding + PaddingValues(ListPadding) +
                             PaddingValues(bottom = DefaultFabSize + FabPadding),
                     listState = dnsListState,
-                    enabled = canEditSettings,
                     servers = vm.dnsServers,
                     customDnsServers = customDnsServers,
                     onCustomDnsServersClick = {
                         config.dnsServers.enabled = !config.dnsServers.enabled
                         customDnsServers = config.dnsServers.enabled
                         config.save()
+                        onRestartService()
                     },
                     onItemClick = { item ->
                         topLevelNavController.navigate(item)
                     },
                     onItemCheckClicked = { item ->
                         vm.toggleDnsServer(item)
+                        onRestartService()
                     },
                 )
             }
