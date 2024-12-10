@@ -8,6 +8,7 @@
 
 package dev.clombardo.dnsnet.ui
 
+import android.annotation.SuppressLint
 import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
@@ -50,7 +51,6 @@ import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -156,6 +156,7 @@ open class TopLevelDestination {
     data object Credits : TopLevelDestination()
 }
 
+@SuppressLint("RestrictedApi")
 @OptIn(ExperimentalPermissionsApi::class, ExperimentalComposeUiApi::class)
 @Composable
 fun App(
@@ -321,6 +322,14 @@ fun App(
     }
 
     val navController = rememberNavController()
+    val onPopBackStack: (id: String) -> Unit = { id ->
+        if (navController.currentBackStack.value.size > 2) {
+            if (navController.currentBackStack.value.any { it.id == id }) {
+                navController.popBackStack()
+            }
+        }
+    }
+
     val status by AdVpnService.status.collectAsState()
     val canEditSettings by remember {
         derivedStateOf { status == VpnStatus.STOPPED }
@@ -355,7 +364,7 @@ fun App(
             EditHostDestination(
                 host = host,
                 vm = vm,
-                navController = navController,
+                onPopBackStack = { onPopBackStack(backstackEntry.id) },
             )
         }
         composable<HostException> { backstackEntry ->
@@ -364,7 +373,7 @@ fun App(
             EditHostDestination(
                 host = host,
                 vm = vm,
-                navController = navController,
+                onPopBackStack = { onPopBackStack(backstackEntry.id) },
             )
         }
         composable<DnsServer> { backstackEntry ->
@@ -385,7 +394,7 @@ fun App(
                         onClick = {
                             vm.removeDnsServer(server)
                             vm.onDismissDeleteDnsServerWarning()
-                            navController.popBackStack()
+                            onPopBackStack(backstackEntry.id)
                         },
                     ),
                     secondaryButton = DialogButton(
@@ -398,14 +407,14 @@ fun App(
 
             EditDnsScreen(
                 server = server,
-                onNavigateUp = { navController.navigateUp() },
+                onNavigateUp = { onPopBackStack(backstackEntry.id) },
                 onSave = { savedServer ->
                     if (server.title.isEmpty()) {
                         vm.addDnsServer(savedServer)
                     } else {
                         vm.replaceDnsServer(server, savedServer)
                     }
-                    navController.popBackStack()
+                    onPopBackStack(backstackEntry.id)
                 },
                 onDelete = if (server.title.isEmpty()) {
                     null
@@ -417,7 +426,7 @@ fun App(
         composable<TopLevelDestination.About> {
             vm.hideStatusBarShade()
             AboutScreen(
-                onNavigateUp = { navController.popBackStack() },
+                onNavigateUp = { onPopBackStack(it.id) },
                 onOpenCredits = { navController.navigate(TopLevelDestination.Credits) },
             )
         }
@@ -425,7 +434,7 @@ fun App(
             vm.hideStatusBarShade()
             BlockLogScreen(
                 canEditSettings = canEditSettings,
-                onNavigateUp = { navController.popBackStack() },
+                onNavigateUp = { onPopBackStack(it.id) },
                 loggedConnections = vm.connectionsLog,
                 onCreateException = {
                     navController.navigate(
@@ -444,7 +453,7 @@ fun App(
         }
         composable<TopLevelDestination.Credits> {
             vm.hideStatusBarShade()
-            CreditsScreen { navController.popBackStack() }
+            CreditsScreen { onPopBackStack(it.id) }
         }
     }
 }
@@ -453,7 +462,7 @@ fun App(
 fun EditHostDestination(
     host: Host,
     vm: HomeViewModel,
-    navController: NavController,
+    onPopBackStack: () -> Unit,
 ) {
     val showDeleteHostWarningDialog by vm.showDeleteHostWarningDialog.collectAsState()
     if (showDeleteHostWarningDialog) {
@@ -468,7 +477,7 @@ fun EditHostDestination(
                 onClick = {
                     vm.removeHost(host)
                     vm.onDismissDeleteHostWarning()
-                    navController.popBackStack()
+                    onPopBackStack()
                 },
             ),
             secondaryButton = DialogButton(
@@ -481,7 +490,7 @@ fun EditHostDestination(
 
     EditHostScreen(
         host = host,
-        onNavigateUp = { navController.navigateUp() },
+        onNavigateUp = onPopBackStack,
         onSave = { hostToSave ->
             if (host.title.isEmpty()) {
                 vm.addHost(hostToSave)
@@ -491,7 +500,7 @@ fun EditHostDestination(
             } else {
                 vm.replaceHost(host, hostToSave)
             }
-            navController.popBackStack()
+            onPopBackStack()
         },
         onDelete = if (host.title.isEmpty()) {
             null
