@@ -347,7 +347,11 @@ fun EditHost(
                 modifier = Modifier
                     .menuAnchor(MenuAnchorType.PrimaryNotEditable)
                     .fillMaxWidth(),
-                value = itemStates[state.ordinal],
+                value = when (state) {
+                    HostState.IGNORE -> itemStates[2]
+                    HostState.DENY -> itemStates[0]
+                    HostState.ALLOW -> itemStates[1]
+                },
                 onValueChange = {},
                 readOnly = true,
                 singleLine = true,
