@@ -666,7 +666,6 @@ fun HomeScreen(
                         config.autoStart = !config.autoStart
                         resumeOnStartup = config.autoStart
                         config.save()
-                        onRestartService()
                     },
                     watchConnection = watchConnection,
                     onWatchConnectionClick = {

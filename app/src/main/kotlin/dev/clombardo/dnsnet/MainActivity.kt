@@ -264,10 +264,8 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun restartService() {
-        if (AdVpnService.status.value == VpnStatus.RUNNING) {
-            val intent = Intent(this, AdVpnService::class.java)
-                .putExtra(AdVpnService.COMMAND_TAG, Command.START.ordinal)
-            startService(intent)
+        if (AdVpnService.status.value != VpnStatus.STOPPED) {
+            createService()
         }
     }
 
@@ -326,9 +324,9 @@ class MainActivity : AppCompatActivity() {
 
     private fun createService() {
         val intent = Intent(applicationContext, AdVpnService::class.java)
-            .putExtra("COMMAND", Command.START.ordinal)
+            .putExtra(AdVpnService.COMMAND_TAG, Command.START.ordinal)
             .putExtra(
-                "NOTIFICATION_INTENT",
+                AdVpnService.NOTIFICATION_INTENT_TAG,
                 PendingIntent.getActivity(
                     applicationContext,
                     0,

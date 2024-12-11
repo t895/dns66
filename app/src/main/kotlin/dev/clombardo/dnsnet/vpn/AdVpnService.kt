@@ -84,7 +84,7 @@ class AdVpnService : VpnService(), Handler.Callback {
         const val VPN_MSG_STATUS_UPDATE = 0
 
         const val COMMAND_TAG = "COMMAND"
-        private const val NOTIFICATION_INTENT_TAG = "NOTIFICATION_INTENT"
+        const val NOTIFICATION_INTENT_TAG = "NOTIFICATION_INTENT"
 
         private val _status = MutableStateFlow(VpnStatus.STOPPED)
         val status = _status.asStateFlow()
@@ -193,7 +193,7 @@ class AdVpnService : VpnService(), Handler.Callback {
         val command = if (intent == null) {
             Command.START
         } else {
-            Command.entries[intent.getIntExtra("COMMAND", Command.START.ordinal)]
+            Command.entries[intent.getIntExtra(COMMAND_TAG, Command.START.ordinal)]
         }
 
         val start = {
