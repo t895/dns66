@@ -67,9 +67,7 @@ import dev.clombardo.dnsnet.viewmodel.HomeViewModel
 import dev.clombardo.dnsnet.vpn.AdVpnService
 import dev.clombardo.dnsnet.vpn.Command
 import dev.clombardo.dnsnet.vpn.VpnStatus
-import java.io.BufferedReader
 import java.io.IOException
-import java.io.InputStreamReader
 import java.util.concurrent.TimeUnit
 
 class MainActivity : AppCompatActivity() {
@@ -133,6 +131,12 @@ class MainActivity : AppCompatActivity() {
                         }
                     }
 
+                val logcatLauncher =
+                    rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("text/plain")) {
+                        it ?: return@rememberLauncherForActivityResult
+                        vm.onWriteLogcat(it)
+                    }
+
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -152,7 +156,7 @@ class MainActivity : AppCompatActivity() {
                         },
                         onImport = { importLauncher.launch(arrayOf("*/*")) },
                         onExport = { exportLauncher.launch("dnsnet.json") },
-                        onShareLogcat = ::sendLogcat,
+                        onShareLogcat = { logcatLauncher.launch("dnsnet-log.txt") },
                         onTryToggleService = { tryToggleService(true, vpnLauncher) },
                         onStartWithoutHostsCheck = { tryToggleService(false, vpnLauncher) },
                         onRestartService = ::restartService,
@@ -196,33 +200,6 @@ class MainActivity : AppCompatActivity() {
         }
 
         updateRefreshWork()
-    }
-
-    private fun sendLogcat() {
-        var proc: Process? = null
-        try {
-            proc = Runtime.getRuntime().exec("logcat -d")
-            val bis = BufferedReader(InputStreamReader(proc.inputStream))
-            val logcat = StringBuilder()
-            var line: String?
-            while (bis.readLine().also { line = it } != null) {
-                logcat.append(line)
-                logcat.append('\n')
-            }
-
-            val sendIntent = Intent(Intent.ACTION_SEND)
-                .setType("text/plain")
-                .putExtra(Intent.EXTRA_EMAIL, arrayOf("clombardo169@gmail.com"))
-                .putExtra(Intent.EXTRA_SUBJECT, "DNSNet Logcat")
-                .putExtra(Intent.EXTRA_TEXT, logcat.toString())
-            val shareIntent = Intent.createChooser(sendIntent, null)
-            startActivity(shareIntent)
-        } catch (e: Exception) {
-            logd("sendLogcat: Not supported", e)
-            Toast.makeText(this, "Not supported: $e", Toast.LENGTH_LONG).show()
-        } finally {
-            proc?.destroy()
-        }
     }
 
     override fun onNewIntent(intent: Intent) {

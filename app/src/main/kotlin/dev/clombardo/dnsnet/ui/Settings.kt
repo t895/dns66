@@ -777,6 +777,7 @@ fun FilledTonalSettingsButton(
     description: String,
     icon: ImageVector,
     onClick: () -> Unit,
+    endContent: (@Composable () -> Unit)? = null,
 ) {
     Surface(
         modifier = modifier
@@ -795,7 +796,7 @@ fun FilledTonalSettingsButton(
         ) {
             Icon(imageVector = icon, contentDescription = null)
             Spacer(Modifier.padding(horizontal = 8.dp))
-            Column {
+            Column(modifier = Modifier.weight(1f)) {
                 Text(
                     modifier = Modifier.basicMarquee(),
                     text = title,
@@ -808,6 +809,9 @@ fun FilledTonalSettingsButton(
                     style = MaterialTheme.typography.labelSmall,
                     maxLines = 1,
                 )
+            }
+            if (endContent != null) {
+                endContent()
             }
         }
     }

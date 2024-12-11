@@ -657,6 +657,7 @@ fun HomeScreen(
                     )
                 }
 
+                val isWritingLogcat by vm.isWritingLogcat.collectAsState()
                 StartScreen(
                     contentPadding = contentPadding + PaddingValues(ListPadding) +
                             PaddingValues(bottom = VpnFabSize + FabPadding),
@@ -697,6 +698,7 @@ fun HomeScreen(
                     },
                     onImport = onImport,
                     onExport = onExport,
+                    isWritingLogcat = isWritingLogcat,
                     onShareLogcat = onShareLogcat,
                     onResetSettings = { vm.onResetSettingsWarning() },
                     onOpenAbout = { topLevelNavController.navigate(TopLevelDestination.About) },

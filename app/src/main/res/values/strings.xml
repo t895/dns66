@@ -170,4 +170,5 @@
     <string name="ascending">Ascending</string>
     <string name="descending">Descending</string>
     <string name="system_apps">System apps</string>
+    <string name="logcat_written_successfully">Logcat written successfully</string>
 </resources>

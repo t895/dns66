@@ -8,18 +8,23 @@
 
 package dev.clombardo.dnsnet.ui
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.calculateEndPadding
 import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -28,6 +33,7 @@ import androidx.compose.material.icons.filled.Download
 import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Upload
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
@@ -42,6 +48,8 @@ import dev.clombardo.dnsnet.R
 import dev.clombardo.dnsnet.ui.navigation.NavigationBar
 import dev.clombardo.dnsnet.ui.theme.DnsNetTheme
 import dev.clombardo.dnsnet.ui.theme.FabPadding
+import dev.clombardo.dnsnet.ui.theme.HideRefreshHostFilesSpinner
+import dev.clombardo.dnsnet.ui.theme.ShowRefreshHostFilesSpinner
 import dev.clombardo.dnsnet.vpn.VpnStatus
 
 @Composable
@@ -60,6 +68,7 @@ fun StartScreen(
     onOpenBlockLog: () -> Unit,
     onImport: () -> Unit,
     onExport: () -> Unit,
+    isWritingLogcat: Boolean,
     onShareLogcat: () -> Unit,
     onResetSettings: () -> Unit,
     onOpenAbout: () -> Unit,
@@ -121,10 +130,27 @@ fun StartScreen(
                     onClick = onExport,
                 )
                 FilledTonalSettingsButton(
+                    enabled = !isWritingLogcat,
                     title = stringResource(R.string.action_logcat),
                     description = stringResource(R.string.logcat_description),
                     icon = Icons.Default.BugReport,
                     onClick = onShareLogcat,
+                    endContent = {
+                        AnimatedVisibility(
+                            modifier = Modifier.height(IntrinsicSize.Max),
+                            visible = isWritingLogcat,
+                            enter = ShowRefreshHostFilesSpinner,
+                            exit = HideRefreshHostFilesSpinner,
+                        ) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.Start,
+                            ) {
+                                Spacer(Modifier.padding(horizontal = 8.dp))
+                                CircularProgressIndicator(Modifier.size(24.dp))
+                            }
+                        }
+                    }
                 )
                 FilledTonalSettingsButton(
                     title = stringResource(R.string.load_defaults),
@@ -188,6 +214,7 @@ private fun StartScreenPreview() {
             onOpenBlockLog = {},
             onImport = {},
             onExport = {},
+            isWritingLogcat = false,
             onShareLogcat = {},
             onResetSettings = {},
             onOpenAbout = {},

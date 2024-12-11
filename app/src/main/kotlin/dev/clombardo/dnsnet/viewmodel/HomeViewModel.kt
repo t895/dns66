@@ -9,6 +9,8 @@
 package dev.clombardo.dnsnet.viewmodel
 
 import android.content.pm.ApplicationInfo
+import android.net.Uri
+import android.widget.Toast
 import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateMapOf
 import androidx.lifecycle.ViewModel
@@ -20,8 +22,10 @@ import dev.clombardo.dnsnet.HostException
 import dev.clombardo.dnsnet.HostFile
 import dev.clombardo.dnsnet.HostState
 import dev.clombardo.dnsnet.Preferences
+import dev.clombardo.dnsnet.R
 import dev.clombardo.dnsnet.config
 import dev.clombardo.dnsnet.db.RuleDatabaseUpdateWorker
+import dev.clombardo.dnsnet.logd
 import dev.clombardo.dnsnet.logw
 import dev.clombardo.dnsnet.ui.App
 import dev.clombardo.dnsnet.vpn.AdVpnService
@@ -31,6 +35,8 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import java.io.BufferedReader
+import java.io.InputStreamReader
 import java.util.Collections
 
 class HomeViewModel : ViewModel() {
@@ -85,6 +91,11 @@ class HomeViewModel : ViewModel() {
 
     private val _showStatusBarShade = MutableStateFlow(true)
     val showStatusBarShade = _showStatusBarShade.asStateFlow()
+
+    private val _isWritingLogcat = MutableStateFlow(false)
+    val isWritingLogcat = _isWritingLogcat.asStateFlow()
+
+    private var logcatLock = atomic(false)
 
     init {
         _connectionsLog.putAll(AdVpnService.logger.connections)
@@ -416,5 +427,46 @@ class HomeViewModel : ViewModel() {
     fun onClearBlockLog() {
         _connectionsLog.clear()
         AdVpnService.logger.clear()
+    }
+
+    fun onWriteLogcat(uri: Uri) {
+        if (logcatLock.getAndSet(true)) {
+            return
+        }
+        _isWritingLogcat.value = true
+
+        viewModelScope.launch {
+            var failed = false
+            var proc: Process? = null
+            try {
+                proc = Runtime.getRuntime().exec("logcat -d")
+                applicationContext.contentResolver.openOutputStream(uri)?.bufferedWriter()
+                    .use { outputStream ->
+                        BufferedReader(InputStreamReader(proc.inputStream)).use { inputStream ->
+                            var line: String?
+                            while (inputStream.readLine().also { line = it } != null) {
+                                outputStream?.write("$line\n")
+                            }
+                        }
+                    }
+            } catch (e: Exception) {
+                logd("sendLogcat: Not supported", e)
+                Toast.makeText(applicationContext, "Not supported: $e", Toast.LENGTH_LONG).show()
+                failed = true
+            } finally {
+                proc?.destroy()
+            }
+
+            if (!failed) {
+                Toast.makeText(
+                    applicationContext,
+                    applicationContext.getString(R.string.logcat_written_successfully),
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+
+            logcatLock.getAndSet(false)
+            _isWritingLogcat.value = false
+        }
     }
 }
