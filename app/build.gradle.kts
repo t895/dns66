@@ -120,7 +120,7 @@ dependencies {
 
     implementation("io.coil-kt.coil3:coil-compose:3.0.4")
 
-    implementation("androidx.navigation:navigation-compose:2.8.4")
+    implementation("androidx.navigation:navigation-compose:2.8.5")
 
     val lifecycleVersion = "2.8.7"
     implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion")
