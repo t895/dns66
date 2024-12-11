@@ -270,7 +270,7 @@ fun BlockLog(
                             var showMenu by rememberSaveable { mutableStateOf(false) }
                             BasicTooltipIconButton(
                                 icon = Icons.Default.MoreVert,
-                                contentDescription = stringResource(R.string.modify_list),
+                                contentDescription = stringResource(R.string.more_options),
                                 onClick = { showMenu = true },
                             )
 
