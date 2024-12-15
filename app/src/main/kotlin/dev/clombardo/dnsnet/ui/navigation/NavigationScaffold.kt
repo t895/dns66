@@ -8,6 +8,9 @@
 
 package dev.clombardo.dnsnet.ui.navigation
 
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.scaleIn
+import androidx.compose.animation.scaleOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -40,6 +43,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import dev.clombardo.dnsnet.R
 import dev.clombardo.dnsnet.ui.plus
+import dev.clombardo.dnsnet.ui.theme.Animation
 import dev.clombardo.dnsnet.ui.theme.DnsNetTheme
 
 enum class LayoutType {
@@ -50,6 +54,11 @@ enum class LayoutType {
 object NavigationScaffoldDefaults {
     val windowInsets: WindowInsets
         @Composable get() = WindowInsets.systemBars.union(WindowInsets.displayCutout)
+}
+
+object NavigationScaffold {
+    val FabEnter by lazy { scaleIn(animationSpec = tween(easing = Animation.EmphasizedDecelerateEasing)) }
+    val FabExit by lazy { scaleOut(animationSpec = tween(easing = Animation.EmphasizedAccelerateEasing)) }
 }
 
 @Composable

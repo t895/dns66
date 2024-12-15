@@ -9,6 +9,10 @@
 package dev.clombardo.dnsnet.ui
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
@@ -35,9 +39,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import dev.clombardo.dnsnet.R
-import dev.clombardo.dnsnet.ui.theme.HideScrollUpIndicator
 import dev.clombardo.dnsnet.ui.theme.ScrollUpIndicatorPadding
-import dev.clombardo.dnsnet.ui.theme.ShowScrollUpIndicator
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
@@ -45,12 +47,17 @@ object ScrollUpIndicatorDefaults {
     val windowInsets: WindowInsets
         @Composable get() = WindowInsets.systemBars
             .add(WindowInsets.displayCutout)
+
+    val EnterTransition by lazy { slideInVertically { it } }
+    val ExitTransition by lazy { slideOutVertically { it } }
 }
 
 @Composable
 fun BoxScope.ScrollUpIndicator(
     enabled: Boolean = true,
     visible: Boolean,
+    enterTransition: EnterTransition = ScrollUpIndicatorDefaults.EnterTransition,
+    exitTransition: ExitTransition = ScrollUpIndicatorDefaults.ExitTransition,
     windowInsets: WindowInsets = ScrollUpIndicatorDefaults.windowInsets,
     onClick: suspend CoroutineScope.() -> Unit,
 ) {
@@ -59,8 +66,8 @@ fun BoxScope.ScrollUpIndicator(
     AnimatedVisibility(
         modifier = Modifier.align(Alignment.BottomCenter),
         visible = visible,
-        enter = ShowScrollUpIndicator,
-        exit = HideScrollUpIndicator,
+        enter = enterTransition,
+        exit = exitTransition,
     ) {
         Box(
             modifier = Modifier

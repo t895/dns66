@@ -60,9 +60,8 @@ import dev.chrisbanes.haze.haze
 import dev.chrisbanes.haze.hazeChild
 import dev.clombardo.dnsnet.db.RuleDatabaseUpdateWorker
 import dev.clombardo.dnsnet.ui.App
+import dev.clombardo.dnsnet.ui.theme.Animation
 import dev.clombardo.dnsnet.ui.theme.DnsNetTheme
-import dev.clombardo.dnsnet.ui.theme.HideStatusBarShade
-import dev.clombardo.dnsnet.ui.theme.ShowStatusBarShade
 import dev.clombardo.dnsnet.viewmodel.HomeViewModel
 import dev.clombardo.dnsnet.vpn.AdVpnService
 import dev.clombardo.dnsnet.vpn.Command
@@ -170,8 +169,8 @@ class MainActivity : AppCompatActivity() {
                     val showStatusBarShade by vm.showStatusBarShade.collectAsState()
                     AnimatedVisibility(
                         visible = showStatusBarShade,
-                        enter = ShowStatusBarShade,
-                        exit = HideStatusBarShade,
+                        enter = Animation.ShowStatusBarShade,
+                        exit = Animation.HideStatusBarShade,
                     ) {
                         Box(
                             modifier = Modifier

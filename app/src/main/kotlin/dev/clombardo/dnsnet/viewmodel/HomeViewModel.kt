@@ -159,6 +159,7 @@ class HomeViewModel : ViewModel() {
             _appList.addAll(entries)
             _appListRefreshing.value = false
             refreshingLock = false
+            Runtime.getRuntime().gc()
         }
     }
 

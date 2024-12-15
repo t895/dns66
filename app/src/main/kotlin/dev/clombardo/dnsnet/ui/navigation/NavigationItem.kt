@@ -36,11 +36,10 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import dev.clombardo.dnsnet.ui.theme.Animation
 import dev.clombardo.dnsnet.ui.theme.DnsNetTheme
-import dev.clombardo.dnsnet.ui.theme.EmphasizedDecelerateEasing
 
 data class NavigationItem(
     val modifier: Modifier,
@@ -86,7 +85,7 @@ fun NavigationItem(
                 targetValue = if (item.selected) indicatorWidth else 0.dp,
                 animationSpec = tween(
                     durationMillis = if (item.selected) 250 else 0,
-                    easing = EmphasizedDecelerateEasing,
+                    easing = Animation.EmphasizedDecelerateEasing,
                 ),
                 label = "animatedWidth",
             )

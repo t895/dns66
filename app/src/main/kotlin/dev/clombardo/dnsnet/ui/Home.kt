@@ -13,10 +13,16 @@ import android.os.Build
 import android.os.Parcel
 import android.os.Parcelable
 import androidx.annotation.StringRes
+import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
-import androidx.compose.animation.scaleOut
+import androidx.compose.animation.slideIn
+import androidx.compose.animation.slideOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -48,8 +54,11 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.semantics.semantics
 import androidx.compose.ui.semantics.testTagsAsResourceId
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntOffset
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavBackStackEntry
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
@@ -70,17 +79,10 @@ import dev.clombardo.dnsnet.db.RuleDatabaseUpdateWorker
 import dev.clombardo.dnsnet.ui.HomeDestinationIcon.Companion.toHomeDestinationIcon
 import dev.clombardo.dnsnet.ui.navigation.LayoutType
 import dev.clombardo.dnsnet.ui.navigation.NavigationScaffold
+import dev.clombardo.dnsnet.ui.theme.Animation
 import dev.clombardo.dnsnet.ui.theme.DefaultFabSize
-import dev.clombardo.dnsnet.ui.theme.EmphasizedAccelerateEasing
-import dev.clombardo.dnsnet.ui.theme.EmphasizedDecelerateEasing
 import dev.clombardo.dnsnet.ui.theme.FabPadding
-import dev.clombardo.dnsnet.ui.theme.HomeEnterTransition
-import dev.clombardo.dnsnet.ui.theme.HomeExitTransition
 import dev.clombardo.dnsnet.ui.theme.ListPadding
-import dev.clombardo.dnsnet.ui.theme.TopLevelEnter
-import dev.clombardo.dnsnet.ui.theme.TopLevelExit
-import dev.clombardo.dnsnet.ui.theme.TopLevelPopEnter
-import dev.clombardo.dnsnet.ui.theme.TopLevelPopExit
 import dev.clombardo.dnsnet.ui.theme.VpnFabSize
 import dev.clombardo.dnsnet.viewmodel.HomeViewModel
 import dev.clombardo.dnsnet.vpn.AdVpnService
@@ -153,6 +155,59 @@ open class TopLevelDestination {
 
     @Serializable
     data object Credits : TopLevelDestination()
+}
+
+object Home {
+    val NavigationEnterTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition by lazy {
+        {
+            scaleIn(
+                initialScale = 0.75f,
+                animationSpec = tween(
+                    durationMillis = 400,
+                    easing = Animation.EmphasizedDecelerateEasing
+                ),
+            ) + fadeIn(animationSpec = tween(400))
+        }
+    }
+    val NavigationExitTransition: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition by lazy {
+        { fadeOut(animationSpec = tween(50)) }
+    }
+
+    private const val SIZE_FRACTION = 12
+
+    private fun getOffsetForTopLevelEnter(fullSize: IntSize): IntOffset =
+        IntOffset(fullSize.width / SIZE_FRACTION, 0)
+
+    private fun getOffsetForTopLevelExit(fullSize: IntSize): IntOffset =
+        IntOffset(-fullSize.width / SIZE_FRACTION, 0)
+
+    private val TopLevelFadeEnterSpec by lazy { tween<Float>(400) }
+    private val TopLevelFadeExitSpec by lazy { tween<Float>(100) }
+
+    val TopLevelEnter: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition by lazy {
+        {
+            slideIn(initialOffset = ::getOffsetForTopLevelEnter) +
+                    fadeIn(animationSpec = TopLevelFadeEnterSpec)
+        }
+    }
+    val TopLevelPopEnter: AnimatedContentTransitionScope<NavBackStackEntry>.() -> EnterTransition by lazy {
+        {
+            slideIn(initialOffset = ::getOffsetForTopLevelExit) +
+                    fadeIn(animationSpec = TopLevelFadeEnterSpec)
+        }
+    }
+    val TopLevelExit: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition by lazy {
+        {
+            slideOut(targetOffset = ::getOffsetForTopLevelExit) +
+                    fadeOut(animationSpec = TopLevelFadeExitSpec)
+        }
+    }
+    val TopLevelPopExit: AnimatedContentTransitionScope<NavBackStackEntry>.() -> ExitTransition by lazy {
+        {
+            slideOut(targetOffset = ::getOffsetForTopLevelEnter) +
+                    fadeOut(animationSpec = TopLevelFadeExitSpec)
+        }
+    }
 }
 
 @SuppressLint("RestrictedApi")
@@ -335,10 +390,10 @@ fun App(
         modifier = modifier.background(MaterialTheme.colorScheme.surface),
         navController = navController,
         startDestination = TopLevelDestination.Home,
-        enterTransition = { TopLevelEnter },
-        exitTransition = { TopLevelExit },
-        popEnterTransition = { TopLevelPopEnter },
-        popExitTransition = { TopLevelPopExit },
+        enterTransition = Home.TopLevelEnter,
+        exitTransition = Home.TopLevelExit,
+        popEnterTransition = Home.TopLevelPopEnter,
+        popExitTransition = Home.TopLevelPopExit,
     ) {
         composable<TopLevelDestination.Home> {
             vm.showStatusBarShade()
@@ -593,8 +648,8 @@ fun HomeScreen(
                 modifier = Modifier.padding(16.dp),
                 visible = currentDestination == HomeDestinations.Hosts ||
                         currentDestination == HomeDestinations.DNS,
-                enter = scaleIn(animationSpec = tween(easing = EmphasizedDecelerateEasing)),
-                exit = scaleOut(animationSpec = tween(easing = EmphasizedAccelerateEasing)),
+                enter = NavigationScaffold.FabEnter,
+                exit = NavigationScaffold.FabExit,
             ) {
                 FloatingActionButton(
                     onClick = {
@@ -621,10 +676,10 @@ fun HomeScreen(
         NavHost(
             navController = navController,
             startDestination = HomeDestinations.Start,
-            enterTransition = { HomeEnterTransition },
-            exitTransition = { HomeExitTransition },
-            popEnterTransition = { HomeEnterTransition },
-            popExitTransition = { HomeExitTransition },
+            enterTransition = Home.NavigationEnterTransition,
+            exitTransition = Home.NavigationExitTransition,
+            popEnterTransition = Home.NavigationEnterTransition,
+            popExitTransition = Home.NavigationExitTransition,
         ) {
             composable<HomeDestinations.Start> {
                 vm.showStatusBarShade()

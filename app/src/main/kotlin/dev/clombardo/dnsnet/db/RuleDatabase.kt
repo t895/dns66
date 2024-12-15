@@ -95,7 +95,7 @@ class RuleDatabase {
         }
     }
 
-    private var blockedHosts by atomic(HashSet<String>())
+    private var blockedHosts by atomic(HashSet<Int>())
 
     /**
      * Checks if a host is blocked.
@@ -103,7 +103,7 @@ class RuleDatabase {
      * @param host A hostname
      * @return true if the host is blocked, false otherwise.
      */
-    fun isBlocked(host: String): Boolean = blockedHosts.contains(host)
+    fun isBlocked(host: String): Boolean = blockedHosts.contains(host.hashCode())
 
     /**
      * Check if any hosts are blocked
@@ -133,7 +133,7 @@ class RuleDatabase {
             }
             .sortedBy { it.state.ordinal }
 
-        val newHosts = HashSet<String>(sortedHostItems.size + config.hosts.exceptions.size)
+        val newHosts = HashSet<Int>(sortedHostItems.size + config.hosts.exceptions.size)
         for (item in sortedHostItems) {
             if (Thread.interrupted()) {
                 throw InterruptedException("Interrupted")
@@ -149,6 +149,7 @@ class RuleDatabase {
         }
 
         blockedHosts = newHosts
+        Runtime.getRuntime().gc()
     }
 
     /**
@@ -158,7 +159,7 @@ class RuleDatabase {
      * @throws InterruptedException If the thread was interrupted.
      */
     @Throws(InterruptedException::class)
-    private fun loadItem(set: HashSet<String>, item: HostFile) {
+    private fun loadItem(set: HashSet<Int>, item: HostFile) {
         if (item.state == HostState.IGNORE) {
             return
         }
@@ -183,19 +184,19 @@ class RuleDatabase {
      * @param item The item the host belongs to
      * @param host The host
      */
-    private fun addHost(set: HashSet<String>, item: Host, host: String) {
+    private fun addHost(set: HashSet<Int>, item: Host, host: String) {
         // Single address to block
         if (item.state == HostState.ALLOW) {
-            set.remove(host)
+            set.remove(host.hashCode())
         } else if (item.state == HostState.DENY) {
-            set.add(host)
+            set.add(host.hashCode())
         }
     }
 
-    private fun addHostException(set: HashSet<String>, exception: HostException) {
+    private fun addHostException(set: HashSet<Int>, exception: HostException) {
         when (exception.state) {
-            HostState.ALLOW -> set.remove(exception.data)
-            HostState.DENY -> set.add(exception.data)
+            HostState.ALLOW -> set.remove(exception.data.hashCode())
+            HostState.DENY -> set.add(exception.data.hashCode())
             else -> return
         }
     }
@@ -208,7 +209,7 @@ class RuleDatabase {
      * @throws InterruptedException If thread was interrupted
      */
     @Throws(InterruptedException::class)
-    fun loadReader(set: HashSet<String>, item: Host, reader: Reader): Boolean {
+    fun loadReader(set: HashSet<Int>, item: Host, reader: Reader): Boolean {
         var count = 0
         try {
             logd("loadBlockedHosts: Reading: ${item.data}")

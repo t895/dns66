@@ -286,18 +286,21 @@ class AdVpnThread(
             deviceFd.events = (deviceFd.events.toInt() or OsConstants.POLLOUT).toShort()
         }
 
-        val polls = arrayOfNulls<StructPollfd>(2 + dnsIn.size())
+        val polls = arrayOfNulls<StructPollfd>(2 + dnsIn.size)
         polls[0] = deviceFd
         polls[1] = blockFd
-        run {
-            var i = -1
-            for (wosp in dnsIn) {
-                i++
-                polls[2 + i] = StructPollfd()
-                val pollFd = polls[2 + i]
-                pollFd!!.fd = ParcelFileDescriptor.fromDatagramSocket(wosp.socket).fileDescriptor
-                pollFd.events = OsConstants.POLLIN.toShort()
-            }
+        var offset = -1
+        for (i in dnsIn.indices) {
+            offset++
+            polls[2 + offset] = StructPollfd()
+            val pollFd = polls[2 + offset]
+            pollFd!!.fd = ParcelFileDescriptor.fromDatagramSocket(dnsIn[i].socket).fileDescriptor
+            pollFd.events = OsConstants.POLLIN.toShort()
+        }
+
+        if (blockFd.revents.toInt() != 0) {
+            logi("Told to stop VPN")
+            return false
         }
 
         logd("doOne: Polling ${polls.size} file descriptors")
@@ -307,15 +310,10 @@ class AdVpnThread(
             return true
         }
 
-        if (blockFd.revents.toInt() != 0) {
-            logi("Told to stop VPN")
-            return false
-        }
-
         // Need to do this before reading from the device, otherwise a new insertion there could
         // invalidate one of the sockets we want to read from either due to size or time out
         // constraints
-        run {
+        if (dnsIn.isNotEmpty()) {
             var i = -1
             val iter = dnsIn.iterator()
             while (iter.hasNext()) {

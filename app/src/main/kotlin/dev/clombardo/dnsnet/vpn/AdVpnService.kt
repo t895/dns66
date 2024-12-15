@@ -89,7 +89,7 @@ class AdVpnService : VpnService(), Handler.Callback {
         private val _status = MutableStateFlow(VpnStatus.STOPPED)
         val status = _status.asStateFlow()
 
-        val logger: BlockLogger = BlockLogger.load()
+        val logger by lazy { BlockLogger.load() }
 
         fun checkStartVpnOnBoot(context: Context) {
             if (!config.autoStart && !Preferences.VpnIsActive) {

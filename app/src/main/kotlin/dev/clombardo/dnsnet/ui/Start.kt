@@ -46,10 +46,9 @@ import androidx.compose.ui.unit.dp
 import androidx.window.core.layout.WindowWidthSizeClass
 import dev.clombardo.dnsnet.R
 import dev.clombardo.dnsnet.ui.navigation.NavigationBar
+import dev.clombardo.dnsnet.ui.theme.Animation
 import dev.clombardo.dnsnet.ui.theme.DnsNetTheme
 import dev.clombardo.dnsnet.ui.theme.FabPadding
-import dev.clombardo.dnsnet.ui.theme.HideRefreshHostFilesSpinner
-import dev.clombardo.dnsnet.ui.theme.ShowRefreshHostFilesSpinner
 import dev.clombardo.dnsnet.vpn.VpnStatus
 
 @Composable
@@ -139,8 +138,8 @@ fun StartScreen(
                         AnimatedVisibility(
                             modifier = Modifier.height(IntrinsicSize.Max),
                             visible = isWritingLogcat,
-                            enter = ShowRefreshHostFilesSpinner,
-                            exit = HideRefreshHostFilesSpinner,
+                            enter = Animation.ShowSpinnerHorizontal,
+                            exit = Animation.HideSpinnerHorizontal,
                         ) {
                             Row(
                                 verticalAlignment = Alignment.CenterVertically,

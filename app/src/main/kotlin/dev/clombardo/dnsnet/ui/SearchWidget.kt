@@ -41,16 +41,20 @@ import androidx.compose.ui.focus.focusRequester
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import dev.clombardo.dnsnet.R
+import dev.clombardo.dnsnet.ui.theme.Animation
 import dev.clombardo.dnsnet.ui.theme.DnsNetTheme
-import dev.clombardo.dnsnet.ui.theme.EmphasizedDecelerateEasing
 
 object SearchWidgetDefaults {
-    val searchEnterTransition: EnterTransition = expandHorizontally(
-        animationSpec = tween(easing = EmphasizedDecelerateEasing),
-    )
-    val searchExitTransition: ExitTransition = shrinkHorizontally(
-        animationSpec = tween(easing = EmphasizedDecelerateEasing),
-    )
+    val searchEnterTransition: EnterTransition by lazy {
+        expandHorizontally(
+            animationSpec = tween(easing = Animation.EmphasizedDecelerateEasing),
+        )
+    }
+    val searchExitTransition: ExitTransition by lazy {
+        shrinkHorizontally(
+            animationSpec = tween(easing = Animation.EmphasizedDecelerateEasing),
+        )
+    }
 }
 
 @Composable

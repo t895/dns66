@@ -24,10 +24,8 @@ data class App(
 ) {
     private var weakIcon: WeakReference<Drawable>? = null
 
-    fun getIcon(): Drawable? = weakIcon?.get()
-
     fun loadIcon(pm: PackageManager): Drawable? {
-        var icon = getIcon()
+        var icon = weakIcon?.get()
         if (icon == null) {
             icon = info.loadIcon(pm)
             weakIcon = WeakReference(icon)

@@ -22,26 +22,20 @@ import java.util.LinkedList
 /**
  * Queue of WaitingOnSocketPacket, bound on time and space.
  */
-class WospList {
-    private val list: LinkedList<WaitingOnSocketPacket> = LinkedList<WaitingOnSocketPacket>()
-
-    fun add(wosp: WaitingOnSocketPacket) {
-        if (list.size > AdVpnThread.DNS_MAXIMUM_WAITING) {
-            logd("Dropping socket due to space constraints: ${list.element().socket}")
-            list.element().socket.close()
-            list.remove()
+class WospList : LinkedList<WaitingOnSocketPacket>() {
+    override fun add(wosp: WaitingOnSocketPacket): Boolean {
+        if (size > AdVpnThread.DNS_MAXIMUM_WAITING) {
+            logd("Dropping socket due to space constraints: ${element().socket}")
+            element().socket.close()
+            remove()
         }
 
-        while (!list.isEmpty() && list.element().ageSeconds() > AdVpnThread.DNS_TIMEOUT_SEC) {
-            logd("Timeout on socket " + list.element().socket)
-            list.element().socket.close()
-            list.remove()
+        while (!isEmpty() && element().ageSeconds() > AdVpnThread.DNS_TIMEOUT_SEC) {
+            logd("Timeout on socket " + element().socket)
+            element().socket.close()
+            remove()
         }
 
-        list.add(wosp)
+        return super.add(wosp)
     }
-
-    operator fun iterator(): MutableIterator<WaitingOnSocketPacket> = list.iterator()
-
-    fun size(): Int = list.size
 }

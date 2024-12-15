@@ -141,35 +141,20 @@ class DnsPacketProxy(
             return
         }
 
-        val parsedUdp: UdpPacket
+        val parsedUdp: UdpPacket?
         val udpPayload: Packet?
-
-        try {
+        if (parsedPacket.payload is UdpPacket) {
             parsedUdp = parsedPacket.payload as UdpPacket
             udpPayload = parsedUdp.payload
-        } catch (e: Exception) {
-            try {
-                logi(
-                    "handleDnsRequest: Discarding unknown packet type ${parsedPacket.header}",
-                    e
-                )
-            } catch (e1: java.lang.Exception) {
-                logi(
-                    "handleDnsRequest: Discarding unknown packet type, could not log packet info",
-                    e1
-                )
-            }
+        } else {
+            logi("handleDnsRequest: Discarding unknown packet type ${parsedPacket.header}")
             return
         }
 
         val destAddr = translateDestinationAddress(parsedPacket) ?: return
 
         if (udpPayload == null) {
-            try {
-                logi("handleDnsRequest: Sending UDP packet without payload: $parsedUdp")
-            } catch (_: Exception) {
-                logi("handleDnsRequest: Sending UDP packet without payload")
-            }
+            logi("handleDnsRequest: Sending UDP packet without payload: $parsedUdp")
 
             // Let's be nice to Firefox. Firefox uses an empty UDP packet to
             // the gateway to reduce the RTT. For further details, please see

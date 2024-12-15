@@ -64,7 +64,7 @@ import androidx.compose.ui.unit.sp
 import com.aallam.similarity.Cosine
 import dev.clombardo.dnsnet.NumberFormatterCompat
 import dev.clombardo.dnsnet.R
-import dev.clombardo.dnsnet.ui.theme.EmphasizedDecelerateEasing
+import dev.clombardo.dnsnet.ui.theme.Animation
 import dev.clombardo.dnsnet.ui.theme.ListPadding
 import dev.clombardo.dnsnet.ui.theme.ScrollUpIndicatorPadding
 import dev.clombardo.dnsnet.ui.theme.ScrollUpIndicatorSize
@@ -78,6 +78,15 @@ data class LoggedConnectionState(
     var attempts: Long,
     var lastAttemptTime: Long,
 ) : Parcelable
+
+object BlockLog {
+    val BlockedRatioAnimationSpec by lazy {
+        tween<Float>(
+            durationMillis = 500,
+            easing = Animation.EmphasizedDecelerateEasing,
+        )
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -168,7 +177,7 @@ fun BlockLog(
         modifier = modifier,
         state = listState,
         contentPadding = contentPadding + PaddingValues(ListPadding) +
-            PaddingValues(bottom = ScrollUpIndicatorPadding + ScrollUpIndicatorSize),
+                PaddingValues(bottom = ScrollUpIndicatorPadding + ScrollUpIndicatorSize),
     ) {
         item {
             val blockedConnections = loggedConnections.count { !it.value.allowed }
@@ -176,10 +185,7 @@ fun BlockLog(
                 blockedConnections.toFloat() / loggedConnections.size.toFloat()
             val blockedRatioAnimated by animateFloatAsState(
                 targetValue = blockedConnectionsPercent.takeIf { !it.isNaN() } ?: 0f,
-                animationSpec = tween(
-                    durationMillis = 500,
-                    easing = EmphasizedDecelerateEasing,
-                ),
+                animationSpec = BlockLog.BlockedRatioAnimationSpec,
                 label = "blockedRatioAnimated",
             )
             val size = 256.dp

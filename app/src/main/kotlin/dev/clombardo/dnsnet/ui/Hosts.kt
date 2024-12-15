@@ -63,6 +63,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import dev.clombardo.dnsnet.DnsNetApplication.Companion.applicationContext
 import dev.clombardo.dnsnet.Host
@@ -71,10 +72,17 @@ import dev.clombardo.dnsnet.HostFile
 import dev.clombardo.dnsnet.HostState
 import dev.clombardo.dnsnet.HostState.Companion.toHostState
 import dev.clombardo.dnsnet.R
+import dev.clombardo.dnsnet.ui.theme.Animation
 import dev.clombardo.dnsnet.ui.theme.DnsNetTheme
-import dev.clombardo.dnsnet.ui.theme.EmphasizedAccelerateEasing
-import dev.clombardo.dnsnet.ui.theme.HideRefreshHostFilesSpinner
-import dev.clombardo.dnsnet.ui.theme.ShowRefreshHostFilesSpinner
+
+object Hosts {
+    val RefreshHostsButtonContainerAnimationSpec by lazy {
+        tween<IntSize>(
+            durationMillis = 1,
+            easing = Animation.EmphasizedAccelerateEasing,
+        )
+    }
+}
 
 @Composable
 private fun IconText(
@@ -169,10 +177,7 @@ fun HostsScreen(
             ) {
                 Row(
                     modifier = Modifier.animateContentSize(
-                        animationSpec = tween(
-                            durationMillis = 1,
-                            easing = EmphasizedAccelerateEasing,
-                        )
+                        animationSpec = Hosts.RefreshHostsButtonContainerAnimationSpec
                     ),
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
@@ -188,8 +193,8 @@ fun HostsScreen(
 
                     AnimatedVisibility(
                         visible = isRefreshingHosts,
-                        enter = ShowRefreshHostFilesSpinner,
-                        exit = HideRefreshHostFilesSpinner,
+                        enter = Animation.ShowSpinnerHorizontal,
+                        exit = Animation.HideSpinnerHorizontal,
                     ) {
                         Row(
                             modifier = Modifier.wrapContentSize(),

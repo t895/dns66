@@ -17,8 +17,7 @@ class AppImageKeyer : Keyer<dev.clombardo.dnsnet.ui.App> {
 
 class AppImageFetcher(val pm: PackageManager, val app: dev.clombardo.dnsnet.ui.App) : Fetcher {
     override suspend fun fetch(): FetchResult? {
-        app.loadIcon(pm)
-        val icon = app.getIcon() ?: return null
+        val icon = app.loadIcon(pm) ?: return null
         return ImageFetchResult(
             image = icon.asImage(),
             isSampled = true,
