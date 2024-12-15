@@ -79,6 +79,7 @@ fun TooltipIconButton(
     TooltipBox(
         positionProvider = rememberTooltipPositionProvider(),
         state = rememberTooltipState(),
+        focusable = false,
         tooltip = {
             val haptics = LocalHapticFeedback.current
             LaunchedEffect(Unit) {
