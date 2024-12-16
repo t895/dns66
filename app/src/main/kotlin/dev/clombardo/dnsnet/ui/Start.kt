@@ -9,24 +9,24 @@
 package dev.clombardo.dnsnet.ui
 
 import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.foundation.ScrollState
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.calculateEndPadding
-import androidx.compose.foundation.layout.calculateStartPadding
 import androidx.compose.foundation.layout.displayCutoutPadding
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
+import androidx.compose.foundation.lazy.grid.LazyGridState
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.rememberLazyGridState
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.BugReport
 import androidx.compose.material.icons.filled.Download
@@ -37,9 +37,10 @@ import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.adaptive.currentWindowAdaptiveInfo
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalLayoutDirection
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -51,11 +52,20 @@ import dev.clombardo.dnsnet.ui.theme.DnsNetTheme
 import dev.clombardo.dnsnet.ui.theme.FabPadding
 import dev.clombardo.dnsnet.vpn.VpnStatus
 
+data class StartButton(
+    val enabled: Boolean = true,
+    val title: String,
+    val description: String,
+    val icon: ImageVector,
+    val onClick: () -> Unit,
+    val endContent: @Composable (() -> Unit)? = null,
+)
+
 @Composable
 fun StartScreen(
     modifier: Modifier = Modifier,
     contentPadding: PaddingValues = PaddingValues(),
-    listState: ScrollState = rememberScrollState(),
+    listState: LazyGridState = rememberLazyGridState(),
     resumeOnStartup: Boolean,
     onResumeOnStartupClick: () -> Unit,
     watchConnection: Boolean,
@@ -75,100 +85,118 @@ fun StartScreen(
     onChangeVpnStatusClick: () -> Unit,
 ) {
     Box(modifier = modifier.fillMaxSize()) {
-        val layoutDirection = LocalLayoutDirection.current
-        Column(
-            modifier = Modifier
-                .padding(start = contentPadding.calculateStartPadding(layoutDirection))
-                .padding(end = contentPadding.calculateEndPadding(layoutDirection))
-                .verticalScroll(listState),
-        ) {
-            Spacer(Modifier.padding(top = contentPadding.calculateTopPadding()))
-            ListSettingsContainer(title = stringResource(R.string.start_title)) {
-                SwitchListItem(
-                    title = stringResource(id = R.string.switch_onboot),
-                    details = stringResource(id = R.string.switch_onboot_description),
-                    checked = resumeOnStartup,
-                    onCheckedChange = { onResumeOnStartupClick() },
-                )
-                SwitchListItem(
-                    title = stringResource(id = R.string.watchdog),
-                    details = stringResource(id = R.string.watchdog_description),
-                    checked = watchConnection,
-                    onCheckedChange = { onWatchConnectionClick() },
-                )
-                SwitchListItem(
-                    title = stringResource(id = R.string.ipv6_support),
-                    details = stringResource(id = R.string.ipv6_support_description),
-                    checked = ipv6Support,
-                    onCheckedChange = { onIpv6SupportClick() },
-                )
-                SplitSwitchListItem(
-                    title = stringResource(id = R.string.block_log),
-                    details = stringResource(id = R.string.block_log_description),
-                    maxDetailLines = Int.MAX_VALUE,
-                    outlineColor = MaterialTheme.colorScheme.outline,
-                    checked = blockLog,
-                    bodyEnabled = blockLog,
-                    onCheckedChange = { onToggleBlockLog() },
-                    onBodyClick = onOpenBlockLog,
-                )
-            }
-            Spacer(Modifier.padding(vertical = 4.dp))
-
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                FilledTonalSettingsButton(
-                    title = stringResource(R.string.action_import),
-                    description = stringResource(R.string.import_description),
-                    icon = Icons.Default.Download,
-                    onClick = onImport,
-                )
-                FilledTonalSettingsButton(
-                    title = stringResource(R.string.action_export),
-                    description = stringResource(R.string.export_description),
-                    icon = Icons.Default.Upload,
-                    onClick = onExport,
-                )
-                FilledTonalSettingsButton(
-                    enabled = !isWritingLogcat,
-                    title = stringResource(R.string.action_logcat),
-                    description = stringResource(R.string.logcat_description),
-                    icon = Icons.Default.BugReport,
-                    onClick = onShareLogcat,
-                    endContent = {
-                        AnimatedVisibility(
-                            modifier = Modifier.height(IntrinsicSize.Max),
-                            visible = isWritingLogcat,
-                            enter = Animation.ShowSpinnerHorizontal,
-                            exit = Animation.HideSpinnerHorizontal,
+        val startButtons = listOf(
+            StartButton(
+                title = stringResource(R.string.action_import),
+                description = stringResource(R.string.import_description),
+                icon = Icons.Default.Download,
+                onClick = onImport,
+            ),
+            StartButton(
+                title = stringResource(R.string.action_export),
+                description = stringResource(R.string.export_description),
+                icon = Icons.Default.Upload,
+                onClick = onExport,
+            ),
+            StartButton(
+                enabled = !isWritingLogcat,
+                title = stringResource(R.string.action_logcat),
+                description = stringResource(R.string.logcat_description),
+                icon = Icons.Default.BugReport,
+                onClick = onShareLogcat,
+                endContent = {
+                    AnimatedVisibility(
+                        modifier = Modifier.height(IntrinsicSize.Max),
+                        visible = isWritingLogcat,
+                        enter = Animation.ShowSpinnerHorizontal,
+                        exit = Animation.HideSpinnerHorizontal,
+                    ) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.Start,
                         ) {
-                            Row(
-                                verticalAlignment = Alignment.CenterVertically,
-                                horizontalArrangement = Arrangement.Start,
-                            ) {
-                                Spacer(Modifier.padding(horizontal = 8.dp))
-                                CircularProgressIndicator(Modifier.size(24.dp))
-                            }
+                            Spacer(Modifier.padding(horizontal = 8.dp))
+                            CircularProgressIndicator(Modifier.size(24.dp))
                         }
                     }
-                )
-                FilledTonalSettingsButton(
-                    title = stringResource(R.string.load_defaults),
-                    description = stringResource(R.string.load_defaults_description),
-                    icon = Icons.Default.History,
-                    onClick = onResetSettings,
-                )
-                FilledTonalSettingsButton(
-                    title = stringResource(R.string.action_about),
-                    description = stringResource(R.string.about_description),
-                    icon = Icons.Default.Info,
-                    onClick = onOpenAbout,
-                )
-            }
-
-            Spacer(Modifier.padding(bottom = contentPadding.calculateBottomPadding()))
-        }
+                }
+            ),
+            StartButton(
+                title = stringResource(R.string.load_defaults),
+                description = stringResource(R.string.load_defaults_description),
+                icon = Icons.Default.History,
+                onClick = onResetSettings,
+            ),
+            StartButton(
+                title = stringResource(R.string.action_about),
+                description = stringResource(R.string.about_description),
+                icon = Icons.Default.Info,
+                onClick = onOpenAbout,
+            ),
+        )
 
         val windowSizeClass = currentWindowAdaptiveInfo().windowSizeClass
+        val columns = remember {
+            when (windowSizeClass.windowWidthSizeClass) {
+                WindowWidthSizeClass.COMPACT -> 1
+                WindowWidthSizeClass.MEDIUM -> 2
+                else -> 3
+            }
+        }
+
+        LazyVerticalGrid(
+            state = listState,
+            contentPadding = contentPadding,
+            columns = GridCells.Fixed(columns),
+            verticalArrangement = Arrangement.spacedBy(8.dp),
+            horizontalArrangement = Arrangement.spacedBy(8.dp),
+        ) {
+            item(span = { GridItemSpan(columns) }) {
+                ListSettingsContainer(title = stringResource(R.string.start_title)) {
+                    SwitchListItem(
+                        title = stringResource(id = R.string.switch_onboot),
+                        details = stringResource(id = R.string.switch_onboot_description),
+                        checked = resumeOnStartup,
+                        onCheckedChange = { onResumeOnStartupClick() },
+                    )
+                    SwitchListItem(
+                        title = stringResource(id = R.string.watchdog),
+                        details = stringResource(id = R.string.watchdog_description),
+                        checked = watchConnection,
+                        onCheckedChange = { onWatchConnectionClick() },
+                    )
+                    SwitchListItem(
+                        title = stringResource(id = R.string.ipv6_support),
+                        details = stringResource(id = R.string.ipv6_support_description),
+                        checked = ipv6Support,
+                        onCheckedChange = { onIpv6SupportClick() },
+                    )
+                    SplitSwitchListItem(
+                        title = stringResource(id = R.string.block_log),
+                        details = stringResource(id = R.string.block_log_description),
+                        maxDetailLines = Int.MAX_VALUE,
+                        outlineColor = MaterialTheme.colorScheme.outline,
+                        checked = blockLog,
+                        bodyEnabled = blockLog,
+                        onCheckedChange = { onToggleBlockLog() },
+                        onBodyClick = onOpenBlockLog,
+                    )
+                }
+                Spacer(Modifier.padding(vertical = 4.dp))
+            }
+
+            items(startButtons) {
+                FilledTonalSettingsButton(
+                    enabled = it.enabled,
+                    title = it.title,
+                    description = it.description,
+                    icon = it.icon,
+                    onClick = it.onClick,
+                    endContent = it.endContent,
+                )
+            }
+        }
+
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = if (windowSizeClass.windowWidthSizeClass == WindowWidthSizeClass.COMPACT) {
