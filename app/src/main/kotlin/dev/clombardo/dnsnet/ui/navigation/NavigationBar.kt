@@ -9,6 +9,7 @@
 package dev.clombardo.dnsnet.ui.navigation
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.WindowInsets
@@ -59,6 +60,12 @@ fun NavigationBar(
     val layoutDirection = LocalLayoutDirection.current
     Row(
         modifier = modifier
+            .clickable(
+                enabled = false,
+                interactionSource = null,
+                indication = null,
+                onClick = {},
+            )
             .fillMaxWidth()
             .background(MaterialTheme.colorScheme.surfaceContainer)
             .padding(
