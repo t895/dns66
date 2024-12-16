@@ -158,6 +158,8 @@ dependencies {
     implementation("dev.chrisbanes.haze:haze:1.1.1")
 
     implementation("com.aallam.similarity:string-similarity-kotlin:0.1.0")
+
+    implementation("androidx.collection:collection-ktx:1.4.5")
 }
 
 licensee {

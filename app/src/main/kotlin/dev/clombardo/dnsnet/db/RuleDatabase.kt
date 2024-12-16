@@ -11,6 +11,8 @@
 
 package dev.clombardo.dnsnet.db
 
+import androidx.collection.MutableIntSet
+import androidx.collection.intSetOf
 import dev.clombardo.dnsnet.FileHelper
 import dev.clombardo.dnsnet.Host
 import dev.clombardo.dnsnet.HostException
@@ -95,7 +97,7 @@ class RuleDatabase {
         }
     }
 
-    private var blockedHosts by atomic(HashSet<Int>())
+    private var blockedHosts by atomic(intSetOf())
 
     /**
      * Checks if a host is blocked.
@@ -133,7 +135,7 @@ class RuleDatabase {
             }
             .sortedBy { it.state.ordinal }
 
-        val newHosts = HashSet<Int>(sortedHostItems.size + config.hosts.exceptions.size)
+        val newHosts = MutableIntSet(sortedHostItems.size + config.hosts.exceptions.size)
         for (item in sortedHostItems) {
             if (Thread.interrupted()) {
                 throw InterruptedException("Interrupted")
@@ -159,7 +161,7 @@ class RuleDatabase {
      * @throws InterruptedException If the thread was interrupted.
      */
     @Throws(InterruptedException::class)
-    private fun loadItem(set: HashSet<Int>, item: HostFile) {
+    private fun loadItem(set: MutableIntSet, item: HostFile) {
         if (item.state == HostState.IGNORE) {
             return
         }
@@ -184,7 +186,7 @@ class RuleDatabase {
      * @param item The item the host belongs to
      * @param host The host
      */
-    private fun addHost(set: HashSet<Int>, item: Host, host: String) {
+    private fun addHost(set: MutableIntSet, item: Host, host: String) {
         // Single address to block
         if (item.state == HostState.ALLOW) {
             set.remove(host.hashCode())
@@ -193,7 +195,7 @@ class RuleDatabase {
         }
     }
 
-    private fun addHostException(set: HashSet<Int>, exception: HostException) {
+    private fun addHostException(set: MutableIntSet, exception: HostException) {
         when (exception.state) {
             HostState.ALLOW -> set.remove(exception.data.hashCode())
             HostState.DENY -> set.add(exception.data.hashCode())
@@ -209,7 +211,7 @@ class RuleDatabase {
      * @throws InterruptedException If thread was interrupted
      */
     @Throws(InterruptedException::class)
-    fun loadReader(set: HashSet<Int>, item: Host, reader: Reader): Boolean {
+    fun loadReader(set: MutableIntSet, item: Host, reader: Reader): Boolean {
         var count = 0
         try {
             logd("loadBlockedHosts: Reading: ${item.data}")
