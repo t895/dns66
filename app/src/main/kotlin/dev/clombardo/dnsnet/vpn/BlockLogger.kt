@@ -9,10 +9,6 @@ import kotlinx.serialization.Transient
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.decodeFromStream
 import kotlinx.serialization.json.encodeToStream
-import java.util.Calendar
-
-private val now: Long
-    get() = Calendar.getInstance().timeInMillis
 
 @Serializable
 data class LoggedConnection(
@@ -20,7 +16,7 @@ data class LoggedConnection(
     var attempts: Long = 0,
     var lastAttemptTime: Long = 0,
 ) {
-    fun attempt() {
+    fun attempt(now: Long) {
         attempts++
         lastAttemptTime = now
     }
@@ -37,12 +33,13 @@ data class BlockLogger(val connections: MutableMap<String, LoggedConnection> = H
 
     fun newConnection(name: String, allowed: Boolean) {
         val connection = connections[name]
+        val now = System.currentTimeMillis()
         if (connection != null) {
             if (connection.allowed != allowed) {
                 connections.remove(name)
                 connections[name] = LoggedConnection(allowed, 1, now)
             } else {
-                connection.attempt()
+                connection.attempt(now)
             }
         } else {
             connections[name] = LoggedConnection(allowed, 1, now)
