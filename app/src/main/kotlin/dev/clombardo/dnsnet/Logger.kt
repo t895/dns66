@@ -12,21 +12,39 @@ import android.util.Log
 
 fun Any.className(): String = this::class.java.simpleName
 
-fun Any.logd(message: String) = Log.d(this.className(), message)
-fun Any.logd(message: String, error: Throwable?) =
-    Log.d(this.className(), message, error)
-fun Any.logv(message: String) = Log.v(this.className(), message)
-fun Any.logv(message: String, error: Throwable?) =
+fun Any.logd(message: String, error: Throwable? = null) {
+    if (BuildConfig.DEBUG) {
+        Log.d(this.className(), message, error)
+    }
+}
+
+inline fun Any.logd(error: Throwable? = null, crossinline lazyMessage: () -> String) {
+    if (BuildConfig.DEBUG) {
+        Log.d(this.className(), lazyMessage(), error)
+    }
+}
+
+fun Any.logv(message: String, error: Throwable? = null) =
     Log.v(this.className(), message, error)
-fun Any.logi(message: String) = Log.i(this.className(), message)
-fun Any.logi(message: String, error: Throwable?) =
+inline fun Any.logv(error: Throwable? = null, crossinline lazyMessage: () -> String) =
+    logv(lazyMessage(), error)
+
+fun Any.logi(message: String, error: Throwable? = null) =
     Log.i(this.className(), message, error)
-fun Any.logw(message: String) = Log.w(this.className(), message)
-fun Any.logw(message: String, error: Throwable?) =
+inline fun Any.logi(error: Throwable? = null, crossinline lazyMessage: () -> String) =
+    logi(lazyMessage(), error)
+
+fun Any.logw(message: String, error: Throwable? = null) =
     Log.w(this.className(), message, error)
-fun Any.loge(message: String) = Log.e(this.className(), message)
-fun Any.loge(message: String, error: Throwable?) =
+inline fun Any.logw(error: Throwable? = null, crossinline lazyMessage: () -> String) =
+    logw(lazyMessage(), error)
+
+fun Any.loge(message: String, error: Throwable? = null) =
     Log.e(this.className(), message, error)
-fun Any.logwtf(message: String) = Log.wtf(this.className(), message)
-fun Any.logwtf(message: String, error: Throwable?) =
+inline fun Any.loge(error: Throwable? = null, crossinline lazyMessage: () -> String) =
+    loge(lazyMessage(), error)
+
+fun Any.logwtf(message: String, error: Throwable? = null) =
     Log.wtf(this.className(), message, error)
+inline fun Any.logwtf(error: Throwable? = null, crossinline lazyMessage: () -> String) =
+    logwtf(lazyMessage(), error)

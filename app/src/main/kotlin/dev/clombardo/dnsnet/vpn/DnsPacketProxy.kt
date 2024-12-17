@@ -235,7 +235,7 @@ class DnsPacketProxy(
                 )
                 return null
             }
-            logd(
+            logd {
                 String.format(
                     Locale.ENGLISH,
                     "handleDnsRequest: Incoming packet to %s AKA %d AKA %s",
@@ -243,12 +243,12 @@ class DnsPacketProxy(
                     index,
                     destAddr
                 )
-            )
+            }
         } else {
             destAddr = parsedPacket.header.dstAddr
-            logd(
+            logd {
                 "handleDnsRequest: Incoming packet to ${parsedPacket.header.dstAddr.hostAddress} - is upstream"
-            )
+            }
         }
         return destAddr
     }
