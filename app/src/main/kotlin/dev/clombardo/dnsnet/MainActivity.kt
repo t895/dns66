@@ -66,6 +66,7 @@ import dev.clombardo.dnsnet.viewmodel.HomeViewModel
 import dev.clombardo.dnsnet.vpn.AdVpnService
 import dev.clombardo.dnsnet.vpn.Command
 import dev.clombardo.dnsnet.vpn.VpnStatus
+import uniffi.net.add
 import java.io.IOException
 import java.util.concurrent.TimeUnit
 
@@ -83,6 +84,9 @@ class MainActivity : AppCompatActivity() {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
                 window.isNavigationBarContrastEnforced = false
             }
+
+            val new = add(100U, 100U)
+            println("Got this value from Rust! - $new")
 
             DnsNetTheme {
                 val importLauncher =

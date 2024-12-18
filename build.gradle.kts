@@ -21,4 +21,6 @@ plugins {
     id("io.github.usefulness.licensee-for-android") version "0.2.2" apply false
 
     id("io.gitlab.arturbosch.detekt") version("1.23.7") apply false
+
+    id("org.mozilla.rust-android-gradle.rust-android") version "0.9.5"
 }

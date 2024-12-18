@@ -1,3 +1,5 @@
+import com.android.build.gradle.tasks.MergeSourceSetFolders
+import com.nishtahir.CargoBuildTask
 import io.gitlab.arturbosch.detekt.Detekt
 
 plugins {
@@ -12,6 +14,58 @@ plugins {
     id("app.cash.licensee")
     id("io.github.usefulness.licensee-for-android")
     id("io.gitlab.arturbosch.detekt")
+    id("org.mozilla.rust-android-gradle.rust-android")
+}
+
+cargo {
+    module = "../libnet"
+    libname = "net"
+
+    /**
+     * This is a little confusing seeing as we can still build for arm64, arm, x86, and x86_64
+     * That's because this is a *desktop* target which only guides the version that gets built
+     * as an intermediary build step. In our case, this is just the version that will be read
+     * by uniffi when creating the Kotlin bindings.
+     */
+    targets = listOf("arm64")
+
+    pythonCommand = "python3"
+}
+
+val task = tasks.register<Exec>("uniffiBindgen") {
+    val s = File.separatorChar
+    workingDir = file("${project.rootDir}${s}libnet")
+    commandLine(
+        "cargo",
+        "run",
+        "--bin",
+        "uniffi-bindgen",
+        "generate",
+        "--library",
+        "${project.rootDir}${s}app${s}build${s}rustJniLibs${s}android${s}arm64-v8a${s}libnet.so",
+        "--language",
+        "kotlin",
+        "--out-dir",
+        layout.buildDirectory.dir("generated${s}kotlin").get().asFile.path
+    )
+}
+
+project.afterEvaluate {
+    tasks.withType(CargoBuildTask::class)
+        .forEach { buildTask ->
+            tasks.withType(MergeSourceSetFolders::class)
+                .configureEach {
+                    inputs.dir(
+                        layout.buildDirectory.dir("rustJniLibs" + File.separatorChar + buildTask.toolchain!!.folder)
+                    )
+                    dependsOn(buildTask)
+                }
+        }
+}
+
+tasks.preBuild.configure {
+    dependsOn.add(tasks.withType(CargoBuildTask::class.java))
+    dependsOn.add(task)
 }
 
 android {
@@ -24,6 +78,12 @@ android {
         targetSdk = 35
         versionCode = 29
         versionName = "1.0.15"
+    }
+
+    ndkVersion = "27.2.12479018"
+
+    sourceSets {
+        getByName("main").java.srcDir("build/generated/kotlin")
     }
 
     val storeFilePath = System.getenv("STORE_FILE_PATH")
@@ -107,8 +167,12 @@ dependencies {
     implementation("androidx.appcompat:appcompat:1.7.0")
 
     // Proxy stuff
-    implementation("org.pcap4j:pcap4j-core:1.8.2")
-    implementation("org.pcap4j:pcap4j-packetfactory-static:1.8.2")
+    implementation("org.pcap4j:pcap4j-core:1.8.2") {
+        exclude(group = "net.java.dev.jna", module = "jna")
+    }
+    implementation("org.pcap4j:pcap4j-packetfactory-static:1.8.2") {
+        exclude(group = "net.java.dev.jna", module = "jna")
+    }
     implementation("dnsjava:dnsjava:3.6.2")
 
     // Compose
@@ -160,6 +224,8 @@ dependencies {
     implementation("com.aallam.similarity:string-similarity-kotlin:0.1.0")
 
     implementation("androidx.collection:collection-ktx:1.4.5")
+
+    implementation("net.java.dev.jna:jna:5.15.0@aar")
 }
 
 licensee {

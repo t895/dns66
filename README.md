@@ -50,6 +50,24 @@ Contributing
 ------------
 See [CONTRIBUTING.md](CONTRIBUTING.md)
 
+Building
+--------
+You'll need a few things installed to get up and running
+- Android Studio
+- Rust
+- Python 3
+
+Then run this in the root directory.
+
+```bash
+./gradlew assembleDebug
+```
+
+Note - Android Studio on macOS has an issue where it won't be able to find the "rustc" and "cargo."
+You'll need to build via the command line in order for things to work properly.
+
+https://issuetracker.google.com/issues/377339196?pli=1
+
 License
 -------
 This program is free software: you can redistribute it and/or modify
