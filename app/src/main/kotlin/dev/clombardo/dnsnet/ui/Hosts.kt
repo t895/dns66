@@ -373,7 +373,13 @@ fun EditHost(
                         },
                         onClick = {
                             expanded = false
-                            onStateChanged(index.toHostState())
+                            onStateChanged(
+                                when (index) {
+                                    0 -> HostState.DENY
+                                    1 -> HostState.ALLOW
+                                    else -> HostState.IGNORE
+                                }
+                            )
                         },
                         contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding,
                     )
