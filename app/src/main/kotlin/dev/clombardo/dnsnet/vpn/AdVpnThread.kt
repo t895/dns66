@@ -36,14 +36,15 @@ import android.system.Os
 import android.system.OsConstants
 import android.system.StructPollfd
 import dev.clombardo.dnsnet.Configuration
+import dev.clombardo.dnsnet.DnsNetApplication.Companion.applicationContext
 import dev.clombardo.dnsnet.FileHelper
 import dev.clombardo.dnsnet.MainActivity
+import dev.clombardo.dnsnet.R
 import dev.clombardo.dnsnet.config
 import dev.clombardo.dnsnet.logd
 import dev.clombardo.dnsnet.loge
 import dev.clombardo.dnsnet.logi
 import dev.clombardo.dnsnet.logw
-import org.pcap4j.packet.IpPacket
 import java.io.FileDescriptor
 import java.io.FileInputStream
 import java.io.FileOutputStream
@@ -63,7 +64,7 @@ class AdVpnThread(
     private val vpnService: VpnService,
     private val notify: (VpnStatus) -> Unit,
     log: (name: String, allowed: Boolean) -> Unit,
-) : Runnable, EventLoop {
+) : Runnable {
     companion object {
         private const val MIN_RETRY_TIME = 5
         private const val MAX_RETRY_TIME = 2 * 60
@@ -370,8 +371,16 @@ class AdVpnThread(
         dnsPacketProxy.handleDnsRequest(readPacket)
     }
 
+    /**
+     * Called to send a packet to a remote location
+     *
+     * @param packet        The packet to send
+     * @param requestPacket If specified, the event loop must wait for a response, and then
+     * call [DnsPacketProxy.handleDnsResponse] for the data
+     * of the response, with this packet as the first argument.
+     */
     @Throws(VpnNetworkException::class)
-    override fun forwardPacket(packet: DatagramPacket?, requestPacket: IpPacket?) {
+    fun forwardPacket(packet: DatagramPacket?, requestPacket: ByteArray?) {
         var dnsSocket: DatagramSocket? = null
         try {
             // Packets to be sent to the real DNS server will need to be protected from the VPN
@@ -401,17 +410,22 @@ class AdVpnThread(
         }
     }
 
+    /**
+     * Write an IP packet to the local TUN device
+     *
+     * @param packet The packet to write (a response to a DNS request)
+     */
+    fun queueDeviceWrite(packet: ByteArray?) {
+        packet ?: return
+        deviceWrites.add(packet)
+    }
+
     @Throws(IOException::class)
-    private fun handleRawDnsResponse(parsedPacket: IpPacket, dnsSocket: DatagramSocket) {
+    private fun handleRawDnsResponse(parsedPacket: ByteArray, dnsSocket: DatagramSocket) {
         val datagramData = ByteArray(DNS_RESPONSE_PACKET_SIZE)
         val replyPacket = DatagramPacket(datagramData, datagramData.size)
         dnsSocket.receive(replyPacket)
         dnsPacketProxy.handleDnsResponse(parsedPacket, datagramData)
-    }
-
-    override fun queueDeviceWrite(packet: IpPacket?) {
-        packet ?: return
-        deviceWrites.add(packet.rawData)
     }
 
     @Throws(UnknownHostException::class)
@@ -573,7 +587,7 @@ class AdVpnThread(
             PendingIntent.FLAG_CANCEL_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
         val pfd = builder
-            .setSession("DNSNet")
+            .setSession(applicationContext.getString(R.string.app_name))
             .setConfigureIntent(pendingIntent)
             .establish()
         logi("Configured")

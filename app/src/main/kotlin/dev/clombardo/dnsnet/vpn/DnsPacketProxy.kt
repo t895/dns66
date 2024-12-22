@@ -17,16 +17,7 @@
 package dev.clombardo.dnsnet.vpn
 
 import dev.clombardo.dnsnet.db.RuleDatabase
-import dev.clombardo.dnsnet.logd
-import dev.clombardo.dnsnet.loge
 import dev.clombardo.dnsnet.logi
-import org.pcap4j.packet.IpPacket
-import org.pcap4j.packet.IpSelector
-import org.pcap4j.packet.IpV4Packet
-import org.pcap4j.packet.IpV6Packet
-import org.pcap4j.packet.Packet
-import org.pcap4j.packet.UdpPacket
-import org.pcap4j.packet.UnknownPacket
 import org.xbill.DNS.DClass
 import org.xbill.DNS.Flags
 import org.xbill.DNS.Message
@@ -35,17 +26,18 @@ import org.xbill.DNS.Rcode
 import org.xbill.DNS.SOARecord
 import org.xbill.DNS.Section
 import org.xbill.DNS.TextParseException
+import uniffi.net.GenericIpPacket
+import uniffi.net.buildResponsePacket
 import java.io.IOException
 import java.net.DatagramPacket
 import java.net.InetAddress
-import java.util.Locale
 
 /**
  * Creates and parses packets, and sends packets to a remote socket or the device using
  * {@link AdVpnThread}.
  */
 class DnsPacketProxy(
-    private val eventLoop: EventLoop,
+    private val eventLoop: AdVpnThread,
     private val log: (name: String, allowed: Boolean) -> Unit,
 ) {
     companion object {
@@ -94,37 +86,8 @@ class DnsPacketProxy(
      * @param requestPacket   The original request packet
      * @param responsePayload The payload of the response
      */
-    fun handleDnsResponse(requestPacket: IpPacket, responsePayload: ByteArray) {
-        val udpOutPacket = requestPacket.payload as UdpPacket
-        val payloadBuilder = UdpPacket.Builder(udpOutPacket)
-            .srcPort(udpOutPacket.header.dstPort)
-            .dstPort(udpOutPacket.header.srcPort)
-            .srcAddr(requestPacket.header.dstAddr)
-            .dstAddr(requestPacket.header.srcAddr)
-            .correctChecksumAtBuild(true)
-            .correctChecksumAtBuild(true)
-            .correctLengthAtBuild(true)
-            .payloadBuilder(UnknownPacket.Builder().rawData(responsePayload))
-
-        val ipOutPacket = if (requestPacket is IpV4Packet) {
-            IpV4Packet.Builder(requestPacket)
-                .srcAddr(requestPacket.header.dstAddr)
-                .dstAddr(requestPacket.header.srcAddr)
-                .correctChecksumAtBuild(true)
-                .correctLengthAtBuild(true)
-                .payloadBuilder(payloadBuilder)
-                .build()
-        } else {
-            IpV6Packet.Builder(requestPacket as IpV6Packet)
-                .srcAddr(requestPacket.header.dstAddr)
-                .dstAddr(requestPacket.header.srcAddr)
-                .correctLengthAtBuild(true)
-                .payloadBuilder(payloadBuilder)
-                .build()
-        }
-
-        eventLoop.queueDeviceWrite(ipOutPacket)
-    }
+    fun handleDnsResponse(requestPacket: ByteArray, responsePayload: ByteArray) =
+        eventLoop.queueDeviceWrite(buildResponsePacket(requestPacket, responsePayload))
 
     /**
      * Handles a DNS request, by either blocking it or forwarding it to the remote location.
@@ -134,27 +97,20 @@ class DnsPacketProxy(
      */
     @Throws(VpnNetworkException::class)
     fun handleDnsRequest(packetData: ByteArray) {
-        val parsedPacket = try {
-            IpSelector.newPacket(packetData, 0, packetData.size) as IpPacket
-        } catch (e: Exception) {
-            logi("handleDnsRequest: Discarding invalid IP packet", e)
-            return
-        }
+        val packet = GenericIpPacket(packetData)
 
-        val parsedUdp: UdpPacket?
-        val udpPayload: Packet?
-        if (parsedPacket.payload is UdpPacket) {
-            parsedUdp = parsedPacket.payload as UdpPacket
-            udpPayload = parsedUdp.payload
-        } else {
-            logi("handleDnsRequest: Discarding unknown packet type ${parsedPacket.header}")
-            return
-        }
+        // TODO: We currently assume that DNS requests will be UDP only. This is not true.
+        val udpPacketData = packet.getUdpPacket() ?: return
+        val udpPacket = uniffi.net.UdpPacket(udpPacketData)
 
-        val destAddr = translateDestinationAddress(parsedPacket) ?: return
+        val destinationAddress = packet.getDestinationAddress() ?: return
+        val realDestinationAddress = translateDestinationAddress(destinationAddress) ?: return
+        val inetRealDestinationAddress = InetAddress.getByAddress(realDestinationAddress)
 
-        if (udpPayload == null) {
-            logi("handleDnsRequest: Sending UDP packet without payload: $parsedUdp")
+        val destinationPort = udpPacket.getDestinationPort().toInt()
+
+        if (!udpPacket.hasPayload()) {
+            // logi("handleDnsRequest: Sending UDP packet without payload: $parsedUdp")
 
             // Let's be nice to Firefox. Firefox uses an empty UDP packet to
             // the gateway to reduce the RTT. For further details, please see
@@ -164,8 +120,8 @@ class DnsPacketProxy(
                     ByteArray(0),
                     0,
                     0,
-                    destAddr,
-                    parsedUdp.header.dstPort.valueAsInt()
+                    inetRealDestinationAddress,
+                    destinationPort,
                 )
                 eventLoop.forwardPacket(outPacket, null)
             } catch (e: Exception) {
@@ -174,9 +130,9 @@ class DnsPacketProxy(
             return
         }
 
-        val dnsRawData = udpPayload.rawData
+        val udpPayload = udpPacket.getPayload()!!
         val dnsMsg = try {
-            Message(dnsRawData)
+            Message(udpPayload)
         } catch (e: IOException) {
             logi("handleDnsRequest: Discarding non-DNS or invalid packet", e)
             return
@@ -189,23 +145,23 @@ class DnsPacketProxy(
 
         val dnsQueryName = dnsMsg.question.name.toString(true).lowercase()
         if (!ruleDatabase.isBlocked(dnsQueryName)) {
-            logi("handleDnsRequest: DNS Name $dnsQueryName Allowed, sending to $destAddr")
+            logi("handleDnsRequest: DNS Name $dnsQueryName Allowed, sending to $realDestinationAddress")
             log(dnsQueryName, true)
             val outPacket = DatagramPacket(
-                dnsRawData,
+                udpPayload,
                 0,
-                dnsRawData.size,
-                destAddr,
-                parsedUdp.header.dstPort.valueAsInt()
+                udpPayload.size,
+                inetRealDestinationAddress,
+                destinationPort,
             )
-            eventLoop.forwardPacket(outPacket, parsedPacket)
+            eventLoop.forwardPacket(outPacket, packetData)
         } else {
             logi("handleDnsRequest: DNS Name $dnsQueryName Blocked!")
             log(dnsQueryName, false)
             dnsMsg.header.setFlag(Flags.QR.toInt())
             dnsMsg.header.rcode = Rcode.NOERROR
             dnsMsg.addRecord(NEGATIVE_CACHE_SOA_RECORD, Section.AUTHORITY)
-            handleDnsResponse(parsedPacket, dnsMsg.toWire())
+            handleDnsResponse(packetData, dnsMsg.toWire())
         }
     }
 
@@ -213,43 +169,43 @@ class DnsPacketProxy(
      * Translates the destination address in the packet to the real one. In
      * case address translation is not used, this just returns the original one.
      *
-     * @param parsedPacket Packet to get destination address for.
+     * @param destinationAddress Destination address in that packet that we want to translate.
      * @return The translated address or null on failure.
      */
-    private fun translateDestinationAddress(parsedPacket: IpPacket): InetAddress? {
-        val destAddr: InetAddress
+    private fun translateDestinationAddress(destinationAddress: ByteArray): ByteArray? {
+        val realDestinationAddress: ByteArray
         if (upstreamDnsServers.isNotEmpty()) {
-            val addr = parsedPacket.header.dstAddr.address
-            val index = addr[addr.size - 1] - 2
+            val index = destinationAddress[destinationAddress.size - 1] - 2
 
             try {
-                destAddr = upstreamDnsServers[index]
+                realDestinationAddress = upstreamDnsServers[index].address
             } catch (e: Exception) {
-                loge(
-                    """
-                        handleDnsRequest: Cannot handle packets to:
-                        ${parsedPacket.header.dstAddr.hostAddress}
-                        Not a valid address for this network
-                    """.trimIndent(),
-                    e,
-                )
+                // TODO: Create byte array to address string func
+//                loge(
+//                    """
+//                        handleDnsRequest: Cannot handle packets to:
+//                        ${parsedPacket.header.dstAddr.hostAddress}
+//                        Not a valid address for this network
+//                    """.trimIndent(),
+//                    e,
+//                )
                 return null
             }
-            logd {
-                String.format(
-                    Locale.ENGLISH,
-                    "handleDnsRequest: Incoming packet to %s AKA %d AKA %s",
-                    parsedPacket.header.dstAddr.hostAddress,
-                    index,
-                    destAddr
-                )
-            }
+//            logd {
+//                String.format(
+//                    Locale.ENGLISH,
+//                    "handleDnsRequest: Incoming packet to %s AKA %d AKA %s",
+//                    parsedPacket.header.dstAddr.hostAddress,
+//                    index,
+//                    destAddr
+//                )
+//            }
         } else {
-            destAddr = parsedPacket.header.dstAddr
-            logd {
-                "handleDnsRequest: Incoming packet to ${parsedPacket.header.dstAddr.hostAddress} - is upstream"
-            }
+            realDestinationAddress = destinationAddress
+//            logd {
+//                "handleDnsRequest: Incoming packet to ${parsedPacket.header.dstAddr.hostAddress} - is upstream"
+//            }
         }
-        return destAddr
+        return realDestinationAddress
     }
 }

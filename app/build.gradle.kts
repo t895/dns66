@@ -166,13 +166,6 @@ kotlin {
 dependencies {
     implementation("androidx.appcompat:appcompat:1.7.0")
 
-    // Proxy stuff
-    implementation("org.pcap4j:pcap4j-core:1.8.2") {
-        exclude(group = "net.java.dev.jna", module = "jna")
-    }
-    implementation("org.pcap4j:pcap4j-packetfactory-static:1.8.2") {
-        exclude(group = "net.java.dev.jna", module = "jna")
-    }
     implementation("dnsjava:dnsjava:3.6.2")
 
     // Compose
