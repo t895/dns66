@@ -298,16 +298,16 @@ class AdVpnThread(
             pollFd.events = OsConstants.POLLIN.toShort()
         }
 
-        if (blockFd.revents.toInt() != 0) {
-            logi("Told to stop VPN")
-            return false
-        }
-
         logd("doOne: Polling ${polls.size} file descriptors")
         val result = Os.poll(polls, vpnWatchDog.pollTimeout)
         if (result == 0) {
             vpnWatchDog.handleTimeout()
             return true
+        }
+
+        if (blockFd.revents.toInt() != 0) {
+            logi("Told to stop VPN")
+            return false
         }
 
         // Need to do this before reading from the device, otherwise a new insertion there could
