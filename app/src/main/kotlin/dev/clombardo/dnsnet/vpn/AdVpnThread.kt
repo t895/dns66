@@ -45,7 +45,8 @@ import dev.clombardo.dnsnet.logd
 import dev.clombardo.dnsnet.loge
 import dev.clombardo.dnsnet.logi
 import dev.clombardo.dnsnet.logw
-import java.io.FileDescriptor
+import uniffi.net.rustLoop
+import uniffi.net.rustPipe
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
@@ -131,8 +132,8 @@ class AdVpnThread(
     private val vpnWatchDog = VpnWatchdog()
 
     private var thread: Thread? = null
-    private var blockFd: FileDescriptor? = null
-    private var interruptFd: FileDescriptor? = null
+    private var blockFd: Int? = null
+    private var interruptFd: Int? = null
 
     fun startThread() {
         logi("Starting Vpn Thread")
@@ -242,24 +243,31 @@ class AdVpnThread(
         val packet = ByteArray(PACKET_SIZE)
 
         // A pipe we can interrupt the poll() call with by closing the interruptFd end
-        val pipes = Os.pipe()
+//        val pipes = Os.pipe()
+//        interruptFd = pipes[0]
+//        blockFd = pipes[1]
+
+        val pipes = rustPipe()!!
         interruptFd = pipes[0]
         blockFd = pipes[1]
 
         // Authenticate and configure the virtual network interface.
         try {
-            configure().use { pfd ->
+//            configure().use { pfd ->
                 // Read and write views of the tun device
-                val inputStream = FileInputStream(pfd.fileDescriptor)
-                val outFd = FileOutputStream(pfd.fileDescriptor)
+//                val inputStream = FileInputStream(pfd.fileDescriptor)
+//                val outFd = FileOutputStream(pfd.fileDescriptor)
 
                 // Now we are connected. Set the flag and show the message.
-                notify(VpnStatus.RUNNING)
 
-                while (doOne(inputStream, outFd, packet)) {
+
+                ///while (doOne(inputStream, outFd, packet)) {
                     // We keep forwarding packets till something goes wrong.
-                }
-            }
+                //}
+//            }
+            notify(VpnStatus.RUNNING)
+
+            rustLoop(configure().detachFd())
         } finally {
             blockFd = FileHelper.closeOrWarn(blockFd, "runVpn: Could not close blockFd")
         }
