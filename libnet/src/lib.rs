@@ -1,4 +1,10 @@
-use std::{thread, time::{self, SystemTime, UNIX_EPOCH}};
+use std::{
+    io::Error,
+    net::UdpSocket,
+    os::fd::AsRawFd,
+    thread,
+    time::{self, SystemTime, UNIX_EPOCH},
+};
 
 use android_logger::Config;
 use etherparse::{
@@ -6,7 +12,7 @@ use etherparse::{
     Ipv6Header, Ipv6HeaderSlice, Ipv6Slice, NetSlice, PacketBuilder, PacketBuilderStep,
     SlicedPacket, TransportSlice, UdpSlice,
 };
-use libc::pollfd;
+use libc::{pollfd, sock_extended_err};
 use linux_syscall::{syscall, Result, ResultSize};
 use uniffi::deps::log::LevelFilter;
 
@@ -277,12 +283,26 @@ pub fn native_close(fd: i32) -> bool {
 }
 
 #[uniffi::export]
-pub fn vpn_loop(vpn_fd: i32, block_fd: i32) {
+pub fn vpn_loop(vpn_fd: i32, block_fd: i32, watchdog_enabled: bool) {
     let mut device_writes: Vec<Vec<u8>> = Vec::new();
-    while do_one(vpn_fd, block_fd, &mut device_writes) {}
+    let vpn_watchdog = VpnWatchdog::new(watchdog_enabled);
+    let wosp_list = WospList::new();
+    while do_one(
+        vpn_fd,
+        block_fd,
+        &mut device_writes,
+        &vpn_watchdog,
+        &wosp_list,
+    ) {}
 }
 
-fn do_one(vpn_fd: i32, block_fd: i32, device_writes: &mut Vec<Vec<u8>>) -> bool {
+fn do_one(
+    vpn_fd: i32,
+    block_fd: i32,
+    device_writes: &mut Vec<Vec<u8>>,
+    vpn_watchdog: &VpnWatchdog,
+    dns_in: &WospList,
+) -> bool {
     let mut device_poll_fd = pollfd {
         fd: vpn_fd,
         events: libc::POLLIN,
@@ -298,20 +318,53 @@ fn do_one(vpn_fd: i32, block_fd: i32, device_writes: &mut Vec<Vec<u8>>) -> bool 
         device_poll_fd.events = device_poll_fd.events | libc::POLLOUT;
     }
 
-    let mut polls: Vec<pollfd> = Vec::with_capacity(2 /* + dns_in.len() */);
+    let length = dns_in.list.len();
+    let mut polls: Vec<pollfd> = Vec::with_capacity(2 + length);
     polls.push(device_poll_fd);
     polls.push(block_poll_fd);
-    // TODO: Iterate over dns_in
+    for i in 0..length {
+        let poll_fd = pollfd {
+            fd: dns_in.list.get(i).unwrap().socket.as_raw_fd(),
+            events: libc::POLLIN,
+            revents: 0,
+        };
+        polls.push(poll_fd);
+    }
 
-    let result = unsafe { syscall!(linux_syscall::SYS_ppoll, polls.as_ptr(), 100) }.check();
-    // TODO: Handle result
+    debug!("doOne: Polling {} file descriptors", polls.len());
+    let result = unsafe {
+        syscall!(
+            linux_syscall::SYS_ppoll,
+            polls.as_ptr(),
+            vpn_watchdog.get_poll_timeout()
+        )
+    };
+    if result.as_usize_unchecked() == 0 {
+        vpn_watchdog.handle_timeout();
+        return true;
+    }
 
     if block_poll_fd.revents != 0 {
         info!("Told to stop VPN");
         return false;
     }
 
-    // TODO: Iterate over dns_in
+    // Need to do this before reading from the device, otherwise a new insertion there could
+    // invalidate one of the sockets we want to read from either due to size or time out
+    // constraints
+    if !dns_in.list.is_empty() {
+        let mut i: i32 = -1;
+        dns_in.list.retain_mut(|element| {
+            i += 1;
+            if polls.get((i as usize) + 2).unwrap().revents & libc::POLLIN != 0 {
+                debug!("Read from DNS socket: {:?}", element.socket);
+                handle_raw_dns_response(element.packet, element.socket);
+                false
+            } else {
+                true
+            }
+        });
+    }
 
     if device_poll_fd.revents & libc::POLLOUT != 0 {
         debug!("Write to device");
@@ -342,13 +395,20 @@ fn write_to_device(vpn_fd: i32, write: Vec<u8>) -> bool {
     };
 }
 
+fn handle_raw_dns_response(parsed_packet: Vec<u8>, dns_socket: UdpSocket) {
+    // TODO: Find where to put DNS_RESPONSE_PACKET_SIZE = 1024
+    let datagram_data: Vec<u8> = Vec::with_capacity(1024);
+    let mut reply_packet = UdpPacket::new(datagram_data);
+    dns_socket.recv_from(&mut reply_packet.data);
+}
+
 struct VpnWatchdog {
     enabled: bool,
     init_penalty: u64,
     last_packet_sent: u128,
     last_packet_received: u128,
     poll_timeout: i32,
-    target_address: Vec<u8>,
+    target_address: String,
 }
 
 impl VpnWatchdog {
@@ -356,12 +416,12 @@ impl VpnWatchdog {
     const POLL_TIMEOUT_START: i32 = 1000;
     const POLL_TIMEOUT_END: i32 = 4096000;
     const POLL_TIMEOUT_WAITING: i32 = 7000;
-    const POLL_TIMEOUT_GROW: u8 = 4;
+    const POLL_TIMEOUT_GROW: i32 = 4;
 
     // Reconnect penalty ranges from 0s to 5s, in increments of 200 ms.
-    const INIT_PENALTY_START: u32 = 0;
-    const INIT_PENALTY_END: u32 = 5000;
-    const INIT_PENALTY_INC: u32 = 200;
+    const INIT_PENALTY_START: u64 = 0;
+    const INIT_PENALTY_END: u64 = 5000;
+    const INIT_PENALTY_INC: u64 = 200;
 
     const DNS_PORT: u8 = 53;
 
@@ -372,7 +432,7 @@ impl VpnWatchdog {
             last_packet_sent: 0,
             last_packet_received: 0,
             poll_timeout: VpnWatchdog::POLL_TIMEOUT_START,
-            target_address: Vec::new(),
+            target_address: String::new(),
         }
     }
 
@@ -389,10 +449,10 @@ impl VpnWatchdog {
             VpnWatchdog::POLL_TIMEOUT_WAITING
         } else {
             self.poll_timeout
-        }
+        };
     }
 
-    fn set_target(&mut self, target: Vec<u8>) {
+    fn set_target(&mut self, target: String) {
         self.target_address = target;
     }
 
@@ -401,16 +461,122 @@ impl VpnWatchdog {
             return;
         }
 
-        debug!("handle_packet: Received packet of length {}", packet_data.len());
-        self.last_packet_received = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_millis();
+        debug!(
+            "handle_packet: Received packet of length {}",
+            packet_data.len()
+        );
+        self.last_packet_received = SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_millis();
     }
 
-    fn send_packet(&self) {
+    fn send_packet(&mut self) {
         if !self.enabled {
             return;
         }
 
-        debug!("send_packet: Sending packet, poll timeout is {}", self.poll_timeout);
-        // let out_packet = 
+        debug!(
+            "send_packet: Sending packet, poll timeout is {}",
+            self.poll_timeout
+        );
+        let result = UdpSocket::bind("[::]:53");
+        match result {
+            Ok(socket) => {
+                socket.send_to(vec![].as_slice(), &self.target_address);
+                self.last_packet_sent = SystemTime::now()
+                    .duration_since(UNIX_EPOCH)
+                    .unwrap()
+                    .as_millis();
+            }
+            Err(error) => error!("Failed to send watchdog packet! - {}", error.kind()),
+        };
+    }
+
+    fn handle_timeout(&mut self) -> bool {
+        if !self.enabled {
+            return false;
+        }
+
+        debug!(
+            "handleTimeout: Milliseconds elapsed between last receive and sent: {}",
+            self.last_packet_received
+        );
+
+        if self.last_packet_received < self.last_packet_sent && self.last_packet_sent != 0 {
+            self.init_penalty += Self::INIT_PENALTY_INC;
+            if self.init_penalty > Self::INIT_PENALTY_END {
+                self.init_penalty = Self::INIT_PENALTY_END;
+            }
+            return true;
+        }
+
+        self.poll_timeout *= Self::POLL_TIMEOUT_GROW;
+        if self.poll_timeout > Self::POLL_TIMEOUT_END {
+            self.poll_timeout = Self::POLL_TIMEOUT_END;
+        }
+
+        self.send_packet();
+        return false;
+    }
+}
+
+struct WaitingOnSocketPacket {
+    socket: UdpSocket,
+    packet: Vec<u8>,
+    time: u128,
+}
+
+impl WaitingOnSocketPacket {
+    fn new(socket: UdpSocket, packet: Vec<u8>) -> Self {
+        Self {
+            socket,
+            packet,
+            time: SystemTime::now()
+                .duration_since(UNIX_EPOCH)
+                .unwrap()
+                .as_millis(),
+        }
+    }
+
+    fn age_seconds(&self) -> u128 {
+        return (SystemTime::now()
+            .duration_since(UNIX_EPOCH)
+            .unwrap()
+            .as_millis()
+            - self.time)
+            / 1000;
+    }
+}
+
+struct WospList {
+    list: Vec<WaitingOnSocketPacket>,
+}
+
+impl WospList {
+    const DNS_MAXIMUM_WAITING: usize = 1024;
+    const DNS_TIMEOUT_SEC: u128 = 10;
+
+    fn new() -> Self {
+        Self { list: Vec::new() }
+    }
+
+    fn add(&mut self, wosp: WaitingOnSocketPacket) {
+        if self.list.len() > Self::DNS_MAXIMUM_WAITING {
+            debug!(
+                "Dropping socket due to space constraints: {:?}",
+                self.list.first().unwrap().packet
+            );
+            self.list.remove(0);
+        }
+
+        while !self.list.is_empty()
+            && self.list.first().unwrap().age_seconds() > Self::DNS_TIMEOUT_SEC
+        {
+            debug!("Timeout on socket {:?}", self.list.first().unwrap().socket);
+            self.list.remove(0);
+        }
+
+        self.list.push(wosp);
     }
 }

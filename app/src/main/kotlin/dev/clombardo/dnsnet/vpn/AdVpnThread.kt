@@ -74,10 +74,6 @@ class AdVpnThread(
         /* If we had a successful connection for that long, reset retry timeout */
         private const val RETRY_RESET_SEC: Long = 60
 
-        /* Maximum number of responses we want to wait for */
-        const val DNS_MAXIMUM_WAITING = 1024
-        const val DNS_TIMEOUT_SEC: Long = 10
-
         private const val PREFIX_LENGTH = 24
 
         private const val DNS_RESPONSE_PACKET_SIZE = 1024
