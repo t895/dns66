@@ -16,6 +16,9 @@ Installing
 [<img src="https://play.google.com/intl/en_us/badges/images/generic/en-play-badge.png"
      alt="Get it on Google Play"
      height="80">](https://play.google.com/store/apps/details?id=dev.clombardo.dnsnet)
+[<img src="https://accrescent.app/badges/get-it-on.png"
+     alt="Get it on Accrescent"
+     height="80">](https://accrescent.app/app/dev.clombardo.dnsnet)
 
 Or download the latest APK from the [Releases Section](https://github.com/t895/DNSNet/releases/latest).
 
