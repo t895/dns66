@@ -12,6 +12,7 @@ name = "uniffi-bindgen"
 path = "uniffi-bindgen.rs"
 
 [dependencies]
+dns-parser = "0.8.0"
 etherparse = "0.16.0"
 libc = "0.2.169"
 linux-syscall = "1.0.0"

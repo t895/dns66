@@ -32,9 +32,7 @@ import android.net.VpnService
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.system.ErrnoException
-import android.system.Os
 import android.system.OsConstants
-import android.system.StructPollfd
 import dev.clombardo.dnsnet.Configuration
 import dev.clombardo.dnsnet.DnsNetApplication.Companion.applicationContext
 import dev.clombardo.dnsnet.FileHelper
@@ -45,8 +43,10 @@ import dev.clombardo.dnsnet.logd
 import dev.clombardo.dnsnet.loge
 import dev.clombardo.dnsnet.logi
 import dev.clombardo.dnsnet.logw
-import uniffi.net.rustLoop
-import uniffi.net.rustPipe
+import uniffi.net.nativeClose
+import uniffi.net.nativePipe
+import uniffi.net.rustInit
+import uniffi.net.vpnLoop
 import java.io.FileInputStream
 import java.io.FileOutputStream
 import java.io.IOException
@@ -119,13 +119,13 @@ class AdVpnThread(
     private val deviceWrites: Queue<ByteArray> = LinkedList()
 
     // HashMap that keeps an upper limit of packets
-    private val dnsIn: WospList = WospList()
+//    private val dnsIn: WospList = WospList()
 
     // The object where we actually handle packets.
     private val dnsPacketProxy = DnsPacketProxy(this, log)
 
     // Watch dog that checks our connection is alive.
-    private val vpnWatchDog = VpnWatchdog()
+//    private val vpnWatchDog = VpnWatchdog()
 
     private var thread: Thread? = null
     private var blockFd: Int? = null
@@ -144,8 +144,8 @@ class AdVpnThread(
             thread?.interrupt()
         }
 
-        interruptFd =
-            FileHelper.closeOrWarn(interruptFd, "stopThread: Could not close interruptFd")
+//        interruptFd =
+//            FileHelper.closeOrWarn(interruptFd, "stopThread: Could not close interruptFd")
         try {
             if (thread != null) {
                 thread?.join(2000)
@@ -170,7 +170,7 @@ class AdVpnThread(
         // Load the block list
         try {
             dnsPacketProxy.initialize(upstreamDnsServers)
-            vpnWatchDog.initialize(config.watchDog)
+//            vpnWatchDog.initialize(config.watchDog)
         } catch (e: InterruptedException) {
             notify(VpnStatus.STOPPED)
             return
@@ -235,115 +235,22 @@ class AdVpnThread(
         VpnNetworkException::class
     )
     private fun runVpn() {
-        // Allocate the buffer for a single packet.
-        val packet = ByteArray(PACKET_SIZE)
-
         // A pipe we can interrupt the poll() call with by closing the interruptFd end
-//        val pipes = Os.pipe()
-//        interruptFd = pipes[0]
-//        blockFd = pipes[1]
-
-        val pipes = rustPipe()!!
+        val pipes = nativePipe()!!
         interruptFd = pipes[0]
         blockFd = pipes[1]
 
         // Authenticate and configure the virtual network interface.
         try {
-//            configure().use { pfd ->
-                // Read and write views of the tun device
-//                val inputStream = FileInputStream(pfd.fileDescriptor)
-//                val outFd = FileOutputStream(pfd.fileDescriptor)
-
-                // Now we are connected. Set the flag and show the message.
-
-
-                ///while (doOne(inputStream, outFd, packet)) {
-                    // We keep forwarding packets till something goes wrong.
-                //}
-//            }
             notify(VpnStatus.RUNNING)
-
-            rustLoop(configure().detachFd())
+            vpnLoop(
+                vpnFd = configure().detachFd(),
+                blockFd = blockFd!!,
+                watchdogEnabled = config.watchDog
+            )
         } finally {
-            blockFd = FileHelper.closeOrWarn(blockFd, "runVpn: Could not close blockFd")
+             blockFd = nativeClose(blockFd!!)
         }
-    }
-
-    @Throws(
-        IOException::class,
-        ErrnoException::class,
-        InterruptedException::class,
-        VpnNetworkException::class
-    )
-    private fun doOne(
-        inputStream: FileInputStream,
-        outFd: FileOutputStream,
-        packet: ByteArray
-    ): Boolean {
-        val deviceFd = StructPollfd()
-        deviceFd.fd = inputStream.getFD()
-        deviceFd.events = OsConstants.POLLIN.toShort()
-        val blockFd = StructPollfd()
-        blockFd.fd = this.blockFd
-        blockFd.events = (OsConstants.POLLHUP or OsConstants.POLLERR).toShort()
-
-        if (!deviceWrites.isEmpty()) {
-            deviceFd.events = (deviceFd.events.toInt() or OsConstants.POLLOUT).toShort()
-        }
-
-        val polls = arrayOfNulls<StructPollfd>(2 + dnsIn.size)
-        polls[0] = deviceFd
-        polls[1] = blockFd
-        var offset = -1
-        for (i in dnsIn.indices) {
-            offset++
-            polls[2 + offset] = StructPollfd()
-            val pollFd = polls[2 + offset]
-            pollFd!!.fd = ParcelFileDescriptor.fromDatagramSocket(dnsIn[i].socket).fileDescriptor
-            pollFd.events = OsConstants.POLLIN.toShort()
-        }
-
-        logd("doOne: Polling ${polls.size} file descriptors")
-        val result = Os.poll(polls, vpnWatchDog.pollTimeout)
-        if (result == 0) {
-            vpnWatchDog.handleTimeout()
-            return true
-        }
-
-        if (blockFd.revents.toInt() != 0) {
-            logi("Told to stop VPN")
-            return false
-        }
-
-        // Need to do this before reading from the device, otherwise a new insertion there could
-        // invalidate one of the sockets we want to read from either due to size or time out
-        // constraints
-        if (dnsIn.isNotEmpty()) {
-            var i = -1
-            val iter = dnsIn.iterator()
-            while (iter.hasNext()) {
-                i++
-                val wosp = iter.next()
-                if (polls[i + 2]!!.revents.toInt() and OsConstants.POLLIN != 0) {
-                    logd("Read from DNS socket" + wosp.socket)
-                    iter.remove()
-                    handleRawDnsResponse(wosp.packet, wosp.socket)
-                    wosp.socket.close()
-                }
-            }
-        }
-
-        if ((deviceFd.revents.toInt() and OsConstants.POLLOUT) != 0) {
-            logd("Write to device")
-            writeToDevice(outFd)
-        }
-
-        if (deviceFd.revents.toInt() and OsConstants.POLLIN != 0) {
-            logd("Read from device")
-            readPacketFromDevice(inputStream, packet)
-        }
-
-        return true
     }
 
     @Throws(VpnNetworkException::class)
@@ -371,7 +278,7 @@ class AdVpnThread(
 
         val readPacket = Arrays.copyOfRange(packet, 0, length)
 
-        vpnWatchDog.handlePacket(readPacket)
+//        vpnWatchDog.handlePacket(readPacket)
         dnsPacketProxy.handleDnsRequest(readPacket)
     }
 
@@ -395,7 +302,7 @@ class AdVpnThread(
             dnsSocket.send(packet)
 
             if (requestPacket != null) {
-                dnsIn.add(WaitingOnSocketPacket(dnsSocket, requestPacket))
+//                dnsIn.add(WaitingOnSocketPacket(dnsSocket, requestPacket))
             } else {
                 FileHelper.closeOrWarn(
                     dnsSocket,
@@ -450,14 +357,14 @@ class AdVpnThread(
             val alias = String.format(format!!, upstreamDnsServers.size + 1)
             logi("configure: Adding DNS Server $addr as $alias")
             builder.addDnsServer(alias).addRoute(alias, 32)
-            vpnWatchDog.setTarget(InetAddress.getByName(alias))
+//            vpnWatchDog.setTarget(InetAddress.getByName(alias))
         } else if (addr is Inet6Address) {
             upstreamDnsServers.add(addr)
             ipv6Template!![ipv6Template.size - 1] = (upstreamDnsServers.size + 1).toByte()
             val i6addr = Inet6Address.getByAddress(ipv6Template)
             logi("configure: Adding DNS Server $addr as $i6addr")
             builder.addDnsServer(i6addr)
-            vpnWatchDog.setTarget(i6addr)
+//            vpnWatchDog.setTarget(i6addr)
         }
     }
 

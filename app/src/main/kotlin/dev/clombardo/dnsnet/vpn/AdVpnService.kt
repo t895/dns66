@@ -40,6 +40,7 @@ import dev.clombardo.dnsnet.logi
 import dev.clombardo.dnsnet.vpn.VpnStatus.Companion.toVpnStatus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import uniffi.net.AndroidVpnService
 
 enum class VpnStatus {
     STARTING,
@@ -74,7 +75,7 @@ enum class Command {
     RESUME,
 }
 
-class AdVpnService : VpnService(), Handler.Callback {
+class AdVpnService : VpnService(), Handler.Callback, AndroidVpnService {
     companion object {
         const val SERVICE_NOTIFICATION_ID = 1
         const val REQUEST_CODE_START = 43
@@ -310,5 +311,9 @@ class AdVpnService : VpnService(), Handler.Callback {
             else -> throw IllegalArgumentException("Invalid message with what = ${msg.what}")
         }
         return true
+    }
+
+    override fun protectSocket(socketFd: Int) {
+        protect(socketFd)
     }
 }
