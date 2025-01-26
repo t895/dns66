@@ -40,7 +40,7 @@ import dev.clombardo.dnsnet.logi
 import dev.clombardo.dnsnet.vpn.VpnStatus.Companion.toVpnStatus
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
-import uniffi.net.AndroidVpnService
+import uniffi.net.AdVpnCallback
 
 enum class VpnStatus {
     STARTING,
@@ -75,7 +75,7 @@ enum class Command {
     RESUME,
 }
 
-class AdVpnService : VpnService(), Handler.Callback, AndroidVpnService {
+class AdVpnService : VpnService(), Handler.Callback, AdVpnCallback {
     companion object {
         const val SERVICE_NOTIFICATION_ID = 1
         const val REQUEST_CODE_START = 43
@@ -149,15 +149,9 @@ class AdVpnService : VpnService(), Handler.Callback, AndroidVpnService {
     private val handler = Handler(Looper.myLooper()!!, this)
 
     private var vpnThread: AdVpnThread? = AdVpnThread(
-        vpnService = this,
-        notify = { status ->
-            handler.sendMessage(handler.obtainMessage(VPN_MSG_STATUS_UPDATE, status.ordinal, 0))
-        },
-        log = { connectionName, allowed ->
-            if (config.blockLogging) {
-                logger.newConnection(connectionName, allowed)
-            }
-        }
+        adVpnService = this,
+        notify = { status -> notify(status.ordinal) },
+        blockLoggerCallback = logger,
     )
 
     private val connectivityChangedCallback = object : NetworkCallback() {
@@ -313,7 +307,11 @@ class AdVpnService : VpnService(), Handler.Callback, AndroidVpnService {
         return true
     }
 
-    override fun protectSocket(socketFd: Int) {
+    override fun protectRawSocketFd(socketFd: Int) {
         protect(socketFd)
+    }
+
+    override fun notify(nativeStatus: Int) {
+        handler.sendMessage(handler.obtainMessage(VPN_MSG_STATUS_UPDATE, nativeStatus, 0))
     }
 }
