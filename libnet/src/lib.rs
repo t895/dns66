@@ -427,6 +427,15 @@ impl AdVpn {
                 self.vpn_watchdog.get_poll_timeout()
             )
         };
+
+        match result.check() {
+            Ok(_) => debug!("do_one: ppoll ran successfully"),
+            Err(e) => {
+                error!("do_one: ppoll failed! - Error code: {}", e.get());
+                return false;
+            }
+        }
+
         if result.as_usize_unchecked() == 0 {
             self.vpn_watchdog.handle_timeout();
             return true;
