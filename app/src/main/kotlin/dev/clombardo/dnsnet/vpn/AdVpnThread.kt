@@ -32,9 +32,11 @@ import android.net.VpnService
 import android.os.Build
 import android.os.ParcelFileDescriptor
 import android.system.ErrnoException
+import android.system.Os
 import android.system.OsConstants
 import dev.clombardo.dnsnet.Configuration
 import dev.clombardo.dnsnet.DnsNetApplication.Companion.applicationContext
+import dev.clombardo.dnsnet.FileHelper
 import dev.clombardo.dnsnet.MainActivity
 import dev.clombardo.dnsnet.R
 import dev.clombardo.dnsnet.config
@@ -187,6 +189,7 @@ class AdVpnThread(
         runVpnNative(
             adVpnCallback = adVpnService,
             blockLoggerCallback = blockLoggerCallback,
+            androidFileHelper = FileHelper,
             hostItems = config.hosts.items.map { it.toNative() },
             hostExceptions = config.hosts.exceptions.map { it.toNative() },
             upstreamDnsServers = upstreamDnsServers.map { it.address },

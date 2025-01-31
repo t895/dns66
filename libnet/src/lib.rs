@@ -1,10 +1,12 @@
 use std::{
     collections::HashSet,
+    fmt::Debug,
     fs::File,
     hash::{DefaultHasher, Hash, Hasher},
     io::{self, BufRead, Read, Write},
     net::{IpAddr, Ipv4Addr, Ipv6Addr, SocketAddrV6, UdpSocket},
     os::fd::{AsRawFd, FromRawFd},
+    ptr,
     str::FromStr,
     sync::Arc,
     thread,
@@ -16,9 +18,9 @@ use etherparse::{
     ip_number, IpHeaders, IpNumber, Ipv4Header, Ipv6FlowLabel, Ipv6Header, NetSlice, PacketBuilder,
     PacketBuilderStep, SlicedPacket, TransportSlice, UdpSlice,
 };
-use libc::pollfd;
-use linux_syscall::{syscall, Result};
+use libc::{pollfd, timespec};
 use simple_dns::{rdata::RData, Name, PacketFlag, ResourceRecord};
+use syscalls::{syscall, Sysno};
 use uniffi::deps::log::LevelFilter;
 
 #[macro_use]
@@ -39,23 +41,44 @@ pub fn rust_init() {
 #[uniffi::export]
 pub fn native_pipe() -> Option<Vec<i32>> {
     let pipes = vec![0, 0];
-    let result = unsafe { syscall!(linux_syscall::SYS_pipe2, pipes.as_ptr() as usize, 0) }.check();
-    return match result {
-        Ok(_) => Some(pipes),
-        Err(_) => None,
+    return match unsafe { syscall!(Sysno::pipe2, pipes.as_ptr(), 0) } {
+        Ok(result_code) => {
+            debug!(
+                "native_pipe: Successfully created pipes with descriptors {} and {} - Result code: {}",
+                pipes.get(0).unwrap(),
+                pipes.get(1).unwrap(),
+                result_code,
+            );
+            Some(pipes)
+        }
+        Err(e) => {
+            error!(
+                "native_pipe: Failed to create pipe! - Error code: {}",
+                e.name().unwrap_or("Unknown"),
+            );
+            None
+        }
     };
 }
 
 #[uniffi::export]
-pub fn native_close(fd: i32) -> i32 {
-    let _ = unsafe { syscall!(linux_syscall::SYS_close, fd) }.check();
-    return -1;
+pub fn native_close(fd: i32) -> Option<i32> {
+    match unsafe { syscall!(Sysno::close, fd) } {
+        Ok(_) => debug!("native_close: Successfully closed fd {}", fd),
+        Err(e) => error!(
+            "native_close: Failed to close fd {}! - Error code: {}",
+            fd,
+            e.name().unwrap_or("Unknown"),
+        ),
+    };
+    return None;
 }
 
 #[uniffi::export]
 pub fn run_vpn_native(
     ad_vpn_callback: Box<dyn AdVpnCallback>,
     block_logger_callback: Box<dyn BlockLoggerCallback>,
+    android_file_helper: Box<dyn AndroidFileHelper>,
     host_items: Vec<NativeHost>,
     host_exceptions: Vec<NativeHost>,
     upstream_dns_servers: Vec<Vec<u8>>,
@@ -68,6 +91,7 @@ pub fn run_vpn_native(
     vpn.run(
         ad_vpn_callback,
         block_logger_callback,
+        android_file_helper,
         host_items,
         host_exceptions,
         upstream_dns_servers,
@@ -366,12 +390,17 @@ impl AdVpn {
         &mut self,
         android_vpn_callback: Box<dyn AdVpnCallback>,
         block_logger_callback: Box<dyn BlockLoggerCallback>,
+        android_file_helper: Box<dyn AndroidFileHelper>,
         host_items: Vec<NativeHost>,
         host_exceptions: Vec<NativeHost>,
         upstream_dns_servers: Vec<Vec<u8>>,
     ) {
         let mut packet: Vec<u8> = Vec::with_capacity(32767);
-        let mut dns_packet_proxy = DnsPacketProxy::new(android_vpn_callback, block_logger_callback);
+        let mut dns_packet_proxy = DnsPacketProxy::new(
+            android_vpn_callback,
+            block_logger_callback,
+            android_file_helper,
+        );
         dns_packet_proxy.initialize(host_items, host_exceptions, upstream_dns_servers);
         self.vpn_watchdog.init();
         while self.do_one(&mut dns_packet_proxy, packet.as_mut_slice()) {}
@@ -413,33 +442,51 @@ impl AdVpn {
             polls.push(poll_fd);
         }
 
+        let timeout_seconds = (self.vpn_watchdog.get_poll_timeout() / 1000) as i64;
+        let timeout_timespec = timespec {
+            tv_sec: timeout_seconds,
+            tv_nsec: 0,
+        };
+        debug!(
+            "do_one: Polling {} file descriptors with a timeout of {}s",
+            polls.len(),
+            timeout_seconds,
+        );
+        match unsafe {
+            syscall!(
+                Sysno::ppoll,
+                polls.as_mut_ptr(),
+                polls.len(),
+                ptr::addr_of!(timeout_timespec),
+                0
+            )
+        } {
+            Ok(result_code) => {
+                debug!("do_one: ppoll result code: {}", result_code);
+                if result_code == 0 {
+                    self.vpn_watchdog.handle_timeout();
+                    return true;
+                }
+            }
+            Err(e) => {
+                error!(
+                    "do_one: ppoll failed! - Error code: {}",
+                    e.name().unwrap_or("Unknown")
+                );
+                return false;
+            }
+        };
+
+        debug!(
+            "do_one: block_poll_fd.revents = {}, device_poll_fd.revents = {}",
+            block_poll_fd.revents, device_poll_fd.revents
+        );
         if block_poll_fd.revents != 0 {
             info!("do_one: Told to stop VPN");
             return false;
         }
 
-        debug!("do_one: Polling {} file descriptors", polls.len());
-        let result = unsafe {
-            syscall!(
-                linux_syscall::SYS_ppoll,
-                polls.as_mut_ptr(),
-                polls.len(),
-                self.vpn_watchdog.get_poll_timeout()
-            )
-        };
-
-        match result.check() {
-            Ok(_) => debug!("do_one: ppoll ran successfully"),
-            Err(e) => {
-                error!("do_one: ppoll failed! - Error code: {}", e.get());
-                return false;
-            }
-        }
-
-        if result.as_usize_unchecked() == 0 {
-            self.vpn_watchdog.handle_timeout();
-            return true;
-        }
+        thread::sleep(time::Duration::from_secs(1));
 
         // Need to do this before reading from the device, otherwise a new insertion there could
         // invalidate one of the sockets we want to read from either due to size or time out
@@ -451,7 +498,7 @@ impl AdVpn {
             let mut wosps_to_process = Vec::<WaitingOnSocketPacket>::new();
             while wosp_index < self.wosp_list.list.len() {
                 polls_index += 1;
-                let poll = match polls.get((polls_index as usize) + 2) {
+                let poll: &pollfd = match polls.get((polls_index as usize) + 2) {
                     Some(value) => value,
                     None => {
                         error!("do_one: Used bad index for polls list!");
@@ -782,6 +829,11 @@ impl WospList {
     }
 }
 
+#[uniffi::export(callback_interface)]
+pub trait AndroidFileHelper {
+    fn get_host_fd(&self, host: String, mode: String) -> Option<i32>;
+}
+
 #[derive(uniffi::Enum, PartialEq, PartialOrd)]
 pub enum NativeHostState {
     IGNORE,
@@ -796,8 +848,8 @@ pub struct NativeHost {
     state: NativeHostState,
 }
 
-#[derive(uniffi::Object)]
 struct RuleDatabase {
+    android_file_helper: Box<dyn AndroidFileHelper>,
     blocked_hosts: Arc<HashSet<u64>>,
 }
 
@@ -867,15 +919,19 @@ impl RuleDatabase {
         return Some(host);
     }
 
-    #[uniffi::constructor]
-    fn new() -> Self {
+    fn new(android_file_helper: Box<dyn AndroidFileHelper>) -> Self {
         RuleDatabase {
+            android_file_helper,
             blocked_hosts: Arc::new(HashSet::new()),
         }
     }
 
     fn initialize(&mut self, host_items: Vec<NativeHost>, host_exceptions: Vec<NativeHost>) {
-        info!("initialize: Loading block list");
+        info!(
+            "initialize: Loading block list with {} hosts and {} exceptions",
+            host_items.len(),
+            host_exceptions.len()
+        );
 
         let mut new_set: HashSet<u64> = HashSet::new();
 
@@ -912,7 +968,12 @@ impl RuleDatabase {
                 let lines: io::Lines<io::BufReader<File>> = io::BufReader::new(file).lines();
                 self.load_file(set, &host, lines);
             }
-            Err(_) => {
+            Err(e) => {
+                warn!(
+                    "Failed to open {}. Attempting to add as single host. - {}",
+                    host.data,
+                    e.to_string()
+                );
                 self.add_host(set, &host.state, &host.data);
             }
         }
@@ -986,6 +1047,7 @@ impl<'a> DnsPacketProxy<'a> {
     fn new(
         android_vpn_callback: Box<dyn AdVpnCallback>,
         block_logger_callback: Box<dyn BlockLoggerCallback>,
+        android_file_helper: Box<dyn AndroidFileHelper>,
     ) -> Self {
         let name = match Name::new(Self::INVALID_HOSTNAME) {
             Ok(value) => value,
@@ -1015,7 +1077,7 @@ impl<'a> DnsPacketProxy<'a> {
         DnsPacketProxy {
             android_vpn_callback,
             block_logger_callback,
-            rule_database: RuleDatabase::new(),
+            rule_database: RuleDatabase::new(android_file_helper),
             upstream_dns_servers: Vec::new(),
             negative_cache_record,
         }
