@@ -159,6 +159,7 @@ class AdVpnService : VpnService(), Handler.Callback {
         }
     )
 
+    private var connectivityChangedCallbackRegistered = false
     private val connectivityChangedCallback = object : NetworkCallback() {
         override fun onAvailable(network: Network) {
             super.onAvailable(network)
@@ -229,8 +230,12 @@ class AdVpnService : VpnService(), Handler.Callback {
 
         updateVpnStatus(VpnStatus.STARTING)
         restartVpnThread()
-        getSystemService(ConnectivityManager::class.java)
-            .registerDefaultNetworkCallback(connectivityChangedCallback)
+
+        if (!connectivityChangedCallbackRegistered) {
+            getSystemService(ConnectivityManager::class.java)
+                .registerDefaultNetworkCallback(connectivityChangedCallback)
+            connectivityChangedCallbackRegistered = true
+        }
     }
 
     private fun updateVpnStatus(newStatus: VpnStatus) {
@@ -291,8 +296,11 @@ class AdVpnService : VpnService(), Handler.Callback {
 
         updateVpnStatus(VpnStatus.STOPPED)
 
-        getSystemService(ConnectivityManager::class.java)
-            .unregisterNetworkCallback(connectivityChangedCallback)
+        if (connectivityChangedCallbackRegistered) {
+            getSystemService(ConnectivityManager::class.java)
+                .unregisterNetworkCallback(connectivityChangedCallback)
+            connectivityChangedCallbackRegistered = false
+        }
 
         logger.save()
 
