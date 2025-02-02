@@ -1,27 +1,27 @@
 import io.gitlab.arturbosch.detekt.Detekt
 
 plugins {
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
-    id("org.jetbrains.kotlin.plugin.compose")
-    id("org.jetbrains.kotlin.plugin.parcelize")
-    id("org.jetbrains.kotlin.plugin.serialization")
-    id("org.jetbrains.kotlinx.atomicfu")
-    id("androidx.baselineprofile")
-    id("app.accrescent.tools.bundletool")
-    id("app.cash.licensee")
-    id("io.github.usefulness.licensee-for-android")
-    id("io.gitlab.arturbosch.detekt")
+    alias(libs.plugins.android.application)
+    alias(libs.plugins.kotlin.android)
+    alias(libs.plugins.kotlin.compose)
+    alias(libs.plugins.kotlin.parcelize)
+    alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.kotlinx.atomicfu)
+    alias(libs.plugins.androidx.baselineprofile)
+    alias(libs.plugins.accrescent.bundletool)
+    alias(libs.plugins.cash.licensee)
+    alias(libs.plugins.usefulness.licensee)
+    alias(libs.plugins.arturbosch.detekt)
 }
 
 android {
     namespace = "dev.clombardo.dnsnet"
-    compileSdk = 35
+    compileSdk = libs.versions.compileSdk.get().toInt()
 
     defaultConfig {
         applicationId = "dev.clombardo.dnsnet"
-        minSdk = 24
-        targetSdk = 35
+        minSdk = libs.versions.minSdk.get().toInt()
+        targetSdk = libs.versions.targetSdk.get().toInt()
         versionCode = 29
         versionName = "1.0.15"
     }
@@ -100,66 +100,64 @@ android {
 }
 
 kotlin {
-    jvmToolchain(17)
+    jvmToolchain(libs.versions.java.get().toInt())
 }
 
 dependencies {
-    implementation("androidx.appcompat:appcompat:1.7.0")
+    implementation(libs.androidx.appcompat)
 
     // Proxy stuff
-    implementation("org.pcap4j:pcap4j-core:1.8.2")
-    implementation("org.pcap4j:pcap4j-packetfactory-static:1.8.2")
-    implementation("dnsjava:dnsjava:3.6.2")
+    implementation(libs.pcap4j.core)
+    implementation(libs.pcap4j.packetfactory.static)
+    implementation(libs.dnsjava)
 
     // Compose
-    val composeBom = platform("androidx.compose:compose-bom:2024.11.00")
+    val composeBom = platform(libs.compose.bom)
     implementation(composeBom)
     debugImplementation(composeBom)
     androidTestImplementation(composeBom)
-    implementation("androidx.compose.material3:material3")
-    implementation("androidx.compose.ui:ui-tooling-preview")
-    debugImplementation("androidx.compose.ui:ui-tooling")
-    implementation("androidx.compose.material:material-icons-core")
-    implementation("androidx.compose.material:material-icons-extended")
-    implementation("androidx.compose.material3:material3-adaptive-navigation-suite")
+    implementation(libs.androidx.material3)
+    implementation(libs.androidx.ui.tooling.preview)
+    debugImplementation(libs.androidx.ui.tooling)
+    implementation(libs.androidx.material.icons.core)
+    implementation(libs.androidx.material.icons.extended)
+    implementation(libs.androidx.material3.adaptive.navigation.suite)
 
-    val accompanistVersion = "0.36.0"
-    implementation("com.google.accompanist:accompanist-permissions:$accompanistVersion")
+    implementation(libs.accompanist.permissions)
 
-    implementation("io.coil-kt.coil3:coil-compose:3.0.4")
+    implementation(libs.coil.compose)
 
-    implementation("androidx.navigation:navigation-compose:2.8.5")
+    implementation(libs.androidx.navigation.compose)
 
-    val lifecycleVersion = "2.8.7"
-    implementation("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:$lifecycleVersion")
-    implementation("androidx.lifecycle:lifecycle-runtime-compose:$lifecycleVersion")
+    implementation(libs.androidx.lifecycle.viewmodel.ktx)
+    implementation(libs.androidx.lifecycle.viewmodel.compose)
+    implementation(libs.androidx.lifecycle.runtime.compose)
 
-    implementation("androidx.activity:activity-compose:1.9.3")
+    implementation(libs.androidx.activity.compose)
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+    implementation(libs.kotlinx.serialization.json)
 
-    implementation("org.jetbrains.kotlinx:atomicfu:0.26.1")
+    implementation(libs.atomicfu)
 
     // Baseline profiles
-    implementation("androidx.profileinstaller:profileinstaller:1.4.1")
+    implementation(libs.androidx.profileinstaller)
     "baselineProfile"(project(":baselineprofile"))
 
-    implementation("androidx.work:work-runtime-ktx:2.10.0")
+    implementation(libs.androidx.work.runtime.ktx)
 
-    implementation("androidx.preference:preference-ktx:1.2.1")
+    implementation(libs.androidx.preference.ktx)
 
-    implementation("androidx.core:core-splashscreen:1.0.1")
+    implementation(libs.androidx.core.splashscreen)
 
-    implementation("io.github.t895:materialswitch:0.1.3")
+    implementation(libs.materialswitch)
 
-    detektPlugins("io.gitlab.arturbosch.detekt:detekt-formatting:1.23.7")
+    detektPlugins(libs.detekt.formatting)
 
-    implementation("dev.chrisbanes.haze:haze:1.1.1")
+    implementation(libs.haze)
 
-    implementation("com.aallam.similarity:string-similarity-kotlin:0.1.0")
+    implementation(libs.string.similarity.kotlin)
 
-    implementation("androidx.collection:collection-ktx:1.4.5")
+    implementation(libs.androidx.collection.ktx)
 }
 
 licensee {
@@ -176,7 +174,7 @@ licenseeForAndroid {
 }
 
 detekt {
-    toolVersion = "1.23.7"
+    toolVersion = libs.versions.detekt.get()
     config.setFrom(file("config/detekt/detekt.yml"))
     buildUponDefaultConfig = true
     autoCorrect = true
