@@ -64,10 +64,6 @@ class BaselineProfileGenerator {
             val apps = By.res("homeNavigation:Apps")
             device.findObject(apps).click()
 
-            val showSystemApps = By.res("apps:showSystemApps")
-            device.wait(Until.hasObject(showSystemApps), 5_000)
-            device.findObject(showSystemApps).click()
-
             val listItem = By.res("apps:listItem")
             device.wait(Until.hasObject(listItem), 5_000)
 

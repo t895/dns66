@@ -68,6 +68,7 @@ import androidx.window.core.layout.WindowWidthSizeClass
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.google.accompanist.permissions.isGranted
 import com.google.accompanist.permissions.rememberPermissionState
+import dev.clombardo.dnsnet.DnsNetApplication.Companion.applicationContext
 import dev.clombardo.dnsnet.DnsServer
 import dev.clombardo.dnsnet.Host
 import dev.clombardo.dnsnet.HostException
@@ -636,6 +637,7 @@ fun HomeScreen(
         navigationItems = {
             HomeDestinations.entries.forEach {
                 item(
+                    modifier = Modifier.testTag("homeNavigation:${applicationContext.getString(it.labelResId)}"),
                     selected = it == currentDestination,
                     onClick = { setDestination(it) },
                     icon = it.iconEnum.icon,
