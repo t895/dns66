@@ -92,7 +92,7 @@ class AdVpnService : VpnService(), Handler.Callback {
         val logger by lazy { BlockLogger.load() }
 
         fun checkStartVpnOnBoot(context: Context) {
-            if (!config.autoStart && !Preferences.VpnIsActive) {
+            if (!config.autoStart || !Preferences.VpnIsActive) {
                 return
             }
 
