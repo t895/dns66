@@ -205,7 +205,15 @@ fun EditDnsScreen(
             LargeTopAppBar(
                 windowInsets = topAppBarInsets,
                 title = {
-                    Text(text = stringResource(R.string.activity_edit_dns_server))
+                    Text(
+                        text = stringResource(
+                            if (server.title.isBlank() && server.location.isBlank()) {
+                                R.string.add_dns_server
+                            } else {
+                                R.string.activity_edit_dns_server
+                            }
+                        )
+                    )
                 },
                 navigationIcon = {
                     BasicTooltipIconButton(
