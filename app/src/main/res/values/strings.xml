@@ -163,6 +163,7 @@
     <string name="edit_hosts_file">Edit hosts file</string>
     <string name="add_host">Add host</string>
     <string name="edit_host">Edit host</string>
+    <string name="hostname">Hostname</string>
     <string name="start_title">General DNSNet configuration</string>
     <string name="hosts_title">Filter hosts with files and exceptions</string>
     <string name="credits">Credits</string>

@@ -293,6 +293,7 @@ fun EditHost(
     onDataTextChanged: (String) -> Unit,
     onOpenHostsDirectoryClick: (() -> Unit)?,
     state: HostState,
+    singleHost: Boolean,
     onStateChanged: (HostState) -> Unit,
 ) {
     Column(
@@ -317,7 +318,7 @@ fun EditHost(
         OutlinedTextField(
             modifier = Modifier.fillMaxWidth(),
             label = {
-                Text(text = stringResource(id = R.string.location))
+                Text(text = stringResource(id = if (singleHost) R.string.hostname else R.string.location))
             },
             value = dataText,
             onValueChange = onDataTextChanged,
@@ -416,6 +417,7 @@ private fun EditHostPreview() {
             onDataTextChanged = { locationText = it },
             onOpenHostsDirectoryClick = {},
             state = state,
+            singleHost = true,
             onStateChanged = { state = it },
         )
     }
@@ -545,6 +547,7 @@ fun EditHostScreen(
                 null
             },
             state = stateInput,
+            singleHost = host is HostException,
             onStateChanged = { stateInput = it },
         )
     }
