@@ -17,6 +17,7 @@ import androidx.compose.animation.AnimatedContentTransitionScope
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.ExitTransition
+import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
@@ -33,6 +34,7 @@ import androidx.compose.material.icons.automirrored.filled.DriveFileMove
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Android
 import androidx.compose.material.icons.filled.Dns
+import androidx.compose.material.icons.filled.Shield
 import androidx.compose.material.icons.filled.VpnKey
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -48,6 +50,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.res.stringResource
@@ -653,19 +656,56 @@ fun HomeScreen(
                 enter = NavigationScaffold.FabEnter,
                 exit = NavigationScaffold.FabExit,
             ) {
-                FloatingActionButton(
-                    onClick = {
-                        if (currentDestination == HomeDestinations.Hosts) {
-                            topLevelNavController.navigate(HostFile())
-                        } else if (currentDestination == HomeDestinations.DNS) {
-                            topLevelNavController.navigate(DnsServer())
+                val add = stringResource(R.string.add)
+                if (currentDestination == HomeDestinations.Hosts) {
+                    var expanded by rememberSaveable { mutableStateOf(false) }
+                    ExpandableFloatingActionButton(
+                        expanded = expanded,
+                        onClick = { expanded = !expanded },
+                        onDismissRequest = { expanded = false },
+                        buttonContent = {
+                            val rotation by animateFloatAsState(
+                                targetValue = if (expanded) 45f else 0f,
+                            )
+                            Icon(
+                                modifier = Modifier.rotate(rotation),
+                                imageVector = Icons.Default.Add,
+                                contentDescription = add
+                            )
                         }
-                    },
-                ) {
-                    Icon(
-                        imageVector = Icons.Default.Add,
-                        contentDescription = stringResource(R.string.add),
-                    )
+                    ) {
+                        item(
+                            icon = Icons.AutoMirrored.Filled.DriveFileMove,
+                            textId = R.string.add_hosts_file,
+                            onClick = {
+                                expanded = false
+                                topLevelNavController.navigate(HostFile())
+                            }
+                        )
+                        item(
+                            icon = Icons.Default.Shield,
+                            textId = R.string.add_host,
+                            onClick = {
+                                expanded = false
+                                topLevelNavController.navigate(HostException())
+                            }
+                        )
+                    }
+                } else {
+                    FloatingActionButton(
+                        onClick = {
+                            if (currentDestination == HomeDestinations.Hosts) {
+                                topLevelNavController.navigate(HostFile())
+                            } else if (currentDestination == HomeDestinations.DNS) {
+                                topLevelNavController.navigate(DnsServer())
+                            }
+                        },
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Add,
+                            contentDescription = add,
+                        )
+                    }
                 }
             }
         },

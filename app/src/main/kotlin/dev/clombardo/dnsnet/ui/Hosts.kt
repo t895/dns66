@@ -480,9 +480,9 @@ fun EditHostScreen(
 
                         is HostException -> {
                             if (host.title.isEmpty()) {
-                                stringResource(R.string.add_host_exception)
+                                stringResource(R.string.add_host)
                             } else {
-                                stringResource(R.string.edit_host_exception)
+                                stringResource(R.string.edit_host)
                             }
                         }
 

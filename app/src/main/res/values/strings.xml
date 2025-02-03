@@ -161,8 +161,8 @@
     <string name="create_exception">Create exception</string>
     <string name="add_hosts_file">Add hosts file</string>
     <string name="edit_hosts_file">Edit hosts file</string>
-    <string name="add_host_exception">Add host exception</string>
-    <string name="edit_host_exception">Edit host exception</string>
+    <string name="add_host">Add host</string>
+    <string name="edit_host">Edit host</string>
     <string name="start_title">General DNSNet configuration</string>
     <string name="hosts_title">Filter hosts with files and exceptions</string>
     <string name="credits">Credits</string>
