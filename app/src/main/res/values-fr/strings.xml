@@ -27,10 +27,13 @@
     <string name="notification_reconnecting">Reconnexion</string>
     <string name="notification_reconnecting_error">Erreur de reconnexion</string>
     <string name="notification_stopped">Arrêtée</string>
+    <string name="deny">Refuser</string>
+    <string name="allow">Accepter</string>
+    <string name="ignore">Ignorer</string>
     <string-array name="item_states">
-        <item>Refuser</item>
-        <item>Accepter</item>
-        <item>Ignorer</item>
+        <item>@string/deny</item>
+        <item>@string/allow</item>
+        <item>@string/ignore</item>
     </string-array>
     <!-- Translate with something like <Language> Translation: Your Name -->
     <string name="translator_credits">Traduction française : Julien Lepiller</string>

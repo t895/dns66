@@ -57,10 +57,13 @@
     <string name="notification_reconnecting">Переподключение</string>
     <string name="notification_reconnecting_error">Ошибка переподключения</string>
     <string name="notification_stopped">Остановлен</string>
+    <string name="deny">Запретить</string>
+    <string name="allow">Разрешить</string>
+    <string name="ignore">Игнорировать</string>
     <string-array name="item_states">
-        <item>Запретить</item>
-        <item>Разрешить</item>
-        <item>Игнорировать</item>
+        <item>@string/deny</item>
+        <item>@string/allow</item>
+        <item>@string/ignore</item>
     </string-array>
     <!-- Translate with something like <Language> Translation: Your Name -->
     <string name="translator_credits">Русский Перевод: Николай Бузовский</string>

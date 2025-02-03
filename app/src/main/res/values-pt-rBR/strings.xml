@@ -26,10 +26,13 @@
     <string name="notification_reconnecting">Conectando de novo</string>
     <string name="notification_reconnecting_error">Falha de conexão</string>
     <string name="notification_stopped">Parou</string>
+    <string name="deny">Negar</string>
+    <string name="allow">Permitir</string>
+    <string name="ignore">Ignorar</string>
     <string-array name="item_states">
-        <item>Negar</item>
-        <item>Permitir</item>
-        <item>Ignorar</item>
+        <item>@string/deny</item>
+        <item>@string/allow</item>
+        <item>@string/ignore</item>
     </string-array>
     <!-- Translate with something like <Language> Translation: Your Name -->
     <string name="translator_credits"/>

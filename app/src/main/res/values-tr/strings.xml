@@ -36,10 +36,13 @@
     <string name="notification_reconnecting">Yeniden bağlanıyor</string>
     <string name="notification_reconnecting_error">Yeniden bağlanırken sorun oluştu</string>
     <string name="notification_stopped">Durduruldu</string>
+    <string name="deny">Reddet</string>
+    <string name="allow">İzin Ver</string>
+    <string name="ignore">Görmezden Gel</string>
     <string-array name="item_states">
-        <item>Reddet</item>
-        <item>İzin Ver</item>
-        <item>Görmezden Gel</item>
+        <item>@string/deny</item>
+        <item>@string/allow</item>
+        <item>@string/ignore</item>
     </string-array>
     <!-- Translate with something like <Language> Translation: Your Name -->
     <string name="translator_credits">Çeviri : Mehmet Yüksel POLAT</string>

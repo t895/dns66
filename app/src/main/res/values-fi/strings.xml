@@ -27,10 +27,13 @@
     <string name="notification_reconnecting">Yhdistetään uudelleen</string>
     <string name="notification_reconnecting_error">Ongelma uudelleen yhdistämisessä</string>
     <string name="notification_stopped">Pysäytetty</string>
+    <string name="deny">Kiellä</string>
+    <string name="allow">Salli</string>
+    <string name="ignore">Ohita</string>
     <string-array name="item_states">
-        <item>Kiellä</item>
-        <item>Salli</item>
-        <item>Ohita</item>
+        <item>@string/deny</item>
+        <item>@string/allow</item>
+        <item>@string/ignore</item>
     </string-array>
     <!-- Translate with something like <Language> Translation: Your Name -->
     <string name="translator_credits">Suomeksi kääntänyt: Ilmari Jaaranen</string>

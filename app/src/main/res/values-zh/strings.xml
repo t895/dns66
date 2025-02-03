@@ -12,10 +12,13 @@
     <string name="action">行为</string>
     <string name="location">位置 (URL 或 Host)</string>
     <string name="title">标题</string>
+    <string name="deny">拒绝</string>
+    <string name="allow">允许</string>
+    <string name="ignore">忽略</string>
     <string-array name="item_states">
-        <item>拒绝</item>
-        <item>允许</item>
-        <item>忽略</item>
+        <item>@string/deny</item>
+        <item>@string/allow</item>
+        <item>@string/ignore</item>
     </string-array>
     <string name="cannot_restore_previous_config">无法还原之前设置: %s</string>
     <string name="cannot_write_config">无法写入设置: %s</string>

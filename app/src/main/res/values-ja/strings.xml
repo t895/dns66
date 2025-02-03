@@ -28,10 +28,13 @@
     <string name="notification_reconnecting">再接続中</string>
     <string name="notification_reconnecting_error">再接続エラー</string>
     <string name="notification_stopped">停止しました</string>
+    <string name="deny">拒否</string>
+    <string name="allow">許可</string>
+    <string name="ignore">無視</string>
     <string-array name="item_states">
-        <item>拒否</item>
-        <item>許可</item>
-        <item>無視</item>
+        <item>@string/deny</item>
+        <item>@string/allow</item>
+        <item>@string/ignore</item>
     </string-array>
     <!-- Translate with something like <Language> Translation: Your Name -->
     <string name="translator_credits">日本語翻訳: Naofumi Fukue</string>

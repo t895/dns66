@@ -33,10 +33,13 @@
     <string name="notification_reconnecting">Reconnecting</string>
     <string name="notification_reconnecting_error">Reconnecting error</string>
     <string name="notification_stopped">Stopped</string>
+    <string name="deny">Deny</string>
+    <string name="allow">Allow</string>
+    <string name="ignore">Ignore</string>
     <string-array name="item_states">
-        <item>Deny</item>
-        <item>Allow</item>
-        <item>Ignore</item>
+        <item>@string/deny</item>
+        <item>@string/allow</item>
+        <item>@string/ignore</item>
     </string-array>
     <!-- Translate with something like <Language> Translation: Your Name -->
     <string name="translator_credits"/>

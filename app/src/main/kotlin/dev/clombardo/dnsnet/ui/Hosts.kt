@@ -90,16 +90,16 @@ private fun IconText(
     icon: Painter,
     text: String,
 ) {
-    Row(
+    Column(
         modifier = modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.Start,
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Icon(
             painter = icon,
             contentDescription = text,
         )
-        Spacer(modifier = Modifier.padding(horizontal = 2.dp))
+        Spacer(modifier = Modifier.padding(vertical = 2.dp))
         Text(
             text = text,
             style = MaterialTheme.typography.bodyMedium,
@@ -145,21 +145,28 @@ fun HostsScreen(
                         text = stringResource(id = R.string.legend_host_intro),
                         style = MaterialTheme.typography.bodyMedium,
                     )
-                    IconText(
-                        icon = painterResource(id = R.drawable.ic_state_ignore),
-                        text = stringResource(id = R.string.legend_host_ignore),
-                    )
-                    IconText(
-                        icon = painterResource(id = R.drawable.ic_state_allow),
-                        text = stringResource(id = R.string.legend_host_allow),
-                    )
-                    IconText(
-                        icon = painterResource(id = R.drawable.ic_state_deny),
-                        text = stringResource(id = R.string.legend_host_deny),
-                    )
+                    Spacer(Modifier.padding(top = 2.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.Center,
+                        verticalAlignment = Alignment.CenterVertically,
+                    ) {
+                        IconText(
+                            icon = painterResource(id = R.drawable.ic_state_ignore),
+                            text = stringResource(id = R.string.ignore),
+                        )
+                        Spacer(Modifier.padding(horizontal = 8.dp))
+                        IconText(
+                            icon = painterResource(id = R.drawable.ic_state_allow),
+                            text = stringResource(id = R.string.allow),
+                        )
+                        Spacer(Modifier.padding(horizontal = 8.dp))
+                        IconText(
+                            icon = painterResource(id = R.drawable.ic_state_deny),
+                            text = stringResource(id = R.string.deny),
+                        )
+                    }
                 }
-
-                Spacer(modifier = Modifier.padding(vertical = 2.dp))
 
                 SwitchListItem(
                     title = stringResource(id = R.string.automatic_refresh),

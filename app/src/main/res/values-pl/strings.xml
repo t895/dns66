@@ -26,10 +26,13 @@
     <string name="notification_reconnecting">Ponowne łączenie</string>
     <string name="notification_reconnecting_error">Błąd ponownego łączenia</string>
     <string name="notification_stopped">Zatrzymany</string>
+    <string name="deny">Odmów</string>
+    <string name="allow">Pozwól</string>
+    <string name="ignore">Ignoruj</string>
     <string-array name="item_states">
-        <item>Odmów</item>
-        <item>Pozwól</item>
-        <item>Ignoruj</item>
+        <item>@string/deny</item>
+        <item>@string/allow</item>
+        <item>@string/ignore</item>
     </string-array>
     <!-- Translate with something like <Language> Translation: Your Name -->
     <string name="translator_credits">Tłumaczyli: justmix4</string>

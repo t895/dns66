@@ -26,10 +26,13 @@
     <string name="notification_reconnecting">Opnieuw verbinden</string>
     <string name="notification_reconnecting_error">Opnieuw verbinden fout</string>
     <string name="notification_stopped">Gestopt</string>
+    <string name="deny">Weigeren</string>
+    <string name="allow">Toestaan</string>
+    <string name="ignore">Negeren</string>
     <string-array name="item_states">
-        <item>Weigeren</item>
-        <item>Toestaan</item>
-        <item>Negeren</item>
+        <item>@string/deny</item>
+        <item>@string/allow</item>
+        <item>@string/ignore</item>
     </string-array>
     <!-- Translate with something like <Language> Translation: Your Name -->
     <string name="translator_credits">Nederlandse vertaling: Roy Schutte</string>

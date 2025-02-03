@@ -16,10 +16,13 @@
     <string name="action">Regel</string>
     <string name="location">Ort (URL oder Host)</string>
     <string name="title">Titel</string>
+    <string name="deny">Verbieten</string>
+    <string name="allow">Erlauben</string>
+    <string name="ignore">Ignorieren</string>
     <string-array name="item_states">
-        <item>Verbieten</item>
-        <item>Erlauben</item>
-        <item>Ignorieren</item>
+        <item>@string/deny</item>
+        <item>@string/allow</item>
+        <item>@string/ignore</item>
     </string-array>
     <string name="action_refresh">Hosts-Dateien aktualisieren</string>
     <string name="cannot_load_default_config">Standardeinstellungen konnten nicht gelesen werden: %s - Das sollte nicht passieren!</string>

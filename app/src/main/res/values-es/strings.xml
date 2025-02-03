@@ -26,10 +26,13 @@
     <string name="notification_reconnecting">Reconectando</string>
     <string name="notification_reconnecting_error">Error reconectando</string>
     <string name="notification_stopped">Parado</string>
+    <string name="deny">Denegar</string>
+    <string name="allow">Permitir</string>
+    <string name="ignore">Ignorar</string>
     <string-array name="item_states">
-        <item>Denegar</item>
-        <item>Permitir</item>
-        <item>Ignorar</item>
+        <item>@string/deny</item>
+        <item>@string/allow</item>
+        <item>@string/ignore</item>
     </string-array>
     <!-- Translate with something like <Language> Translation: Your Name -->
     <string name="translator_credits">Traducción al español: David López</string>

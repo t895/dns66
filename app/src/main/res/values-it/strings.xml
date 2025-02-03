@@ -27,10 +27,13 @@
     <string name="notification_reconnecting">Riconnessione</string>
     <string name="notification_reconnecting_error">Errore di riconnessione</string>
     <string name="notification_stopped">Arrestato</string>
+    <string name="deny">Nega</string>
+    <string name="allow">Permetti</string>
+    <string name="ignore">Ignora</string>
     <string-array name="item_states">
-        <item>Nega</item>
-        <item>Permetti</item>
-        <item>Ignora</item>
+        <item>@string/deny</item>
+        <item>@string/allow</item>
+        <item>@string/ignore</item>
     </string-array>
     <!-- Translate with something like <Language> Translation: Your Name -->
     <string name="translator_credits">Traduzione italiana: TJL73 - http://tjl73.altervista.org/</string>

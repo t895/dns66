@@ -26,10 +26,13 @@
     <string name="notification_reconnecting">Taasühendun</string>
     <string name="notification_reconnecting_error">Taasühendamise viga</string>
     <string name="notification_stopped">Peatatud</string>
+    <string name="deny">Keela</string>
+    <string name="allow">Luba</string>
+    <string name="ignore">Ignoreeri</string>
     <string-array name="item_states">
-        <item>Keela</item>
-        <item>Luba</item>
-        <item>Ignoreeri</item>
+        <item>@string/deny</item>
+        <item>@string/allow</item>
+        <item>@string/ignore</item>
     </string-array>
     <!-- Translate with something like <Language> Translation: Your Name -->
     <string name="translator_credits">Eesti keelde tõlkinud Madis0</string>
