@@ -206,7 +206,7 @@ class AdVpnService : VpnService(), Handler.Callback {
      */
     private fun shouldReconnect(oldNetwork: NetworkDetails?, newNetwork: NetworkDetails): Boolean {
         if (oldNetwork == null) {
-            return true
+            return false
         }
 
         if (oldNetwork.transports == null && newNetwork.transports == null) {
