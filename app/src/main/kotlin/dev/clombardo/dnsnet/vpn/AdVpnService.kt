@@ -32,6 +32,7 @@ import android.os.Message
 import androidx.annotation.StringRes
 import androidx.core.app.NotificationCompat
 import dev.clombardo.dnsnet.DnsNetApplication.Companion.applicationContext
+import dev.clombardo.dnsnet.Intents
 import dev.clombardo.dnsnet.MainActivity
 import dev.clombardo.dnsnet.NotificationChannels
 import dev.clombardo.dnsnet.Preferences
@@ -110,6 +111,19 @@ class AdVpnService : VpnService(), Handler.Callback {
             } else {
                 context.startService(getStartIntent())
             }
+        }
+
+        fun start(context: Context) {
+            val intent = Intents.getStartVpnIntent()
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                context.startForegroundService(intent)
+            } else {
+                context.startService(intent)
+            }
+        }
+
+        fun stop(context: Context) {
+            context.startService(Intents.getStopVpnIntent())
         }
 
         private const val NOTIFICATION_ACTION_PENDING_INTENT_FLAGS =

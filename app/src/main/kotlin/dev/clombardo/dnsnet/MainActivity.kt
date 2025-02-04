@@ -126,7 +126,7 @@ class MainActivity : AppCompatActivity() {
                             vm.onVpnConfigurationFailure()
                         } else if (it.resultCode == Activity.RESULT_OK) {
                             logd("onActivityResult: Starting service")
-                            createService()
+                            AdVpnService.start(this)
                         }
                     }
 
@@ -223,9 +223,7 @@ class MainActivity : AppCompatActivity() {
     ) {
         if (AdVpnService.status.value != VpnStatus.STOPPED) {
             logi("Attempting to disconnect")
-            val intent = Intent(this, AdVpnService::class.java)
-                .putExtra(AdVpnService.COMMAND_TAG, Command.STOP.ordinal)
-            startService(intent)
+            AdVpnService.stop(this)
         } else {
             if (isPrivateDnsEnabled()) {
                 vm.onPrivateDnsEnabledWarning()
@@ -241,7 +239,7 @@ class MainActivity : AppCompatActivity() {
 
     private fun restartService() {
         if (AdVpnService.status.value != VpnStatus.STOPPED) {
-            createService()
+            AdVpnService.start(this)
         }
     }
 
@@ -294,27 +292,7 @@ class MainActivity : AppCompatActivity() {
         if (intent != null) {
             launcher.launch(intent)
         } else {
-            createService()
-        }
-    }
-
-    private fun createService() {
-        val intent = Intent(applicationContext, AdVpnService::class.java)
-            .putExtra(AdVpnService.COMMAND_TAG, Command.START.ordinal)
-            .putExtra(
-                AdVpnService.NOTIFICATION_INTENT_TAG,
-                PendingIntent.getActivity(
-                    applicationContext,
-                    0,
-                    Intent(applicationContext, MainActivity::class.java),
-                    PendingIntent.FLAG_IMMUTABLE
-                )
-            )
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            startForegroundService(intent)
-        } else {
-            startService(intent)
+            AdVpnService.start(this)
         }
     }
 
